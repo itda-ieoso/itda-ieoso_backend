@@ -1,9 +1,12 @@
 package itda.ieoso.Course.Domain;
 
+import itda.ieoso.Lecture.Domain.Lecture;
 import itda.ieoso.User.Domain.User;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Course {
@@ -28,6 +31,7 @@ public class Course {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @Column
     private Integer maxStudents;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -36,8 +40,20 @@ public class Course {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @Column(nullable = false)
-    private String videoLink;
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Lecture> lectures = new ArrayList<>();
+
+    // 강의를 추가하는 메서드
+    public void addLecture(Lecture lecture) {
+        lectures.add(lecture);
+        lecture.setCourse(this);
+    }
+
+    // 강의를 삭제하는 메서드
+    public void removeLecture(Lecture lecture) {
+        lectures.remove(lecture);
+        lecture.setCourse(null);
+    }
 
     // Getters and Setters
     public String getCourseId() {
@@ -112,11 +128,11 @@ public class Course {
         this.updatedAt = updatedAt;
     }
 
-    public String getVideoLink() {
-        return videoLink;
+    public List<Lecture> getLectures() {
+        return lectures;
     }
 
-    public void setVideoLink(String videoLink) {
-        this.videoLink = videoLink;
+    public void setLectures(List<Lecture> lectures) {
+        this.lectures = lectures;
     }
 }

@@ -1,4 +1,4 @@
-package itda.ieoso.Class.Domain;
+package itda.ieoso.ClassStudent.Domain;
 
 import itda.ieoso.Course.Domain.Course;
 import itda.ieoso.User.Domain.User;
@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
-public class Class {
+public class ClassStudent {
 
     @Id
     @Column(name = "class_id", nullable = false)
@@ -17,7 +17,8 @@ public class Class {
     private Date joinedAt;
 
     @Enumerated(EnumType.STRING)
-    private ClassStatus classStatus;
+    @Column(name = "class_student_status", nullable = false)
+    private ClassStudentStatus classStudentStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
@@ -44,12 +45,12 @@ public class Class {
         this.joinedAt = joinedAt;
     }
 
-    public ClassStatus getClassStatus() {
-        return classStatus;
+    public ClassStudentStatus getClassStatus() {
+        return classStudentStatus;
     }
 
-    public void setClassStatus(ClassStatus classStatus) {
-        this.classStatus = classStatus;
+    public void setClassStudentStatus(ClassStudentStatus classStudentStatus) {
+        this.classStudentStatus = classStudentStatus;
     }
 
     public Course getCourse() {

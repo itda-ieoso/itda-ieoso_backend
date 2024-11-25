@@ -3,7 +3,6 @@ package itda.ieoso.User.Domain;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "User")
 public class User {
     @Id
     @Column(name = "user_id")
