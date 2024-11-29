@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface CourseRepository extends JpaRepository<Course, String> {
     Optional<Course> findByCourseId(String courseId);
+    boolean existsByCourseIdAndCreatedBy_UserId(String courseId, String userId);
 }

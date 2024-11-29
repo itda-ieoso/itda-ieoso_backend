@@ -50,4 +50,43 @@ public class Submission {
     public void setSubmittedAt(Date submittedAt) {
         this.submittedAt = submittedAt;
     }
+    public String getTextContent() {
+        return textContent;
+    }
+
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public SubmissionStatus getSubStatus() {
+        return subStatus;
+    }
+
+    public void setSubStatus(SubmissionStatus subStatus) {
+        this.subStatus = subStatus;
+    }
+
+    public Assignment getAssignment() {
+        return assignment;
+    }
+
+    public void setAssignment(Assignment assignment) {
+        this.assignment = assignment;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
