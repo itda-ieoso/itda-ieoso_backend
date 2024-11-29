@@ -1,6 +1,7 @@
 package itda.ieoso.Assignment.Domain;
 
 import itda.ieoso.Course.Domain.Course;
+import itda.ieoso.Lecture.Domain.Lecture;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -31,6 +32,10 @@ public class Assignment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lecture_id", nullable = false)  // Foreign key column name in the Assignment table
+    private Lecture lecture;
 
     // Getters and Setters
     public String getAssignmentId() {
@@ -87,5 +92,13 @@ public class Assignment {
 
     public void setCourse(Course course) {
         this.course = course;
+    }
+
+    public Lecture getLecture() {
+        return lecture;
+    }
+
+    public void setLecture(Lecture lecture) {
+        this.lecture = lecture;
     }
 }
