@@ -1,8 +1,15 @@
 package itda.ieoso.User.Domain;
 
+import itda.ieoso.File.Domain.File;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
     @Id
     @Column(name = "user_id")
@@ -17,12 +24,16 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+    @OneToOne(fetch = FetchType.LAZY)
+    private File file;
 
-    @Column(name = "profile_image_url")
-    private String profileImageUrl;
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
 
     // Getters and Setters
     public String getUserId() {
@@ -57,19 +68,8 @@ public class User {
         this.name = name;
     }
 
-    public Role getRole() {
-        return role;
-    }
 
-    public void setRole(Role role) {
-        this.role = role;
-    }
 
-    public String getProfileImageUrl() {
-        return profileImageUrl;
-    }
-
-    public void setProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
+    public void updateFile(File file) {
     }
 }
