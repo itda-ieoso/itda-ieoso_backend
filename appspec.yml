@@ -15,7 +15,7 @@ hooks:
     # 배포 완료 이후, 실행할 작업 설정
     AfterInstall:
         # deploy.sh 라는 스크립트 실행
-        - location: {scripts파일이 위치한폴더}/scripts/deploy.sh # 예시: cicd/scripts/deploy.sh
+        - location: ./scripts/deploy.sh
         # deploy.sh 파일 실행 시 timeout 설정 (180s)
           timeout: 180
           runas: root
