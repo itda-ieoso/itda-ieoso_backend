@@ -49,9 +49,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Move appspec.yml to root (최상단으로 이동)
-      run: mv ./appspec.yml
-
     - name: AWS S3 에 build 결과 업로드
       run: |
           aws deploy push \
