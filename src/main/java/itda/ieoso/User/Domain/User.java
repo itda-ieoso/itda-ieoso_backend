@@ -74,5 +74,3 @@ public class User {
         this.profileImageUrl = profileImageUrl;
     }
 }
-
-//ㅇㅇ
