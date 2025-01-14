@@ -30,10 +30,10 @@ jobs:
       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
     - name: gradlew 권한 부여
-      run: chmod +x {gradlew가 위치한폴더/gradlew} # 예시: cicd/gradlew
+      run: chmod +x ./gradlew
 
     - name: Gradle 빌드 (dev 프로파일 활성화)
-      working-directory: ./{gradle가 위치한 경로} # 예시: ./cicd
+      working-directory: ./
       run: ./gradlew clean build -x test
       
 
