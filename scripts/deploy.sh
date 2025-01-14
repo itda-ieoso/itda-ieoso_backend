@@ -1,4 +1,4 @@
-BUILD_JAR=$(ls /home/ubuntu/app/{cicd}/build/libs/*.jar) # { } 부분부터 repository와 동일하게 경로 맞추기
+BUILD_JAR=$(ls /home/ubuntu/app/build/libs/*.jar) # { } 부분부터 repository와 동일하게 경로 맞추기
 JAR_NAME=$(basename $BUILD_JAR)
 echo "> build 파일명: $JAR_NAME" >> /home/ubuntu/app/deploy.log
 
