@@ -36,7 +36,7 @@ jobs:
 
     - name: gradlew 권한 부여
       run: chmod +x ./gradlew
-      working-directory: ./gradlew
+      working-directory: ./
       
     - name: Gradle 빌드
       run: ./gradlew clean build -x test
