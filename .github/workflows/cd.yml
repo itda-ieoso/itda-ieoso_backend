@@ -8,9 +8,9 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
-  S3_BUCKET_NAME: {s3버켓 이름}
-  CODE_DEPLOY_APPLICATION_NAME: {codedeploy의 애플리케이션 이름}
-  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: {codedeploy의 배포그룹 이름}
+  S3_BUCKET_NAME: itdaawsbucket
+  CODE_DEPLOY_APPLICATION_NAME: itda-code-deploy
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: itda-aws-server
   
 permissions:
   contents: read
@@ -36,11 +36,11 @@ jobs:
 
     - name: gradlew 권한 부여
       run: chmod +x ./gradlew
-      working-directory: ./{gradlew가 위치한 경로} # 예시: ./cicd
+      working-directory: ./gradlew
       
     - name: Gradle 빌드
       run: ./gradlew clean build -x test
-      working-directory: ./{gradle가 위치한 경로} # 예시:./cicd
+      working-directory: ./
   
     - name: AWS 인증 (IAM 사용자 Access key, Secret Key 사용)
       uses: aws-actions/configure-aws-credentials@v4
@@ -50,23 +50,23 @@ jobs:
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Move appspec.yml to root (최상단으로 이동)
-      run: mv {appspec.yml이 위치한폴더/appspec.yml} .  # 예시 cicd/appspec.yml
+      run: mv ./appspec.yml
 
     - name: AWS S3 에 build 결과 업로드
       run: |
           aws deploy push \
-            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --application-name itda-code-deploy \
             --ignore-hidden-files \
-            --s3-location s3://${{ env.S3_BUCKET_NAME }}/${{ github.sha }}.zip \
+            --s3-location s3://itdaawsbucket/${{ github.sha }}.zip \
             --source . \
-            --region ${{ env.AWS_REGION }}  # 리전 추가
+            --region ap-northeast-2  # 리전 추가
       
     - name: S3 버킷 내 파일 CodeDeploy 실행
       run: |
           aws deploy create-deployment \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-            --s3-location bucket=${{ env.S3_BUCKET_NAME }},key=${{ github.sha }}.zip,bundleType=zip \
-            --region ${{ env.AWS_REGION }}
+            --application-name itda-code-deploy \
+            --deployment-group-name itda-aws-server \
+            --s3-location bucket=itdaawsbucket,key=${{ github.sha }}.zip,bundleType=zip \
+            --region ap-northeast-2
   
