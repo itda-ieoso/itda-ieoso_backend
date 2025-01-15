@@ -1,4 +1,4 @@
-package itda.ieoso.Submission.Domain;
+package itda.ieoso.Submission;
 
 public enum SubmissionStatus {
     SUBMITTED,   // 제출됨
