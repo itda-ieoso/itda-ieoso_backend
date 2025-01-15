@@ -1,6 +1,5 @@
-package itda.ieoso.User.Repository;
+package itda.ieoso.User;
 
-import itda.ieoso.User.Domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
