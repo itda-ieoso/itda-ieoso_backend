@@ -1,10 +1,11 @@
 package itda.ieoso.User.Domain;
-
-import itda.ieoso.File.Domain.File;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
 
 @Entity
 @NoArgsConstructor
@@ -24,17 +25,12 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private File file;
-
-    public File getFile() {
-        return file;
+    public User(String email, String password, String name) {
+        this.userId = UUID.randomUUID().toString();  // Generate UUID
+        this.email = email;
+        this.password = password;
+        this.name = name;
     }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
-
     // Getters and Setters
     public String getUserId() {
         return userId;
@@ -66,10 +62,5 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-
-
-    public void updateFile(File file) {
     }
 }
