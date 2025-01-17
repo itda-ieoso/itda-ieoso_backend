@@ -1,12 +1,11 @@
 package itda.ieoso.Login.Jwt;
 
-import itda.ieoso.User.Domain.User;
+import itda.ieoso.User.User;
 import itda.ieoso.Login.Dto.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,10 +13,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@RequiredArgsConstructor
+import static itda.ieoso.User.UserRole.USER;
+
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+
+    public JwtFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -42,8 +46,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
         User user = User.builder()
                 .email(email)
-                .password("temp")  // We don't need the password here for authentication
+                .password("temp")  // 비밀번호 임시 설정
                 .name("tempName") // 이름도 임시로 설정
+                .role(USER)
                 .build();
 
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
