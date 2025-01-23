@@ -4,6 +4,7 @@ import itda.ieoso.User.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -16,8 +17,9 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Return an empty collection since you don't need role-based authorities
-        return Collections.emptyList();
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(() -> user.getRole().getAuthority());
+        return authorities;
     }
 
     @Override

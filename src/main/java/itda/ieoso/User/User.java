@@ -1,12 +1,14 @@
 package itda.ieoso.User;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
     @Id
@@ -37,5 +39,16 @@ public class User {
     // public으로 password 제공
     public String getPassword() {
         return password;
+    }
+
+    // public으로 userId 제공
+    public Long getUserId() { return userId; }
+
+    @Builder
+    public User(String name, String email, String password, UserRole role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
     }
 }
