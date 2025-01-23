@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,16 +48,18 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lecture> lectures = new ArrayList<>();
 
-    // 강의를 추가하는 메서드
-//    public void addLecture(Lecture lecture) {
-//        lectures.add(lecture);
-//        lecture.setCourse(this);
-//    }
-//
-//    // 강의를 삭제하는 메서드
-//    public void removeLecture(Lecture lecture) {
-//        lectures.remove(lecture);
-//        lecture.setCourse(null);
-//    }
+    // 생성자: 필수 값만 받아서 객체 초기화
+    public Course(User user, String courseTitle, String courseDescription,
+                  int maxStudents, LocalDate closedDate) {
+        this.user = user;
+        this.courseTitle = courseTitle;
+        this.courseDescription = courseDescription;
+        this.maxStudents = maxStudents;
+        this.closedDate = closedDate;
+    }
+    public void setCreatedAt(LocalDateTime now) {
+    }
 
+    public void setUpdatedAt(LocalDateTime now) {
+    }
 }
