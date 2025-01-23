@@ -13,8 +13,9 @@ import lombok.Getter;
 public class LectureHistory {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "lecture_history_id")
-    private String lectureHistoryId;
+    private Long lectureHistoryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)

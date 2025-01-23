@@ -13,6 +13,7 @@ import java.time.LocalDate;
 public class Assignment {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "assignment_id", nullable = false)
     private Long assignmentId;
 

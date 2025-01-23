@@ -11,7 +11,9 @@ import java.sql.Timestamp;
 @Entity
 @Getter
 public class UserAlarmHistory {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_alarm_history_id", nullable = false)
     private Long userAlarmHistoryId;
 

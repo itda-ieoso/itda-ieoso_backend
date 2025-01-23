@@ -1,12 +1,18 @@
 package itda.ieoso.User;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
 
@@ -24,7 +30,25 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private UserRole role;
 
+    // public으로 email 제공
+    public String getEmail() {
+        return email;
+    }
+    // public으로 password 제공
+    public String getPassword() {
+        return password;
+    }
 
+    // public으로 userId 제공
+    public Long getUserId() { return userId; }
+
+    @Builder
+    public User(String name, String email, String password, UserRole role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
 }
