@@ -13,6 +13,7 @@ import java.util.Date;
 public class Lecture {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "lecture_id")
     private Long lectureId;
 

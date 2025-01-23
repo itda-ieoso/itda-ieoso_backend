@@ -6,6 +6,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LectureRepository extends JpaRepository<Lecture, String> {
-    List<Lecture> findByCourse_CourseId(String courseId);  // 강좌 ID로 강의를 조회
-    Optional<Lecture> findByLectureId(String lectureId);    // 강의 ID로 강의를 조회
+//    List<Lecture> findByCourse_CourseId(String courseId);  // 강좌 ID로 강의를 조회
+//    Optional<Lecture> findByLectureId(String lectureId);    // 강의 ID로 강의를 조회
 }

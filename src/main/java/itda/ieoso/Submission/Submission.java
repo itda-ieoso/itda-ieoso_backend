@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 public class Submission {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "submission_id", nullable = false)
     private Long submissionId;
 
