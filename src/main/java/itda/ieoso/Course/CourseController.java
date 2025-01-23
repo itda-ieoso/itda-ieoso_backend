@@ -61,28 +61,5 @@ public class CourseController {
                 .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
         return ResponseEntity.ok(course);
     }
-
-    // 강의실 입장 코드 생성
-    @PostMapping("/{courseId}/generate-entry-code")
-    public ResponseEntity<String> generateEntryCode(@PathVariable Long courseId) {
-        String entryCode = UUID.randomUUID().toString().substring(0, 8); // 랜덤 코드 생성
-        entryCodes.put(courseId, entryCode);
-        return ResponseEntity.ok(entryCode);
-    }
-
-    // 강의실 입장
-    @PostMapping("/{courseId}/enter")
-    public ResponseEntity<String> enterCourse(
-            @PathVariable Long courseId,
-            @RequestParam String entryCode) {
-
-        String storedCode = entryCodes.get(courseId);
-
-        if (storedCode != null && storedCode.equals(entryCode)) {
-            return ResponseEntity.ok("강의실에 성공적으로 입장하였습니다!");
-        } else {
-            return ResponseEntity.status(403).body("입장 코드가 잘못되었습니다.");
-        }
-    }
 }
 
