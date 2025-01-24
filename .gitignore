@@ -43,3 +43,5 @@ bin/
 ### Mac OS ###
 .DS_Store
 
+# Ignore application properties files
+src/main/resources/application.properties

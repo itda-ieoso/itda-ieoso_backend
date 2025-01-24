@@ -2,10 +2,12 @@ package itda.ieoso.Lecture;
 
 import itda.ieoso.Course.Course;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -36,11 +38,52 @@ public class Lecture {
     @Column
     private LocalDate endDate;
 
-    @Column(nullable = false)
-    private Timestamp createdAt;
+    @Column
+    private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    private Timestamp updatedAt;
+    @Column
+    private LocalDateTime updatedAt;
 
+    // 기본 생성자 추가
+    public Lecture() {
+    }
 
+    // 생성자: 모든 필드를 초기화
+    @Builder
+    public Lecture(Course course, String lectureTitle, String lectureDescription, String videoLink,
+                   LocalDate startDate, LocalDate endDate) {
+        this.course = course;
+        this.lectureTitle = lectureTitle;
+        this.lectureDescription = lectureDescription;
+        this.videoLink = videoLink;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setLectureTitle(String lectureTitle) {
+        this.lectureTitle = lectureTitle;
+    }
+
+    public void setLectureDescription(String lectureDescription) {
+        this.lectureDescription = lectureDescription;
+    }
+
+    public void setVideoLink(String videoLink) {
+        this.videoLink = videoLink;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
 }
