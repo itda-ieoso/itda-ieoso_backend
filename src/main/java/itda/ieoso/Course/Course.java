@@ -3,7 +3,10 @@ package itda.ieoso.Course;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.User.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -13,6 +16,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Course {
 
     @Id
@@ -33,33 +37,66 @@ public class Course {
     @Column
     private int maxStudents;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Timestamp createdAt;
+    @Column
+    private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column
     private LocalDate closedDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Timestamp updatedAt;
+    @Column
+    private LocalDateTime updatedAt;
 
     @Column
     private String courseThumbnail;
 
+    @Column(unique = true)
+    private String entryCode;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lecture> lectures = new ArrayList<>();
 
-    // 생성자: 필수 값만 받아서 객체 초기화
-    public Course(User user, String courseTitle, String courseDescription,
-                  int maxStudents, LocalDate closedDate) {
+    // 생성자 수정: 이제 모든 필드를 받음
+    @Builder
+    public Course(User user, String courseTitle, String courseDescription, int maxStudents, LocalDate closedDate,
+                  String courseThumbnail, String entryCode) {
         this.user = user;
         this.courseTitle = courseTitle;
         this.courseDescription = courseDescription;
         this.maxStudents = maxStudents;
         this.closedDate = closedDate;
-    }
-    public void setCreatedAt(LocalDateTime now) {
+        this.courseThumbnail = courseThumbnail;
+        this.entryCode = entryCode;
     }
 
-    public void setUpdatedAt(LocalDateTime now) {
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setEntryCode(String entryCode) {
+        this.entryCode = entryCode;
+    }
+
+    public void setCourseTitle(String courseTitle) {
+        this.courseTitle = courseTitle;
+    }
+
+    public void setCourseDescription(String courseDescription) {
+        this.courseDescription = courseDescription;
+    }
+
+    public void setMaxStudents(int maxStudents) {
+        this.maxStudents = maxStudents;
+    }
+
+    public void setClosedDate(LocalDate closedDate) {
+        this.closedDate = closedDate;
+    }
+
+    public void setCourseThumbnail(String courseThumbnail) {
+        this.courseThumbnail = courseThumbnail;
     }
 }
