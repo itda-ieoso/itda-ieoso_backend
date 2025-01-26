@@ -65,13 +65,13 @@ public class LectureController {
         LectureDTO lectureDTO = lectureService.getLectureById(lectureId);
         return ResponseEntity.ok(lectureDTO); // 조회된 강의 반환
     }
-//    // 특정 강의실에 속한 강의 목록 조회
-//    @GetMapping("/{courseId}/lectures")
-//    public ResponseEntity<List<Lecture>> getLecturesByCourseId(@PathVariable Long courseId, @RequestParam Long userId) {
-//        // 서비스 레이어에서 강의 목록을 가져옴
-//        List<Lecture> lectures = lectureService.getLecturesByCourseId(courseId, userId);
-//
-//        // ResponseEntity로 반환
-//        return ResponseEntity.ok(lectures);
-//    }
+    // 특정 강의실에 속한 강의 목록 조회
+    @GetMapping("/{courseId}/lectures")
+    public ResponseEntity<List<LectureDTO>> getLecturesByCourseId(@PathVariable Long courseId) {
+        // 서비스 레이어에서 강의 목록을 가져옴
+        List<LectureDTO> lectures = lectureService.getLecturesByCourseId(courseId);
+
+        // ResponseEntity로 반환
+        return ResponseEntity.ok(lectures);
+    }
 }

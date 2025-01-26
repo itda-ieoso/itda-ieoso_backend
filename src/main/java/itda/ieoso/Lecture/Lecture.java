@@ -5,8 +5,10 @@ import itda.ieoso.Course.Course;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Video.Video;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -17,6 +19,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Lecture {
 
     @Id
@@ -54,10 +57,6 @@ public class Lecture {
 
     @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Assignment> assignments = new ArrayList<>();
-
-    // 기본 생성자 추가
-    public Lecture() {
-    }
 
     // 생성자: 모든 필드를 초기화
     @Builder
