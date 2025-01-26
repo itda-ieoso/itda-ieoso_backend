@@ -1,20 +1,11 @@
 package itda.ieoso.Course;
 
-import itda.ieoso.CourseAttendees.CourseAttendees;
-import itda.ieoso.CourseAttendees.CourseAttendeesDTO;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
-import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
-import itda.ieoso.User.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/courses")
@@ -66,21 +57,18 @@ public class CourseController {
         return ResponseEntity.ok(courseDTO);
     }
 
-//    // 강의실 입장
-//    @PostMapping("/{courseId}/enter/{userId}")
-//    public ResponseEntity<Map<String, Object>> enterCourse(
-//            @PathVariable Long courseId,
-//            @PathVariable Long userId,
-//            @RequestParam String entryCode) {
-//        // 서비스 메서드를 호출하여 강의실에 입장하고 CourseAttendeesDTO 반환 받기
-//        CourseAttendeesDTO courseAttendeesDTO = courseService.enterCourse(courseId, userId, entryCode);
-//
-//        // 응답 준비
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("courseAttendees", courseAttendeesDTO);
-//
-//        return ResponseEntity.ok(response);  // DTO를 포함한 응답 반환
-//    }
+    // 강의실 입장
+    @PostMapping("/{courseId}/enter/{userId}")
+    public ResponseEntity<String> enterCourse(
+            @PathVariable Long courseId,
+            @PathVariable Long userId,
+            @RequestParam String entryCode) {
+        // 서비스 메서드를 호출하여 강의실 입장 처리
+        courseService.enterCourse(courseId, userId, entryCode);
+
+        // 성공 메시지 반환
+        return ResponseEntity.ok("가입되었습니다!");
+    }
 
 
 }

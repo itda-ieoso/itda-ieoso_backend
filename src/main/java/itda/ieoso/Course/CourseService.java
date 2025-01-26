@@ -1,7 +1,6 @@
 package itda.ieoso.Course;
 
 import itda.ieoso.CourseAttendees.CourseAttendees;
-import itda.ieoso.CourseAttendees.CourseAttendeesDTO;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
 import itda.ieoso.User.User;
@@ -10,7 +9,6 @@ import itda.ieoso.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -53,14 +51,23 @@ public class CourseService {
         course.setCreatedAt(LocalDateTime.now());
         course.setUpdatedAt(LocalDateTime.now()); // 처음 생성 시 updatedAt도 현재 시간
 
+        // 데이터베이스에 저장
+        courseRepository.save(course);
+
+        // 생성한 사람을 CourseAttendees에 추가
+        CourseAttendees courseAttendees = CourseAttendees.builder()
+                .course(course)
+                .user(user)
+                .joinedAt(LocalDate.now()) // 현재 시간
+                .courseAttendeesStatus(CourseAttendeesStatus.OWNER) // 소유자 역할로 상태 설정
+                .build();
+
+        courseAttendeesRepository.save(courseAttendees); // CourseAttendees 저장
         // UserDTO 생성
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
 
         // CourseDTO로 변환하여 반환
         CourseDTO courseDTO = CourseDTO.of(course, userInfoDto);
-
-        // 데이터베이스에 저장
-        courseRepository.save(course);
 
         return courseDTO;
     }
@@ -127,38 +134,36 @@ public class CourseService {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 8);  // 예: 32자 중 앞 8자 사용
     }
 
-//    // 강의실 입장 및 CourseAttendeesDTO 반환 처리
-//    public CourseAttendeesDTO enterCourse(Long courseId, Long userId, String entryCode) {
-//        // 입장 코드 검증
-//        boolean isValid = validateEntryCode(courseId, entryCode);
-//        if (!isValid) {
-//            throw new IllegalArgumentException("입장 코드가 잘못되었습니다.");
-//        }
-//
-//        // 강의와 사용자 가져오기
-//        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
-//
-//        // 사용자 정보 가져오기 (userId로 사용자 조회)
-//        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        // 현재 시간과 상태 설정
-//        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-//        CourseAttendeesStatus status = CourseAttendeesStatus.ACTIVE;
-//
-//        // CourseAttendees 엔티티 생성
-//        CourseAttendees courseAttendees = new CourseAttendees(course, user, currentTime, status);
-//
-//        // 엔티티 DB에 저장
-//        courseAttendeesRepository.save(courseAttendees);
-//
-//        // CourseAttendeesDTO 반환
-//        return CourseAttendeesDTO.builder()
-//                .courseId(course.getCourseId())
-//                .userId(user.getUserId())
-//                .joinedAt(currentTime)
-//                .status(status.name())
-//                .build();
-//    }
+    public void enterCourse(Long courseId, Long userId, String entryCode) {
+        // 1. 강의 존재 여부 확인
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다."));
+
+        // 2. 입장 코드 검증
+        if (!course.getEntryCode().equals(entryCode)) {
+            throw new IllegalArgumentException("잘못된 입장 코드입니다.");
+        }
+
+        // 3. 유저 존재 여부 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+
+        // 4. 이미 강의에 등록되어 있는지 확인
+        boolean isAlreadyEnrolled = courseAttendeesRepository.existsByCourseAndUser(course, user);
+        if (isAlreadyEnrolled) {
+            throw new IllegalArgumentException("이미 이 강의에 등록된 유저입니다.");
+        }
+
+        // 5. CourseAttendees 생성 및 저장
+        CourseAttendees courseAttendees = CourseAttendees.builder()
+                .course(course)
+                .user(user)
+                .joinedAt(LocalDate.now())
+                .courseAttendeesStatus(CourseAttendeesStatus.ACTIVE)
+                .build();
+
+        courseAttendeesRepository.save(courseAttendees);
+    }
 
     // 입장 코드 검증
     public boolean validateEntryCode(Long courseId, String entryCode) {
