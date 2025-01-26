@@ -20,7 +20,7 @@ public class LectureService {
     private LectureRepository lectureRepository;
 
     // 강의 생성
-    public LectureDTO createLecture(Long courseId, Long userId, String title, String description, String videoLink, LocalDate startDate, LocalDate endDate) {
+    public LectureDTO createLecture(Long courseId, Long userId, String title, String description, LocalDate startDate, LocalDate endDate) {
         // 과정 생성자인지 확인
         if (!isCourseCreator(courseId, userId)) {
             throw new IllegalArgumentException("강의를 생성할 권한이 없습니다.");
@@ -35,7 +35,6 @@ public class LectureService {
                 .course(course)
                 .lectureTitle(title)
                 .lectureDescription(description)
-                .videoLink(videoLink)
                 .startDate(startDate)
                 .endDate(endDate)
                 .build();
@@ -49,7 +48,7 @@ public class LectureService {
     }
 
     // 강의 수정
-    public LectureDTO updateLecture(Long courseId, Long lectureId, Long userId, String lectureTitle, String lectureDescription, String videoLink, LocalDate startDate, LocalDate endDate) {
+    public LectureDTO updateLecture(Long courseId, Long lectureId, Long userId, String lectureTitle, String lectureDescription, LocalDate startDate, LocalDate endDate) {
         // 기존 강의 조회
         Lecture lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다"));
@@ -62,7 +61,6 @@ public class LectureService {
         // 기존 객체 수정 (새로 객체를 생성하지 않고 덮어씀)
         lecture.setLectureTitle(lectureTitle);
         lecture.setLectureDescription(lectureDescription);
-        lecture.setVideoLink(videoLink);
         lecture.setStartDate(startDate);
         lecture.setEndDate(endDate);
         lecture.setUpdatedAt(LocalDateTime.now()); // updatedAt 갱신

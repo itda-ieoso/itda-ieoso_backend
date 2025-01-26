@@ -21,7 +21,7 @@ public class LectureController {
     public ResponseEntity<LectureDTO> createLecture(@PathVariable Long courseId, @PathVariable Long userId, @RequestBody Lecture lectureRequest) {
         // LectureService를 통해 강의 생성
         LectureDTO lectureDTO = lectureService.createLecture(courseId, userId, lectureRequest.getLectureTitle(),
-                lectureRequest.getLectureDescription(), lectureRequest.getVideoLink(), lectureRequest.getStartDate(), lectureRequest.getEndDate());
+                lectureRequest.getLectureDescription(), lectureRequest.getStartDate(), lectureRequest.getEndDate());
         System.out.println(lectureRequest);
         return ResponseEntity.ok(lectureDTO);
     }
@@ -35,7 +35,6 @@ public class LectureController {
                 userId,
                 lectureRequest.getLectureTitle(),
                 lectureRequest.getLectureDescription(),
-                lectureRequest.getVideoLink(),
                 lectureRequest.getStartDate(),
                 lectureRequest.getEndDate()
         );
