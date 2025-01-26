@@ -1,9 +1,16 @@
 package itda.ieoso.Course;
 
+import itda.ieoso.CourseAttendees.CourseAttendees;
+import itda.ieoso.CourseAttendees.CourseAttendeesDTO;
+import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
+import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.User.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +22,7 @@ public class CourseController {
 
     @Autowired
     private CourseService courseService;
+    private CourseAttendeesRepository courseAttendeesRepository;
 
     // 강의실 생성 및 입장 코드 생성
     @PostMapping("/{userId}")
@@ -59,20 +67,21 @@ public class CourseController {
     }
 
     // 강의실 입장
-    @PostMapping("/{courseId}/enter")
-    public ResponseEntity<String> enterCourse(
+    @PostMapping("/{courseId}/enter/{userId}")
+    public ResponseEntity<Map<String, Object>> enterCourse(
             @PathVariable Long courseId,
+            @PathVariable Long userId,
             @RequestParam String entryCode) {
+        // 서비스 메서드를 호출하여 강의실에 입장하고 CourseAttendeesDTO 반환 받기
+        CourseAttendeesDTO courseAttendeesDTO = courseService.enterCourse(courseId, userId, entryCode);
 
-        // Service를 통해 입장 코드 검증
-        boolean isValid = courseService.validateEntryCode(courseId, entryCode);
+        // 응답 준비
+        Map<String, Object> response = new HashMap<>();
+        response.put("courseAttendees", courseAttendeesDTO);
 
-        if (isValid) {
-            return ResponseEntity.ok("강의실에 성공적으로 입장하였습니다!");
-        } else {
-            return ResponseEntity.status(403).body("입장 코드가 잘못되었습니다.");
-        }
+        return ResponseEntity.ok(response);  // DTO를 포함한 응답 반환
     }
+
 
 }
 
