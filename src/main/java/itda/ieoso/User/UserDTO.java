@@ -8,7 +8,7 @@ import static itda.ieoso.User.UserRole.USER;
 
 @Getter
 @AllArgsConstructor
-public class UserDto {
+public class UserDTO {
 
     @Getter
     @AllArgsConstructor
