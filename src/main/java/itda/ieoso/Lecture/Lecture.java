@@ -1,6 +1,9 @@
 package itda.ieoso.Lecture;
 
+import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Course.Course;
+import itda.ieoso.Material.Material;
+import itda.ieoso.Video.Video;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +11,9 @@ import lombok.Getter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -29,9 +34,6 @@ public class Lecture {
     @Column(length = 500)
     private String lectureDescription;
 
-    @Column(nullable = false)
-    private String videoLink;
-
     @Column
     private LocalDate startDate;
 
@@ -44,18 +46,26 @@ public class Lecture {
     @Column
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Material> materials = new ArrayList<>();
+
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Video> videos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Assignment> assignments = new ArrayList<>();
+
     // 기본 생성자 추가
     public Lecture() {
     }
 
     // 생성자: 모든 필드를 초기화
     @Builder
-    public Lecture(Course course, String lectureTitle, String lectureDescription, String videoLink,
+    public Lecture(Course course, String lectureTitle, String lectureDescription,
                    LocalDate startDate, LocalDate endDate) {
         this.course = course;
         this.lectureTitle = lectureTitle;
         this.lectureDescription = lectureDescription;
-        this.videoLink = videoLink;
         this.startDate = startDate;
         this.endDate = endDate;
     }
@@ -73,10 +83,6 @@ public class Lecture {
 
     public void setLectureDescription(String lectureDescription) {
         this.lectureDescription = lectureDescription;
-    }
-
-    public void setVideoLink(String videoLink) {
-        this.videoLink = videoLink;
     }
 
     public void setStartDate(LocalDate startDate) {
