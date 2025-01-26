@@ -66,21 +66,21 @@ public class CourseController {
         return ResponseEntity.ok(courseDTO);
     }
 
-    // 강의실 입장
-    @PostMapping("/{courseId}/enter/{userId}")
-    public ResponseEntity<Map<String, Object>> enterCourse(
-            @PathVariable Long courseId,
-            @PathVariable Long userId,
-            @RequestParam String entryCode) {
-        // 서비스 메서드를 호출하여 강의실에 입장하고 CourseAttendeesDTO 반환 받기
-        CourseAttendeesDTO courseAttendeesDTO = courseService.enterCourse(courseId, userId, entryCode);
-
-        // 응답 준비
-        Map<String, Object> response = new HashMap<>();
-        response.put("courseAttendees", courseAttendeesDTO);
-
-        return ResponseEntity.ok(response);  // DTO를 포함한 응답 반환
-    }
+//    // 강의실 입장
+//    @PostMapping("/{courseId}/enter/{userId}")
+//    public ResponseEntity<Map<String, Object>> enterCourse(
+//            @PathVariable Long courseId,
+//            @PathVariable Long userId,
+//            @RequestParam String entryCode) {
+//        // 서비스 메서드를 호출하여 강의실에 입장하고 CourseAttendeesDTO 반환 받기
+//        CourseAttendeesDTO courseAttendeesDTO = courseService.enterCourse(courseId, userId, entryCode);
+//
+//        // 응답 준비
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("courseAttendees", courseAttendeesDTO);
+//
+//        return ResponseEntity.ok(response);  // DTO를 포함한 응답 반환
+//    }
 
 
 }
