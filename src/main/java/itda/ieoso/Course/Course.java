@@ -1,5 +1,6 @@
 package itda.ieoso.Course;
 
+import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.User.User;
 import jakarta.persistence.*;
@@ -47,6 +48,13 @@ public class Course {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lecture> lectures = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourseAttendees> courseAttendees = new ArrayList<>();
+
+    // 기본 생성자 추가
+    public Course() {
+    }
 
     // 생성자: 필수 값만 받아서 객체 초기화
     public Course(User user, String courseTitle, String courseDescription,

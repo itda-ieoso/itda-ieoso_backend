@@ -17,14 +17,6 @@ public class Assignment {
     @Column(name = "assignment_id", nullable = false)
     private Long assignmentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lecture_id", nullable = false)
-    private Lecture lecture;
-
     @Column(nullable = false, length = 200)
     private String assignmentTitle;
 
@@ -43,5 +35,8 @@ public class Assignment {
     @Temporal(TemporalType.TIMESTAMP)
     private Timestamp updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lecture_id", nullable = false)
+    private Lecture lecture;
 
 }
