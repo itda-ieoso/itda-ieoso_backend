@@ -1,5 +1,9 @@
 package itda.ieoso.Course;
 
+import itda.ieoso.CourseAttendees.CourseAttendees;
+import itda.ieoso.CourseAttendees.CourseAttendeesDTO;
+import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
+import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
 import itda.ieoso.User.User;
 import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
@@ -16,11 +20,12 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
-
+    private final CourseAttendeesRepository courseAttendeesRepository;
     @Autowired
-    public CourseService(CourseRepository courseRepository, UserRepository userRepository) {
+    public CourseService(CourseRepository courseRepository, UserRepository userRepository, CourseAttendeesRepository courseAttendeesRepository) {
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
+        this.courseAttendeesRepository = courseAttendeesRepository;
     }
 
     // 강좌 생성
@@ -122,6 +127,39 @@ public class CourseService {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 8);  // 예: 32자 중 앞 8자 사용
     }
 
+    // 강의실 입장 및 CourseAttendeesDTO 반환 처리
+    public CourseAttendeesDTO enterCourse(Long courseId, Long userId, String entryCode) {
+        // 입장 코드 검증
+        boolean isValid = validateEntryCode(courseId, entryCode);
+        if (!isValid) {
+            throw new IllegalArgumentException("입장 코드가 잘못되었습니다.");
+        }
+
+        // 강의와 사용자 가져오기
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+
+        // 사용자 정보 가져오기 (userId로 사용자 조회)
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 현재 시간과 상태 설정
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        CourseAttendeesStatus status = CourseAttendeesStatus.ACTIVE;
+
+        // CourseAttendees 엔티티 생성
+        CourseAttendees courseAttendees = new CourseAttendees(course, user, currentTime, status);
+
+        // 엔티티 DB에 저장
+        courseAttendeesRepository.save(courseAttendees);
+
+        // CourseAttendeesDTO 반환
+        return CourseAttendeesDTO.builder()
+                .courseId(course.getCourseId())
+                .userId(user.getUserId())
+                .joinedAt(currentTime)
+                .status(status.name())
+                .build();
+    }
+
     // 입장 코드 검증
     public boolean validateEntryCode(Long courseId, String entryCode) {
         // courseId로 강좌 조회
@@ -131,6 +169,8 @@ public class CourseService {
         // 입장 코드 비교
         return course.getEntryCode().equals(entryCode);
     }
+
+
 }
 
 
