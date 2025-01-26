@@ -3,9 +3,11 @@ package itda.ieoso.CourseAttendees;
 import itda.ieoso.Course.Course;
 import itda.ieoso.User.User;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -24,11 +26,19 @@ public class CourseAttendees {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Timestamp joinedAt;
+    @Column
+    private LocalDate joinedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "course_attendees_status", nullable = false)
     private CourseAttendeesStatus courseAttendeesStatus;
+
+    @Builder
+    public CourseAttendees(Course course, User user, LocalDate joinedAt, CourseAttendeesStatus courseAttendeesStatus) {
+        this.course = course;
+        this.user = user;
+        this.joinedAt = joinedAt;
+        this.courseAttendeesStatus = courseAttendeesStatus;
+    }
 
 }

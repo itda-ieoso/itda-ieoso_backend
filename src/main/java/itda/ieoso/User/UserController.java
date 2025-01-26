@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import itda.ieoso.User.UserDto.*;
+import itda.ieoso.User.UserDTO.*;
 
 import java.util.List;
 
