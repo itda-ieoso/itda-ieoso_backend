@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -29,11 +30,11 @@ public class Assignment {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Timestamp createdAt;
+    @Column
+    private LocalDateTime createdAt;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Timestamp updatedAt;
+    @Column
+    private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lecture_id", nullable = false)
