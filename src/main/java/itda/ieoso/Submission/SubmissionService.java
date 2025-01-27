@@ -1,88 +1,97 @@
 package itda.ieoso.Submission;
 
+import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
-import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
-import itda.ieoso.Course.CourseRepository;
-import itda.ieoso.User.User;
+import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 public class SubmissionService {
+    @Autowired
+    private SubmissionRepository submissionRepository;
+    @Autowired
+    private AssignmentRepository assignmentRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-//    private final SubmissionRepository submissionRepository;
-//    private final AssignmentRepository assignmentRepository;
-//    private final CourseRepository courseRepository;
-//    private final CourseAttendeesRepository courseAttendeesRepository;
-//    private final UserRepository userRepository;
-//
-//    public SubmissionService(SubmissionRepository submissionRepository, AssignmentRepository assignmentRepository,
-//                             CourseRepository courseRepository, CourseAttendeesRepository courseAttendeesRepository, UserRepository userRepository) {
-//        this.submissionRepository = submissionRepository;
-//        this.assignmentRepository = assignmentRepository;
-//        this.courseRepository = courseRepository;
-//        this.courseAttendeesRepository = courseAttendeesRepository;
-//        this.userRepository = userRepository;
-//    }
-//
-//    public void submitAssignment(String courseId, String lectureId, String assignmentId, String userId,
-//                                 String textContent, String fileUrl) {
-//        // 학습자 권한 확인
-//        if (!courseAttendeesRepository.existsByCourse_CourseIdAndUser_UserId(courseId, userId)) {
-//            throw new IllegalArgumentException("Only enrolled learners can submit assignments.");
-//        }
-//
-//        // 과제 확인
-//        var assignment = assignmentRepository.findById(assignmentId)
-//                .orElseThrow(() -> new IllegalArgumentException("Assignment not found."));
-//
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new IllegalArgumentException("User not found."));
-//
-//        Submission submission = new Submission();
-//        submission.setSubmissionId(UUID.randomUUID().toString());
-//        submission.setUser(user); // 유저 정보 가져오기
-//        submission.setAssignment(assignment);
-//        submission.setSubmittedAt(new Date());
-//        submission.setSubStatus(new Date().after(assignment.getDueDate()) ? SubmissionStatus.LATE : SubmissionStatus.SUBMITTED);
-//
-//        // 텍스트 내용 설정
-//        submission.setTextContent(textContent);
-//
-//        // 파일 URL 설정
-//        submission.setFileUrl(fileUrl);
-//
-//        submissionRepository.save(submission);
-//    }
-//    // Update submission
-//    public Submission updateSubmission(String courseId, String lectureId, String assignmentId, String submissionId, String textContent, String fileUrl) {
-//        Optional<Submission> optionalSubmission = submissionRepository.findById(submissionId);
-//        if (optionalSubmission.isPresent()) {
-//            Submission submission = optionalSubmission.get();
-//            if (textContent != null) {
-//                submission.setTextContent(textContent);
-//            }
-//            if (fileUrl != null) {
-//                submission.setFileUrl(fileUrl);
-//            }
-//            return submissionRepository.save(submission);
-//        } else {
-//            throw new IllegalArgumentException("Submission not found");
-//        }
-//    }
-//
-//    // Delete submission
-//    public void deleteSubmission(String courseId, String lectureId, String assignmentId, String submissionId) {
-//        submissionRepository.deleteById(submissionId);
-//    }
-//
-//    // Get submission
-//    public Submission getSubmission(String courseId, String lectureId, String assignmentId, String submissionId) {
-//        return submissionRepository.findById(submissionId)
-//                .orElseThrow(() -> new IllegalArgumentException("Submission not found"));
-//    }
+    // 과제 제출 및 수정
+    public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, Long userId, String textContent, String fileUrl) {
+        // 과제 조회
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("과제를 찾을 수 없습니다"));
+
+        // 제출 정보 조회
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new RuntimeException("제출 정보를 찾을 수 없습니다"));
+
+        // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
+        if (!submission.getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("이 과제를 수정할 권한이 없습니다.");
+        }
+
+        if(submission.getSubmissionStatus().equals("NOT_SUBMITTED")) {
+            submission.setTextContent(textContent);
+            submission.setFileUrl(fileUrl);
+            submission.setSubmittedAt(LocalDateTime.now());
+            submission.setSubmissionStatus(assignment.getEndDate().isAfter(LocalDate.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE);
+        } else {
+            submission.setTextContent(textContent);
+            submission.setFileUrl(fileUrl);
+            submission.setSubmittedAt(LocalDateTime.now());
+        }
+
+        submissionRepository.save(submission);
+
+        // UserDTO.UserInfoDto 생성
+        UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(submission.getUser(), submission.getUser().getProfileImageUrl());
+
+        // 수정된 SubmissionDTO 반환
+        return SubmissionDTO.of(submission, userInfoDto);
+    }
+
+    // 과제 삭제
+    public void deleteSubmission(Long assignmentId, Long submissionId, Long userId) {
+        // 과제 조회
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("과제를 찾을 수 없습니다"));
+
+        // 제출 정보 조회
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new RuntimeException("제출 정보를 찾을 수 없습니다"));
+
+        // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
+        if (!submission.getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("이 과제를 삭제할 권한이 없습니다.");
+        }
+
+        // 제출 정보 삭제
+        submissionRepository.delete(submission);
+    }
+
+    // 과제 조회
+    public SubmissionDTO getSubmission(Long assignmentId, Long submissionId, Long userId) {
+        // 과제 조회
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("과제를 찾을 수 없습니다"));
+
+        // 제출 정보 조회
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new RuntimeException("제출 정보를 찾을 수 없습니다"));
+
+        // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
+        if (!submission.getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("이 과제를 조회할 권한이 없습니다.");
+        }
+
+        // UserDTO.UserInfoDto 생성
+        UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(submission.getUser(), submission.getUser().getProfileImageUrl());
+
+        // SubmissionDTO로 변환하여 반환
+        return SubmissionDTO.of(submission, userInfoDto);
+    }
 }
