@@ -5,7 +5,9 @@ import itda.ieoso.Course.Course;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Video.Video;
 import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
