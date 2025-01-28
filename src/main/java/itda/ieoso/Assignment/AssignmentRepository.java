@@ -6,8 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface AssignmentRepository extends JpaRepository<Assignment, String> {
+public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
-    // 특정 강의에 대한 과제 조회
-//    List<Assignment> findByCourse_CourseIdAndLecture_LectureId(String courseId, String lectureId);
 }
