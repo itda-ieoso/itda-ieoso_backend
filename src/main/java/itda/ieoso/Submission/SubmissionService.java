@@ -70,7 +70,12 @@ public class SubmissionService {
         }
 
         // 제출 정보 삭제
-        submissionRepository.delete(submission);
+        submission.setTextContent(null);
+        submission.setFileUrl(null);
+        submission.setSubmittedAt(null);
+        submission.setSubmissionStatus(SubmissionStatus.NOT_SUBMITTED);
+
+        submissionRepository.save(submission);
     }
 
     // 과제 조회

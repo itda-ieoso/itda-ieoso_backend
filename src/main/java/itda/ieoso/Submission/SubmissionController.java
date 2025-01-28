@@ -26,15 +26,16 @@ public class SubmissionController {
         return ResponseEntity.ok(updatedSubmissionDTO); // 수정된 제출 정보 반환
     }
 
-    // 과제 삭제
-    @DeleteMapping("/{submissionId}/{userId}")
+    // 과제 삭제(과제 상태 초기화)
+    @PutMapping("/delete/{submissionId}/{userId}")
     public ResponseEntity<Void> deleteSubmission(
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
             @PathVariable Long userId) {
 
-        // 제출 정보 삭제
+        // 제출 정보 수정 처리
         submissionService.deleteSubmission(assignmentId, submissionId, userId);
+
         return ResponseEntity.noContent().build(); // 삭제 완료 응답
     }
 
