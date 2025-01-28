@@ -34,7 +34,7 @@ public class SubmissionService {
             throw new RuntimeException("이 과제를 수정할 권한이 없습니다.");
         }
 
-        if(submission.getSubmissionStatus().equals("NOT_SUBMITTED")) {
+        if(submission.getSubmissionStatus() == SubmissionStatus.NOT_SUBMITTED) {
             submission.setTextContent(textContent);
             submission.setFileUrl(fileUrl);
             submission.setSubmittedAt(LocalDateTime.now());

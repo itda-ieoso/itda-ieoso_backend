@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 public class SubmissionDTO {
 
     private Long submissionId;
-    private Assignment assignment;
     private UserDTO.UserInfoDto user;
     private String textContent;
     private String fileUrl;
@@ -25,7 +24,6 @@ public class SubmissionDTO {
     public static SubmissionDTO of(Submission submission, UserDTO.UserInfoDto userInfoDto) {
         return SubmissionDTO.builder()
                 .submissionId(submission.getSubmissionId())
-                .assignment(submission.getAssignment())
                 .textContent(submission.getTextContent())
                 .fileUrl(submission.getFileUrl())
                 .submissionStatus(submission.getSubmissionStatus())
