@@ -18,46 +18,47 @@ public class LectureController {
     private LectureRepository lectureRepository;
 
     // 강의 생성 (과정 생성자만 가능)
-    @PostMapping("/{courseId}/{userId}")
-    public ResponseEntity<LectureDTO> createLecture(@PathVariable Long courseId, @PathVariable Long userId, @RequestBody Lecture lectureRequest) {
-        // LectureService를 통해 강의 생성
-        LectureDTO lectureDTO = lectureService.createLecture(courseId, userId, lectureRequest.getLectureTitle(),
-                lectureRequest.getLectureDescription(), lectureRequest.getStartDate(), lectureRequest.getEndDate());
-        System.out.println(lectureRequest);
-        return ResponseEntity.ok(lectureDTO);
-    }
-    // 강의 수정
-    @PutMapping("/{courseId}/{lectureId}/{userId}")
-    public ResponseEntity<LectureDTO> updateLecture(@PathVariable Long courseId, @PathVariable Long lectureId, @PathVariable Long userId, @RequestBody Lecture lectureRequest) {
-        // 강의 수정 처리
-        LectureDTO updatedLectureDTO = lectureService.updateLecture(
-                courseId,
-                lectureId,
-                userId,
-                lectureRequest.getLectureTitle(),
-                lectureRequest.getLectureDescription(),
-                lectureRequest.getStartDate(),
-                lectureRequest.getEndDate()
-        );
-
-        return ResponseEntity.ok(updatedLectureDTO); // 수정된 강의 반환
-    }
+//    @PostMapping("/{courseId}/{userId}")
+//    public ResponseEntity<LectureDTO> createLecture(@PathVariable Long courseId, @PathVariable Long userId, @RequestBody Lecture lectureRequest) {
+//        // LectureService를 통해 강의 생성
+//        LectureDTO lectureDTO = lectureService.createLecture(courseId, userId, lectureRequest.getLectureTitle(),
+//                lectureRequest.getLectureDescription(), lectureRequest.getStartDate(), lectureRequest.getEndDate());
+//        System.out.println(lectureRequest);
+//        return ResponseEntity.ok(lectureDTO);
+//    }
+//    // 강의 수정
+//    @PutMapping("/{courseId}/{lectureId}/{userId}")
+//    public ResponseEntity<LectureDTO> updateLecture(@PathVariable Long courseId, @PathVariable Long lectureId, @PathVariable Long userId, @RequestBody Lecture lectureRequest) {
+//        // 강의 수정 처리
+//        LectureDTO updatedLectureDTO = lectureService.updateLecture(
+//                courseId,
+//                lectureId,
+//                userId,
+//                lectureRequest.getLectureTitle(),
+//                lectureRequest.getLectureDescription(),
+//                lectureRequest.getStartDate(),
+//                lectureRequest.getEndDate()
+//        );
+//
+//        return ResponseEntity.ok(updatedLectureDTO); // 수정된 강의 반환
+//    }
+//
     // 강의 삭제 (과정 생성자만 가능)
-    @DeleteMapping("/{courseId}/{lectureId}")
-    public ResponseEntity<Void> deleteLecture(
-            @PathVariable Long courseId,
-            @PathVariable Long lectureId, // 강의 ID
-            @RequestParam Long userId // 사용자 ID
-    ) {
-        // 강의가 속한 과정의 생성자인지 확인
-        if (!lectureService.isLectureOwner(lectureId, userId)) {
-            return ResponseEntity.status(403).build(); // 권한 없음 (Forbidden)
-        }
-
-        // LectureService를 통해 강의 삭제
-        lectureService.deleteLecture(courseId, lectureId, userId);
-        return ResponseEntity.noContent().build();
-    }
+//    @DeleteMapping("/{courseId}/{lectureId}")
+//    public ResponseEntity<Void> deleteLecture(
+//            @PathVariable Long courseId,
+//            @PathVariable Long lectureId, // 강의 ID
+//            @RequestParam Long userId // 사용자 ID
+//    ) {
+//        // 강의가 속한 과정의 생성자인지 확인
+//        if (!lectureService.isLectureOwner(lectureId, userId)) {
+//            return ResponseEntity.status(403).build(); // 권한 없음 (Forbidden)
+//        }
+//
+//        // LectureService를 통해 강의 삭제
+//        lectureService.deleteLecture(courseId, lectureId, userId);
+//        return ResponseEntity.noContent().build();
+//    }
 
     // 강의 조회
     @GetMapping("/{courseId}/{lectureId}")
