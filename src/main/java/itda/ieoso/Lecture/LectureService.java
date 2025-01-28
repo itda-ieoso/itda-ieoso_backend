@@ -20,8 +20,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import static itda.ieoso.Lecture.CurriculumDto.*;
+
 
 @Service
 public class LectureService {
@@ -111,17 +111,11 @@ public class LectureService {
         // 강의 삭제
         lectureRepository.delete(lecture);
     }
-
-    public List<Lecture> getLecturesByCourseId(Long courseId, Long userId) {
-        // 과정 참여자인지 확인
-        if (!isCourseAttendee(courseId, userId)) {
-            throw new IllegalArgumentException("과정에 참여한 사용자만 강의를 조회할 수 있습니다.");
-        }
-
-        // 강의 리스트 반환
-        return courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."))
-                .getLectures();
+    public List<LectureDTO> getLecturesByCourseId(Long courseId) {
+        List<Lecture> lectures = lectureRepository.findByCourse_CourseId(courseId);  // CourseId로 강의 목록 조회
+        return lectures.stream()
+                .map(LectureDTO::of)  // Lecture 객체를 LectureDTO로 변환
+                .collect(Collectors.toList());
     }
 
     // 과정 생성자인지 확인
@@ -138,14 +132,14 @@ public class LectureService {
         return isCourseCreator(lecture.getCourse().getCourseId(), userId);
     }
 
-    // 과정 참여자인지 확인
-    @Autowired
-    private CourseAttendeesRepository courseAttendeesRepository;
-
-    public boolean isCourseAttendee(Long courseId, Long userId) {
-        // `CourseAttendees` 테이블에서 courseId와 userId로 참여 상태 확인
-        return courseAttendeesRepository.existsByCourse_CourseIdAndUser_UserId(courseId, userId);
-    }
+//    // 과정 참여자인지 확인
+//    @Autowired
+//    private CourseAttendeesRepository courseAttendeesRepository;
+//
+////    public boolean isCourseAttendee(Long courseId, Long userId) {
+////        // `CourseAttendees` 테이블에서 courseId와 userId로 참여 상태 확인
+////        return courseAttendeesRepository.existsByCourse_CourseIdAndUser_UserId(courseId, userId);
+////    }
 
     // 강의 조회
     public LectureDTO getLectureById(Long lectureId) {
