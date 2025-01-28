@@ -3,12 +3,18 @@ package itda.ieoso.Submission;
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.User.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Submission {
 
     @Id
@@ -34,13 +40,42 @@ public class Submission {
     @Column(nullable = false)
     private SubmissionStatus submissionStatus;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Timestamp submittedAt;
+    @Column
+    private LocalDateTime submittedAt;
 
     @Column
     private boolean gradeStatus;
 
     @Column
-    private int score;
+    private int score = 0;
 
+    @Builder
+    public Submission(Assignment assignment, User user, String textContent, String fileUrl,
+                      SubmissionStatus submissionStatus, LocalDateTime submittedAt,
+                      boolean gradeStatus, int score) {
+        this.assignment = assignment;
+        this.user = user;
+        this.textContent = textContent;
+        this.fileUrl = fileUrl;
+        this.submissionStatus = submissionStatus;
+        this.submittedAt = submittedAt;
+        this.gradeStatus = gradeStatus;
+        this.score = score;
+    }
+
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public void setSubmittedAt(LocalDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public void setSubmissionStatus(SubmissionStatus submissionStatus) {
+        this.submissionStatus = submissionStatus;
+    }
 }
