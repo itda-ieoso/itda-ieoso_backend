@@ -1,6 +1,6 @@
-package itda.ieoso.Lecture;
+package itda.ieoso.Video;
 
-public enum LectureStatus {
+public enum VideoHistoryStatus {
     WATCHED,
     PART_WATCHED,
     NOT_WATCHED,

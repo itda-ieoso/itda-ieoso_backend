@@ -5,6 +5,8 @@ import itda.ieoso.Course.Course;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Video.Video;
 import jakarta.persistence.*;
+
+import lombok.AllArgsConstructor;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +21,9 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Lecture {
 
     @Id
@@ -49,6 +53,8 @@ public class Lecture {
     @Column
     private LocalDateTime updatedAt;
 
+
+    // TODO 나중에 관리를 위해 양방향 매핑시 joincolumn 추가
     @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Material> materials = new ArrayList<>();
 
