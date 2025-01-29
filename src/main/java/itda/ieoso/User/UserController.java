@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import itda.ieoso.User.UserDTO.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -46,6 +47,23 @@ public class UserController {
     @GetMapping("/user-info")
     public ResponseEntity<UserInfoDto> getUserInfo(@RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(userService.getUserInfo(token));
+    }
+
+    @PostMapping("/profile-image")
+    public ResponseEntity<String> uploadProfileImage(
+            @RequestHeader("Authorization") String token,
+            @RequestParam("file") MultipartFile file) {
+
+        String imageUrl = userService.uploadProfileImage(token, file);
+        return ResponseEntity.ok(imageUrl);
+    }
+
+    @GetMapping("/profile-image")
+    public ResponseEntity<String> getProfileImageUrl(
+            @RequestHeader("Authorization") String token) {
+
+        String imageUrl = userService.getProfileImageUrl(token);
+        return ResponseEntity.ok(imageUrl);
     }
 
     // 모든 사용자 정보 조회
