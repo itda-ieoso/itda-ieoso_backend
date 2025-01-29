@@ -33,6 +33,9 @@ public class CourseAttendees {
     @Column(name = "course_attendees_status", nullable = false)
     private CourseAttendeesStatus courseAttendeesStatus;
 
+    public CourseAttendees() {
+    }
+
     @Builder
     public CourseAttendees(Course course, User user, LocalDate joinedAt, CourseAttendeesStatus courseAttendeesStatus) {
         this.course = course;
