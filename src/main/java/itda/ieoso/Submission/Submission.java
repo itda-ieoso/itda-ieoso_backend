@@ -8,9 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -33,8 +32,10 @@ public class Submission {
     @Column(length = 1000)
     private String textContent;
 
-    @Column(length = 255)
-    private String fileUrl;
+    @ElementCollection
+    @CollectionTable(name = "submission_file_urls", joinColumns = @JoinColumn(name = "submission_id"))
+    @Column(name = "file_url")
+    private List<String> fileUrls;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -50,13 +51,13 @@ public class Submission {
     private int score = 0;
 
     @Builder
-    public Submission(Assignment assignment, User user, String textContent, String fileUrl,
+    public Submission(Assignment assignment, User user, String textContent, List<String> fileUrls,
                       SubmissionStatus submissionStatus, LocalDateTime submittedAt,
                       boolean gradeStatus, int score) {
         this.assignment = assignment;
         this.user = user;
         this.textContent = textContent;
-        this.fileUrl = fileUrl;
+        this.fileUrls = fileUrls;
         this.submissionStatus = submissionStatus;
         this.submittedAt = submittedAt;
         this.gradeStatus = gradeStatus;
@@ -67,8 +68,8 @@ public class Submission {
         this.textContent = textContent;
     }
 
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
+    public void setFileUrls(List<String> fileUrls) {
+        this.fileUrls = fileUrls;
     }
 
     public void setSubmittedAt(LocalDateTime submittedAt) {

@@ -2,6 +2,7 @@ package itda.ieoso.File;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -11,8 +12,13 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class S3Service {
@@ -35,12 +41,6 @@ public class S3Service {
         if (s3Config.getSecretKey() == null || s3Config.getSecretKey().isEmpty()) {
             throw new IllegalArgumentException("Secret Key is not set in the configuration.");
         }
-
-        // Debugging print to verify values are correct
-        System.out.println("Bucket Name: " + s3Config.getBucketName());
-        System.out.println("Region: " + s3Config.getRegion());
-        System.out.println("Access Key: " + s3Config.getAccessKey());
-        System.out.println("Secret Key: " + s3Config.getSecretKey());
 
         // S3 Client와 Presigner를 설정
         this.s3Client = S3Client.builder()
@@ -69,6 +69,29 @@ public class S3Service {
 
         // S3에 저장된 파일의 URL 반환
         return "https://" + s3Config.getBucketName() + ".s3." + s3Config.getRegion() + ".amazonaws.com/" + filePath;
+    }
+
+    // 여러 파일 업로드 메서드
+    public List<String> uploadFiles(String folder, MultipartFile[] files) throws IOException {
+        List<String> fileUrls = new ArrayList<>();
+
+        // 각 파일을 업로드하고 URL을 리스트에 저장
+        for (MultipartFile file : files) {
+            // 파일명을 UUID로 변경하여 중복 방지
+            String filename = System.currentTimeMillis() + "-" + file.getOriginalFilename();
+            File convertedFile = convertMultipartFileToFile(file);
+            String fileUrl = uploadFile(folder, filename, convertedFile);
+            fileUrls.add(fileUrl);
+        }
+
+        return fileUrls;
+    }
+
+    // MultipartFile을 File로 변환하는 유틸리티 메서드
+    private File convertMultipartFileToFile(MultipartFile file) throws IOException {
+        Path tempFile = Files.createTempFile("temp-", file.getOriginalFilename());
+        file.transferTo(tempFile);
+        return tempFile.toFile();
     }
 
     // S3 파일 다운로드 URL 생성 (Presigned URL)

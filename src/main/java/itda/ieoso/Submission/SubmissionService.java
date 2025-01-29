@@ -2,13 +2,17 @@ package itda.ieoso.Submission;
 
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
+import itda.ieoso.File.S3Service;
 import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class SubmissionService {
@@ -19,8 +23,11 @@ public class SubmissionService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private S3Service s3Service;
+
     // 과제 제출 및 수정
-    public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, Long userId, String textContent, String fileUrl) {
+    public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, Long userId, String textContent, MultipartFile[] files) throws IOException, IOException {
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new RuntimeException("과제를 찾을 수 없습니다"));
@@ -34,17 +41,23 @@ public class SubmissionService {
             throw new RuntimeException("이 과제를 수정할 권한이 없습니다.");
         }
 
+        // 파일 업로드
+        String folder = "submissions";  // 업로드할 폴더를 "submissions"로 지정
+        List<String> fileUrls = s3Service.uploadFiles(folder, files);  // MultipartFile[]로 파일 받기
+
+        // 제출 상태 변경
         if(submission.getSubmissionStatus() == SubmissionStatus.NOT_SUBMITTED) {
             submission.setTextContent(textContent);
-            submission.setFileUrl(fileUrl);
+            submission.setFileUrls(fileUrls); // 여러 파일 URL 저장
             submission.setSubmittedAt(LocalDateTime.now());
             submission.setSubmissionStatus(assignment.getEndDate().isAfter(LocalDate.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE);
         } else {
             submission.setTextContent(textContent);
-            submission.setFileUrl(fileUrl);
+            submission.setFileUrls(fileUrls); // 여러 파일 URL 저장
             submission.setSubmittedAt(LocalDateTime.now());
         }
 
+        // 수정된 제출 정보 저장
         submissionRepository.save(submission);
 
         // UserDTO.UserInfoDto 생성
@@ -71,7 +84,7 @@ public class SubmissionService {
 
         // 제출 정보 삭제
         submission.setTextContent(null);
-        submission.setFileUrl(null);
+        submission.setFileUrls(null);
         submission.setSubmittedAt(null);
         submission.setSubmissionStatus(SubmissionStatus.NOT_SUBMITTED);
 
