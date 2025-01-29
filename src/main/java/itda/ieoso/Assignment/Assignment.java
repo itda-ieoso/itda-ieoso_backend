@@ -1,6 +1,5 @@
 package itda.ieoso.Assignment;
 
-import itda.ieoso.Course.Course;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Submission.Submission;
 import itda.ieoso.Video.VideoHistory;
@@ -10,10 +9,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.time.LocalDateTime;
+
 
 @Entity
 @Getter
@@ -40,10 +41,10 @@ public class Assignment {
     private LocalDate endDate;
 
     @Column
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @Column
-    private LocalDate updatedAt;
+    private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lecture_id", nullable = false)
