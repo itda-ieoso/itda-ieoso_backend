@@ -1,5 +1,6 @@
 package itda.ieoso.Assignment;
 
+import itda.ieoso.Course.Course;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Submission.Submission;
 import itda.ieoso.Video.VideoHistory;
@@ -75,7 +76,7 @@ public class Assignment {
         this.endDate = endDate;
     }
 
-    public void setUpdatedAt(LocalDate updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 }
