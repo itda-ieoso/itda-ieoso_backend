@@ -1,14 +1,22 @@
 package itda.ieoso.Submission;
 
 import itda.ieoso.Assignment.Assignment;
+import itda.ieoso.Course.Course;
+import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.User.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 
 @Entity
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Submission {
 
     @Id
@@ -17,8 +25,16 @@ public class Submission {
     private Long submissionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id", nullable = false)
     private Assignment assignment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_attendees_id", nullable = false)
+    private CourseAttendees courseAttendees;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

@@ -5,6 +5,9 @@ import itda.ieoso.Lecture.Lecture;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -26,6 +29,10 @@ public class Material {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
+
+    @OneToMany(mappedBy = "material", cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<MaterialHistory> materialHistories = new ArrayList<>();
+
 
     public void setMaterialTitle(String materialTitle) {
         this.materialTitle = materialTitle;

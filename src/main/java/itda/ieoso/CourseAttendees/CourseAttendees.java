@@ -5,12 +5,14 @@ import itda.ieoso.User.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Entity
 @Getter
+@NoArgsConstructor
 public class CourseAttendees {
 
     @Id

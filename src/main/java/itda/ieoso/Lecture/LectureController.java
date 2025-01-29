@@ -61,22 +61,22 @@ public class LectureController {
 //    }
 
     // 강의 조회
-    @GetMapping("/{courseId}/{lectureId}")
-    public ResponseEntity<LectureDTO> findByLectureId(@PathVariable Long courseId, @PathVariable Long lectureId) {
-        // 강의 정보 조회
-        LectureDTO lectureDTO = lectureService.getLectureById(lectureId);
-        return ResponseEntity.ok(lectureDTO); // 조회된 강의 반환
-    }
+//    @GetMapping("/{courseId}/{lectureId}")
+//    public ResponseEntity<LectureDTO> findByLectureId(@PathVariable Long courseId, @PathVariable Long lectureId) {
+//        // 강의 정보 조회
+//        LectureDTO lectureDTO = lectureService.getLectureById(lectureId);
+//        return ResponseEntity.ok(lectureDTO); // 조회된 강의 반환
+//    }
 
     // 특정 강의실에 속한 강의 목록 조회
-    @GetMapping("/{courseId}/lectures")
-    public ResponseEntity<List<LectureDTO>> getLecturesByCourseId(@PathVariable Long courseId) {
-        // 서비스 레이어에서 강의 목록을 가져옴
-        List<LectureDTO> lectures = lectureService.getLecturesByCourseId(courseId);
-
-        // ResponseEntity로 반환
-        return ResponseEntity.ok(lectures);
-    }
+//    @GetMapping("/{courseId}/lectures")
+//    public ResponseEntity<List<LectureDTO>> getLecturesByCourseId(@PathVariable Long courseId) {
+//        // 서비스 레이어에서 강의 목록을 가져옴
+//        List<LectureDTO> lectures = lectureService.getLecturesByCourseId(courseId);
+//
+//        // ResponseEntity로 반환
+//        return ResponseEntity.ok(lectures);
+//    }
 
     // ------------------ 강의실 관리 ----------------------
     // 강의실 커리큘럼편집 (생성만)

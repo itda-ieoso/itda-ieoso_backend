@@ -2,6 +2,8 @@ package itda.ieoso.Assignment;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.Lecture.Lecture;
+import itda.ieoso.Submission.Submission;
+import itda.ieoso.Video.VideoHistory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +12,8 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -48,6 +52,11 @@ public class Assignment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
+
+    @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Submission> submissions = new ArrayList<>();
+
+
 
     public void setAssignmentTitle(String assignmentTitle) {
         this.assignmentTitle = assignmentTitle;

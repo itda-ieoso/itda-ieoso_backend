@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface CourseAttendeesRepository extends JpaRepository<CourseAttendees, Long> {
     boolean existsByCourseAndUser(Course course, User user);
+    List<CourseAttendees> findAllByCourse(Course course);
 }
