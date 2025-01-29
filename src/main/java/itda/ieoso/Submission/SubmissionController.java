@@ -2,6 +2,9 @@ package itda.ieoso.Submission;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/assignments/{assignmentId}/submissions")
@@ -19,10 +22,12 @@ public class SubmissionController {
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
             @PathVariable Long userId,
-            @RequestBody Submission submissionRequest) {
+            @RequestParam(value = "textContent") String textContent,
+            @RequestParam(value = "files") MultipartFile[] files) throws IOException {  // MultipartFile[]로 받기
 
         // 제출 정보 수정 처리
-        SubmissionDTO updatedSubmissionDTO = submissionService.updateSubmission(assignmentId, submissionId, userId, submissionRequest.getTextContent(), submissionRequest.getFileUrl());
+        SubmissionDTO updatedSubmissionDTO = submissionService.updateSubmission(assignmentId, submissionId, userId, textContent, files);
+
         return ResponseEntity.ok(updatedSubmissionDTO); // 수정된 제출 정보 반환
     }
 

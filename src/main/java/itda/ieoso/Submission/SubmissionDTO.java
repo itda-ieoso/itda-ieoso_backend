@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -14,7 +15,7 @@ public class SubmissionDTO {
     private Long submissionId;
     private UserDTO.UserInfoDto user;
     private String textContent;
-    private String fileUrl;
+    private List<String> fileUrls;
     private SubmissionStatus submissionStatus;
     private LocalDateTime submittedAt;
     private boolean gradeStatus;
@@ -25,7 +26,7 @@ public class SubmissionDTO {
         return SubmissionDTO.builder()
                 .submissionId(submission.getSubmissionId())
                 .textContent(submission.getTextContent())
-                .fileUrl(submission.getFileUrl())
+                .fileUrls(submission.getFileUrls())
                 .submissionStatus(submission.getSubmissionStatus())
                 .submittedAt(submission.getSubmittedAt())
                 .gradeStatus(submission.isGradeStatus())

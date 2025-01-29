@@ -51,4 +51,9 @@ public class User {
         this.password = password;
         this.role = role;
     }
+
+    // S3에서 받은 URL 저장
+    public void updateProfileImage(String imageUrl) {
+        this.profileImageUrl = imageUrl;
+    }
 }
