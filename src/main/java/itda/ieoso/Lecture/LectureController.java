@@ -79,21 +79,12 @@ public class LectureController {
 //    }
 
     // ------------------ 강의실 관리 ----------------------
-    // 강의실 커리큘럼편집 (생성만)
-    @PostMapping("/all/{userId}/{courseId}")
-    public DataResponse<List<CurriculumDto>> createCurriculum(@PathVariable Long userId,
-                                            @PathVariable Long courseId,
-                                            @RequestBody List<CurriculumDto> curriculumDtos) {
-
-        DataResponse<List<CurriculumDto>> response = new DataResponse<>(lectureService.createCurriculum(userId, courseId, curriculumDtos));
-        return response;
-    }
-
-    @PostMapping("/all/save/{userId}/{courseId}")
-    public DataResponse<CurriculumModificationRequest> createCurri(@PathVariable Long userId,
+    // 강의실 커리큘럼편집
+    @PostMapping("/curriculum/{userId}/{courseId}")
+    public DataResponse<CurriculumModificationRequest> createCurriculum(@PathVariable Long userId,
                                                                    @PathVariable Long courseId,
                                                                    @RequestBody CurriculumModificationRequest dto) {
-        DataResponse<CurriculumModificationRequest> response = new DataResponse<>(lectureService.createCuri(userId,courseId, dto));
+        DataResponse<CurriculumModificationRequest> response = new DataResponse<>(lectureService.createCurriculum(userId,courseId, dto));
         return response;
     }
 }

@@ -6,6 +6,7 @@ import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
+import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
 import itda.ieoso.Lecture.CurriculumModificationRequest.ModifyRequestDto;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Material.MaterialHistory;
@@ -176,87 +177,7 @@ public class LectureService {
 
     // ------------------------------------------------------
     @Transactional
-    public List<CurriculumDto> createCurriculum(Long userId, Long courseId, List<CurriculumDto> curriculumDtos) {
-        if (!isCourseCreator(courseId, userId)) {
-            throw new IllegalArgumentException("잘못된 사용자");
-        }
-
-        // 강좌 불러오기
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없음"));
-
-        // 강의 생성(챕터)
-        List<Lecture> lectures = curriculumDtos.stream()
-                .map(dto -> {
-
-                    Lecture lecture = Lecture.builder()
-                            .course(course)
-                            .lectureTitle(dto.getLectureTitle())
-                            .lectureDescription(dto.getLectureDescription())
-                            .startDate(LocalDate.now())
-                            .endDate(LocalDate.now())
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .videos(new ArrayList<>())
-                            .materials(new ArrayList<>())
-                            .assignments(new ArrayList<>())
-                            .build();
-
-                    // vidoe 저장
-                    List<Video> videos = dto.getVideos().stream()
-                            .map(videoDto -> {Video video = Video.builder()
-                                    .videoTitle(videoDto.getVideoTitle())
-                                    .videoUrl(videoDto.getVideoUrl())
-                                    .lecture(lecture)
-                                    .build();
-                                return video;
-                            })
-                            .collect(Collectors.toList());
-
-                    // TODO 나중에 관리를 위해 양방향 매핑시 lecture 쪽에도 추가
-
-                    // material 저장
-                    List<Material> materials = dto.getMaterials().stream()
-                            .map(materialDto -> {Material material = Material.builder()
-                                    .materialTitle(materialDto.getMaterialTitle())
-                                    .materialFile(materialDto.getMaterialFile())
-                                    .lecture(lecture)
-                                    .build();
-                                return material;
-                            })
-                            .collect(Collectors.toList());
-
-                    // assignment 저장
-                    List<Assignment> assignments = dto.getAssignments().stream()
-                            .map(assignmentDto -> {Assignment assignment = Assignment.builder()
-                                    .assignmentTitle(assignmentDto.getAssignmentTitle())
-                                    .assignmentDescription(assignmentDto.getAssignmentDescription())
-                                    .startDate(assignmentDto.getStartDate())
-                                    .endDate(assignmentDto.getEndDate())
-                                    .createdAt(LocalDateTime.now())
-                                    .updatedAt(LocalDateTime.now())
-                                    .lecture(lecture)
-                                    .build();
-                                return assignment;
-                            })
-                            .collect(Collectors.toList());
-
-                    // Lecture 객체에 연관된 Video, Material, Assignment 설정
-                    lecture.getVideos().addAll(videos); // video 추가
-                    lecture.getMaterials().addAll(materials); // material 추가
-                    lecture.getAssignments().addAll(assignments); // assignment 추가
-
-                    return lecture;
-                })
-                .collect(Collectors.toList());
-
-        lectureRepository.saveAll(lectures);
-
-        return curriculumDtos;
-    }
-
-
-    public CurriculumModificationRequest createCuri(Long userId, Long courseId, CurriculumModificationRequest request) {
+    public CurriculumModificationRequest createCurriculum(Long userId, Long courseId, CurriculumModificationRequest request) {
 
         if (!isCourseCreator(courseId, userId)) {
             throw new IllegalArgumentException("잘못된 접근");
@@ -347,6 +268,7 @@ public class LectureService {
             // video에대한 모든 attendees의 videoHistory 추가
             List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
             List<VideoHistory> videoHistoryList = attendees.stream()
+                    .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
                     .map(attendee -> VideoHistory.builder()
                             .course(course)
                             .video(video)
@@ -379,6 +301,7 @@ public class LectureService {
             // material에 대한 모든 attendees의 materialHistory 생성
             List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
             List<MaterialHistory> materialHistoryList = attendees.stream()
+                    .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
                     .map(attendee -> MaterialHistory.builder()
                             .course(course)
                             .material(material)
@@ -412,6 +335,7 @@ public class LectureService {
             // assignment에 대한 모든 attendees의 submission 생성
             List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
             List<Submission> submissionList = attendees.stream()
+                    .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
                     .map(attendee -> Submission.builder()
                             .course(course)
                             .assignment(assignment)
@@ -440,6 +364,7 @@ public class LectureService {
 
             // material 추가
             Material material = Material.builder()
+                    .course(course)
                     .lecture(lecture)
                     .materialTitle(modifyRequestDto.getTitle())
                     .materialFile(modifyRequestDto.getItem())
@@ -450,6 +375,7 @@ public class LectureService {
             // material에 대한 모든 attendees의 materialHistory 생성
             List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
             List<MaterialHistory> materialHistoryList = attendees.stream()
+                    .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
                     .map(attendee -> MaterialHistory.builder()
                             .course(course)
                             .material(material)
@@ -465,6 +391,7 @@ public class LectureService {
 
             // assignment 추가
             Assignment assignment = Assignment.builder()
+                    .course(course)
                     .lecture(lecture)
                     .assignmentTitle(modifyRequestDto.getTitle())
                     .assignmentDescription(modifyRequestDto.getItem())
@@ -477,6 +404,7 @@ public class LectureService {
             // assignment에 대한 모든 attendees의 submission 생성
             List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
             List<Submission> submissionList = attendees.stream()
+                    .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
                     .map(attendee -> Submission.builder()
                             .course(course)
                             .assignment(assignment)
@@ -492,6 +420,7 @@ public class LectureService {
 
             // video 추가
             Video video = Video.builder()
+                    .course(course)
                     .lecture(lecture)
                     .videoTitle(modifyRequestDto.getTitle())
                     .videoUrl(modifyRequestDto.getItem())
@@ -504,6 +433,7 @@ public class LectureService {
             // video에 대한 모든 attendees의 videoHistory 생성
             List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
             List<VideoHistory> videoHistoryList = attendees.stream()
+                    .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
                     .map(attendee -> VideoHistory.builder()
                             .course(course)
                             .video(video)
