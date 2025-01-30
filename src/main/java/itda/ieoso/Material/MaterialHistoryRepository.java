@@ -2,6 +2,7 @@ package itda.ieoso.Material;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.CourseAttendees.CourseAttendees;
+import itda.ieoso.Video.Video;
 import itda.ieoso.Video.VideoHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,5 +20,5 @@ public interface MaterialHistoryRepository extends JpaRepository<MaterialHistory
 
     List<MaterialHistory> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 
-
+    MaterialHistory findByMaterialAndCourseAttendees(Material material, CourseAttendees attendees);
 }

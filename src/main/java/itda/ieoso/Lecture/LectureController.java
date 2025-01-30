@@ -1,8 +1,10 @@
 package itda.ieoso.Lecture;
 
+import itda.ieoso.Course.Course;
 import itda.ieoso.Response.DataResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -79,12 +81,21 @@ public class LectureController {
 //    }
 
     // ------------------ 강의실 관리 ----------------------
-    // 강의실 커리큘럼편집
+    // 강의실 커리큘럼편집(userid = 편집자)
     @PostMapping("/curriculum/{userId}/{courseId}")
     public DataResponse<CurriculumModificationRequest> createCurriculum(@PathVariable Long userId,
                                                                    @PathVariable Long courseId,
                                                                    @RequestBody CurriculumModificationRequest dto) {
         DataResponse<CurriculumModificationRequest> response = new DataResponse<>(lectureService.createCurriculum(userId,courseId, dto));
+        return response;
+    }
+
+    // 강의실 커리큘럼 조회(수강생용) TODO 개설자용 따로 만들기
+    @GetMapping("/curriculum/{userId}/{courseId}")
+    public DataResponse<List<CurriculumResponseDto>> getCurriculum(@PathVariable Long userId,
+                                              @PathVariable Long courseId) {
+
+        DataResponse<List<CurriculumResponseDto>> response = new DataResponse<>(lectureService.getCurriculum(userId,courseId));
         return response;
     }
 }

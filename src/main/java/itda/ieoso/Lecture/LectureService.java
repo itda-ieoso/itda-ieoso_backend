@@ -8,6 +8,9 @@ import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
 import itda.ieoso.Lecture.CurriculumModificationRequest.ModifyRequestDto;
+import itda.ieoso.Lecture.CurriculumResponseDto.AssignmentResponseDto;
+import itda.ieoso.Lecture.CurriculumResponseDto.MaterialResponseDto;
+import itda.ieoso.Lecture.CurriculumResponseDto.VideoResponseDto;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Material.MaterialHistory;
 import itda.ieoso.Material.MaterialHistoryRepository;
@@ -15,6 +18,8 @@ import itda.ieoso.Material.MaterialRepository;
 import itda.ieoso.Submission.Submission;
 import itda.ieoso.Submission.SubmissionRepository;
 import itda.ieoso.Submission.SubmissionStatus;
+import itda.ieoso.User.User;
+import itda.ieoso.User.UserRepository;
 import itda.ieoso.Video.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
@@ -58,6 +63,8 @@ public class LectureService {
 
    @Autowired
     SubmissionRepository submissionRepository;
+    @Autowired
+    private UserRepository userRepository;
 
 
     // 강의 생성
@@ -149,31 +156,11 @@ public class LectureService {
         return course.getUser().getUserId().equals(userId); // Course에 `creatorId` 필드가 있다고 가정
     }
 
-    // 강의가 속한 과정의 생성자인지 확인
-//    public boolean isLectureOwner(Long lectureId, Long userId) {
-//        Lecture lecture = lectureRepository.findById(lectureId)
-//                .orElseThrow(() -> new IllegalArgumentException("해당 강의가 존재하지 않습니다."));
-//        return isCourseCreator(lecture.getCourse().getCourseId(), userId);
-//    }
-
     // 과정 참여자인지 확인
-//    @Autowired
-//    private CourseAttendeesRepository courseAttendeesRepository;
-
-//    public boolean isCourseAttendee(Long courseId, Long userId) {
-//        // `CourseAttendees` 테이블에서 courseId와 userId로 참여 상태 확인
-//        return courseAttendeesRepository.existsByCourse_CourseIdAndUser_UserId(courseId, userId);
-//    }
-
-    // 강의 조회
-//    public LectureDTO getLectureById(Long lectureId) {
-//        // 강의 조회
-//        Lecture lecture = lectureRepository.findById(lectureId)
-//                .orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다"));
-//
-//        // LectureDTO로 변환해서 반환
-//        return LectureDTO.of(lecture);
-//    }
+    public boolean isCourseAttendee(Course course, User user) {
+        // CourseAttendees 테이블에서 courseId와 userId로 참여 상태 확인
+        return courseAttendeesRepository.existsByCourseAndUser(course, user);
+    }
 
     // ------------------------------------------------------
     @Transactional
@@ -355,7 +342,6 @@ public class LectureService {
         return assignmentList;
     }
 
-
     private void addRequest(ModifyRequestDto modifyRequestDto, Course course) {
 
         Lecture lecture = lectureRepository.findById(modifyRequestDto.getId()).orElseThrow();
@@ -488,8 +474,6 @@ public class LectureService {
         }
     }
 
-
-
     private void deleteRequest(ModifyRequestDto modifyRequestDto) {
         if (modifyRequestDto.getType().equals("material")) {
             // materialid가 getId인 materialHistory 전체삭제
@@ -517,6 +501,88 @@ public class LectureService {
         }
     }
 
+    //---------
+    public List<CurriculumResponseDto> getCurriculum(Long userId, Long courseId) {
+
+        // 과정 찾기
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
+
+        // 강의 수강생인지 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new IllegalArgumentException("유효한 사용자가 아닙니다."));
+
+        // courseAttendees 찾기
+        CourseAttendees courseAttendees = courseAttendeesRepository.findByCourseAndUser(course,user)
+                .orElseThrow(()-> new IllegalArgumentException("수강생이 아닙니다."));
+
+        // lecture 조회
+        List<Lecture> lectureList = lectureRepository.findAllByCourse(course);
+
+        //
+
+        return lectureList.stream().map(lecture -> {
+            List<VideoResponseDto> videos = lecture.getVideos().stream()
+                    .map(video -> {
+                        VideoHistory videoHistory=videoHistoryRepository.findByVideoAndCourseAttendees(video, courseAttendees);
+                        if (videoHistory == null) {
+                            throw new IllegalArgumentException("잘못된접근");
+                        }
+                        return VideoResponseDto.builder()
+                                .videoId(video.getVideoId())
+                                .videoTitle(video.getVideoTitle())
+                                .videoUrl(video.getVideoUrl())
+                                .startDate(video.getStartDate())
+                                .endDate(video.getEndDate())
+                                .videoHistoryStatus(videoHistory.getVideoHistoryStatus())
+                                .build();
+                    }).toList();
+
+            List<MaterialResponseDto> materials = lecture.getMaterials().stream()
+                    .map(material -> {
+                        MaterialHistory materialHistory = materialHistoryRepository.findByMaterialAndCourseAttendees(material, courseAttendees);
+                        if (materialHistory == null) {
+                            throw new IllegalArgumentException("잘못된접근");
+                        }
+
+                        return MaterialResponseDto.builder()
+                                .materialId(material.getMaterialId())
+                                .materialTitle(material.getMaterialTitle())
+                                .materialFile(material.getMaterialFile())
+                                .materialHistoryStatus(materialHistory.isMaterialHistoryStatus())
+                                .build();
+                    }).toList();
+
+
+            List<AssignmentResponseDto> assignments = lecture.getAssignments().stream()
+                    .map(assignment -> {
+                        Submission submission = submissionRepository.findByAssignmentAndCourseAttendees(assignment,courseAttendees);
+                        if (submission == null) {
+                            throw new IllegalArgumentException("잘못된접근");
+                        }
+                        return AssignmentResponseDto.builder()
+                                .assignmentId(assignment.getAssignmentId())
+                                .assignmentTitle(assignment.getAssignmentTitle())
+                                .assignmentDescription(assignment.getAssignmentDescription())
+                                .startDate(assignment.getStartDate())
+                                .endDate(assignment.getEndDate())
+                                .submissionStatus(submission.getSubmissionStatus())
+                                .build();
+                    }).toList();
+
+            return new CurriculumResponseDto(
+                    lecture.getLectureId(),
+                    lecture.getLectureTitle(),
+                    lecture.getLectureDescription(),
+                    videos,
+                    materials,
+                    assignments,
+                    lecture.getStartDate(),
+                    lecture.getEndDate()
+            );
+        }).collect(Collectors.toList());
+
+    }
 }
 
 
