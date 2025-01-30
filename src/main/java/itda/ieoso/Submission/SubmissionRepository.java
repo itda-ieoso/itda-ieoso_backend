@@ -1,5 +1,7 @@
 package itda.ieoso.Submission;
 
+import itda.ieoso.Course.Course;
+import itda.ieoso.CourseAttendees.CourseAttendees;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,5 +19,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     @Query("DELETE FROM Submission m WHERE m.assignment.assignmentId = :assignmentId")
     @Transactional
     void deleteAllByAssignmentId(@Param("assignmentId") Long assignmentId);
+
+    List<Submission> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 
 }

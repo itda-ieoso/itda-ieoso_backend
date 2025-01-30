@@ -1,30 +1,50 @@
 package itda.ieoso.Course;
 
+import itda.ieoso.Assignment.Assignment;
+import itda.ieoso.Assignment.AssignmentRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.Material.Material;
+import itda.ieoso.Material.MaterialHistory;
+import itda.ieoso.Material.MaterialHistoryRepository;
+import itda.ieoso.Material.MaterialRepository;
+import itda.ieoso.Submission.Submission;
+import itda.ieoso.Submission.SubmissionRepository;
+import itda.ieoso.Submission.SubmissionStatus;
 import itda.ieoso.User.User;
 import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
+import itda.ieoso.Video.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CourseService {
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final CourseAttendeesRepository courseAttendeesRepository;
-    @Autowired
-    public CourseService(CourseRepository courseRepository, UserRepository userRepository, CourseAttendeesRepository courseAttendeesRepository) {
-        this.courseRepository = courseRepository;
-        this.userRepository = userRepository;
-        this.courseAttendeesRepository = courseAttendeesRepository;
-    }
+    private final VideoRepository videoRepository;
+    private final VideoHistoryRepository videoHistoryRepository;
+    private final MaterialRepository materialRepository;
+    private final MaterialHistoryRepository materialHistoryRepository;
+    private final SubmissionRepository submissionRepository;
+    private final AssignmentRepository assignmentRepository;
+
 
     // 강좌 생성
     public CourseDTO createCourse(Long userId, String courseTitle, String courseDescription, int maxStudents, LocalDate closedDate) {
@@ -163,6 +183,61 @@ public class CourseService {
                 .build();
 
         courseAttendeesRepository.save(courseAttendees);
+
+        // TODO courseAttendees에 대한 모든 history생성
+
+        // video 히스토리 생성
+        List<Video> videoList = videoRepository.findAllByCourse(course);
+        saveHistories(
+                course,
+                courseAttendees,
+                videoList,
+                video -> VideoHistory.builder()
+                        .course(course)
+                        .courseAttendees(courseAttendees)
+                        .video(video)
+                        .videoHistoryStatus(VideoHistoryStatus.NOT_WATCHED)
+                        .build(),
+                (c, ca) -> videoHistoryRepository.findAllByCourseAndCourseAttendees(c,ca),
+                VideoHistory::getVideo,
+                videoHistoryRepository
+        );
+
+        // materialHistory 생성
+        List<Material> materialList = materialRepository.findAllByCourse(course);
+        saveHistories(
+                course,
+                courseAttendees,
+                materialList,
+                material -> MaterialHistory.builder()
+                        .course(course)
+                        .courseAttendees(courseAttendees)
+                        .material(material)
+                        .materialHistoryStatus(false)
+                        .build(),
+                (c,ca) -> materialHistoryRepository.findAllByCourseAndCourseAttendees(c,ca),
+                MaterialHistory::getMaterial,
+                materialHistoryRepository
+        );
+
+        // submission 생성
+        List<Assignment> assignmentList = assignmentRepository.findAllByCourse(course);
+        saveHistories(
+                course,
+                courseAttendees,
+                assignmentList,
+                assignment -> Submission.builder()
+                        .course(course)
+                        .courseAttendees(courseAttendees)
+                        .assignment(assignment)
+                        .user(courseAttendees.getUser())
+                        .submissionStatus(SubmissionStatus.NOT_SUBMITTED)
+                        .build(),
+                (c,ca) -> submissionRepository.findAllByCourseAndCourseAttendees(c,ca),
+                Submission::getAssignment,
+                submissionRepository
+        );
+
     }
 
     // 입장 코드 검증
@@ -173,6 +248,46 @@ public class CourseService {
 
         // 입장 코드 비교
         return course.getEntryCode().equals(entryCode);
+    }
+
+    @Transactional
+    public <T, E> void saveHistories( // (T = history / E = entity)
+            Course course,
+            CourseAttendees courseAttendees,
+            List<E> entityList,
+            Function<E, T> historyBuilder, // 각각의 히스토리 생성로직
+            BiFunction<Course, CourseAttendees, List<T>> existingHistoryFinder, // 각각의 히스토리 조회
+            Function<T,E> entityExtractor,
+            JpaRepository<T, Long> repository
+    ) {
+        // 데이터베이스에 존재하는 attendees의 entity히스토리 조회
+        List<T> existingHistories = existingHistoryFinder.apply(course, courseAttendees);
+
+        // attendees의 entity히스토리 목록을 통해 History가 존재하는 entity들 불러오기
+        Set<E> existingEntities = existingHistories.stream()
+                .map(entityExtractor)
+                .collect(Collectors.toSet());
+
+        // existingEntities에 있는 entity를 제외한 entity들에대해 attendees의 History 생성
+        List<T> newHistories = entityList.stream()
+                .filter(entity -> !existingEntities.contains(entity))
+                .map(historyBuilder)
+                .collect(Collectors.toList());
+
+        // db에 저장
+        repository.saveAll(newHistories);
+    }
+
+    // 각 히스토리 추출 메서드
+    private <T,E> E extractEntity(T history) {
+        if (history instanceof VideoHistory) {
+            return (E) ((VideoHistory) history).getVideo();
+        } else if (history instanceof MaterialHistory) {
+            return (E) ((MaterialHistory) history).getMaterial();
+        } else if (history instanceof Submission) {
+            return (E) ((Submission) history).getAssignment();
+        }
+        throw new IllegalArgumentException("지원하지 않는 타입" + history.getClass());
     }
 
 
