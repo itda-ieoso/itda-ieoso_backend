@@ -1,5 +1,6 @@
 package itda.ieoso.Submission;
 
+import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Course.Course;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,5 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     List<Submission> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 
+    Submission findByAssignmentAndCourseAttendees(Assignment assignment, CourseAttendees courseAttendees);
 }

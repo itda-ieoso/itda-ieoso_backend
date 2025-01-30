@@ -18,4 +18,5 @@ public interface VideoHistoryRepository extends JpaRepository<VideoHistory, Long
 
     List<VideoHistory> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 
+    VideoHistory findByVideoAndCourseAttendees(Video video, CourseAttendees attendees);
 }
