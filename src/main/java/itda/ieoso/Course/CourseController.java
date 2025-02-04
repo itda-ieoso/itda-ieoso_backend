@@ -1,6 +1,10 @@
 package itda.ieoso.Course;
 
+import itda.ieoso.Course.Dto.CourseOverviewUpdateDto;
+import itda.ieoso.Course.Dto.CourseUpdateDto;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
+import itda.ieoso.Lecture.CurriculumModificationRequest;
+import itda.ieoso.Response.DataResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,30 +21,31 @@ public class CourseController {
 
     // 강의실 생성 및 입장 코드 생성
     @PostMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> createCourse(@PathVariable Long userId, @RequestBody Course courseRequest) {
+    public DataResponse<CourseDTO> createCourse(@PathVariable Long userId) {
         // courseService에서 강좌 생성 처리
-        CourseDTO courseDTO = courseService.createCourse(userId, courseRequest.getCourseTitle(),
-                courseRequest.getCourseDescription(), courseRequest.getMaxStudents(), courseRequest.getClosedDate());
-        System.out.println(courseRequest);
-        // 입장 코드 가져오기
-        String entryCode = courseDTO.getEntryCode();
-
-        // 반환할 Map 설정
-        Map<String, Object> response = new HashMap<>();
-        response.put("course", courseDTO);
-        response.put("entryCode", entryCode);
-
-        return ResponseEntity.ok(response); // OK 상태로 반환
+        DataResponse<CourseDTO> response = new DataResponse<>(courseService.createCourse(userId));
+        return response;
     }
 
-    // 강의실 수정
-    @PutMapping("/{courseId}/{userId}")
-    public ResponseEntity<CourseDTO> updateCourse(@PathVariable Long courseId, @PathVariable Long userId, @RequestBody Course courseRequest) {
+    // 강의실 설정창 업데이트
+    @PutMapping("/{courseId}/{userId}/setting")
+    public ResponseEntity<CourseDTO> updateCourse(@PathVariable Long courseId,
+                                                  @PathVariable Long userId,
+                                                  @RequestBody CourseUpdateDto courseRequest) {
         // 강좌 수정 처리
-        CourseDTO updatedCourseDTO = courseService.updateCourse(courseId, userId, courseRequest.getCourseTitle(),
-                courseRequest.getCourseDescription(), courseRequest.getMaxStudents(), courseRequest.getClosedDate(), courseRequest.getCourseThumbnail());
+        CourseDTO updatedCourseDTO = courseService.updateCourse(courseId, userId, courseRequest);
 
         return ResponseEntity.ok(updatedCourseDTO); // 수정된 강좌 반환
+    }
+
+    // 강의실 개요 업데이트
+    @PutMapping("/{courseId}/{userId}/overview")
+    public ResponseEntity<?> updateCourseOverview(@PathVariable Long courseId,
+                                                  @PathVariable Long userId ,
+                                                  @RequestBody CourseOverviewUpdateDto courseRequest ) {
+        // 강좌 수정
+        CourseDTO updateCourseDto = courseService.updateCourseOverview(courseId,userId, courseRequest);
+        return ResponseEntity.ok(updateCourseDto);
     }
 
     // 강의실 삭제
@@ -50,7 +55,7 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
-    // 강의실 조회
+    // 강의실 조회(설정 & 개요 페이지)
     @GetMapping("/{courseId}")
     public ResponseEntity<CourseDTO> findByCourseId(@PathVariable Long courseId) {
         CourseDTO courseDTO = courseService.getCourseById(courseId);
