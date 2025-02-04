@@ -163,6 +163,7 @@ public class LectureService {
     }
 
     // ------------------------------------------------------
+    // 강의실 커리큘럼 전체 생성
     @Transactional
     public CurriculumModificationRequest createCurriculum(Long userId, Long courseId, CurriculumModificationRequest request) {
 
@@ -239,6 +240,7 @@ public class LectureService {
         return request;
     }
 
+    // video 생성
     private List<Video> createVideo(List<VideoDto> videos, Course course, Lecture lecture) {
         List<Video> videoList = new ArrayList<>();
         for (VideoDto videoDto : videos) {
@@ -274,6 +276,7 @@ public class LectureService {
         return videoList;
     }
 
+    // material 생성
     private List<Material> createMaterial(List<MaterialDto> materials,Course course, Lecture lecture) {
         List<Material> materialList = new ArrayList<>();
         for (MaterialDto materialDto : materials) {
@@ -306,6 +309,7 @@ public class LectureService {
         return materialList;
     }
 
+    // assignment 생성
     private List<Assignment> createAssignment(List<AssignmentDto> assignments,Course course, Lecture lecture) {
         List<Assignment> assignmentList = new ArrayList<>();
         for (AssignmentDto assignmentDto : assignments) {
@@ -342,6 +346,7 @@ public class LectureService {
         return assignmentList;
     }
 
+    // lecture에 material, assignment, video 추가
     private void addRequest(ModifyRequestDto modifyRequestDto, Course course) {
 
         Lecture lecture = lectureRepository.findById(modifyRequestDto.getId()).orElseThrow();
@@ -431,6 +436,7 @@ public class LectureService {
         }
     }
 
+    // lecture, material, assignment, video 업데이트
     private void updateRequest(ModifyRequestDto modifyRequestDto) {
 
         if (modifyRequestDto.getType().equals("lecture")) {
@@ -474,6 +480,7 @@ public class LectureService {
         }
     }
 
+    // material, assignment, video 삭제 TODO lecture삭제추가
     private void deleteRequest(ModifyRequestDto modifyRequestDto) {
         if (modifyRequestDto.getType().equals("material")) {
             // materialid가 getId인 materialHistory 전체삭제
@@ -501,6 +508,7 @@ public class LectureService {
         }
     }
 
+    // 커리큘럼 조회
     public List<CurriculumResponseDto> getCurriculum(Long userId, Long courseId) {
 
         // 과정 찾기
@@ -517,8 +525,6 @@ public class LectureService {
 
         // lecture 조회
         List<Lecture> lectureList = lectureRepository.findAllByCourse(course);
-
-        //
 
         return lectureList.stream().map(lecture -> {
             List<VideoResponseDto> videos = lecture.getVideos().stream()
@@ -580,6 +586,10 @@ public class LectureService {
                     lecture.getEndDate()
             );
         }).collect(Collectors.toList());
+
+    }
+
+    public void getToDoList(Long courseId, Long userId) {
 
     }
 }

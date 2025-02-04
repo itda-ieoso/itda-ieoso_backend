@@ -82,7 +82,7 @@ public class LectureController {
 
     // ------------------ 강의실 관리 ----------------------
     // 강의실 커리큘럼편집(userid = 편집자)
-    @PostMapping("/curriculum/{userId}/{courseId}")
+    @PostMapping("/curriculum/{courseId}/{userId}")
     public DataResponse<CurriculumModificationRequest> createCurriculum(@PathVariable Long userId,
                                                                    @PathVariable Long courseId,
                                                                    @RequestBody CurriculumModificationRequest dto) {
@@ -91,11 +91,13 @@ public class LectureController {
     }
 
     // 강의실 커리큘럼 조회(수강생용) TODO 개설자용 따로 만들기
-    @GetMapping("/curriculum/{userId}/{courseId}")
+    @GetMapping("/curriculum/{courseId}/{userId}")
     public DataResponse<List<CurriculumResponseDto>> getCurriculum(@PathVariable Long userId,
                                               @PathVariable Long courseId) {
 
         DataResponse<List<CurriculumResponseDto>> response = new DataResponse<>(lectureService.getCurriculum(userId,courseId));
         return response;
     }
+
+    //
 }
