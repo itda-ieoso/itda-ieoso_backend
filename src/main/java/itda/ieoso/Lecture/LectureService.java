@@ -698,6 +698,7 @@ public class LectureService {
         .collect(Collectors.toList());
     }
 
+    // TODO 일주일전체 조회 추가
 
 }
 
