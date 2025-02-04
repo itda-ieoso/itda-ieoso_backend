@@ -67,6 +67,11 @@ public class SubmissionService {
         return SubmissionDTO.of(submission, userInfoDto);
     }
 
+    public Submission getSubmissionById(Long submissionId) {
+        return submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new RuntimeException("제출 정보를 찾을 수 없습니다."));
+    }
+
     // 과제 삭제
     public void deleteSubmission(Long assignmentId, Long submissionId, Long userId) {
         // 과제 조회
