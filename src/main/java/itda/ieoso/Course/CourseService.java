@@ -19,6 +19,7 @@ import itda.ieoso.Submission.SubmissionStatus;
 import itda.ieoso.User.User;
 import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
+import itda.ieoso.User.UserService;
 import itda.ieoso.Video.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class CourseService {
     private final MaterialHistoryRepository materialHistoryRepository;
     private final SubmissionRepository submissionRepository;
     private final AssignmentRepository assignmentRepository;
+    private final UserService userService;
 
     // 강좌 생성
     @Transactional
@@ -536,6 +538,25 @@ public class CourseService {
             return (E) ((Submission) history).getAssignment();
         }
         throw new IllegalArgumentException("지원하지 않는 타입" + history.getClass());
+    }
+
+    // 사용자가 가입한 강의실 목록 조회
+    public List<CourseDTO> getCoursesByUser(Long userId) {
+        List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(userId);
+
+        // 강의실 목록 반환 (DTO 변환)
+        List<CourseDTO> courseDTOList = new ArrayList<>();
+        for (CourseAttendees courseAttendees : courseAttendeesList) {
+
+            Course course = courseAttendees.getCourse();
+            UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getName());
+
+            // CourseDTO 생성
+            CourseDTO courseDTO = CourseDTO.of(course, userInfoDto);
+            courseDTOList.add(courseDTO);
+        }
+
+        return courseDTOList;
     }
 
 

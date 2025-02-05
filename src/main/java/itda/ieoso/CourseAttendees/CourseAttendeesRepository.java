@@ -14,4 +14,6 @@ public interface CourseAttendeesRepository extends JpaRepository<CourseAttendees
     List<CourseAttendees> findByCourse_CourseId(Long courseId);
 
     void deleteAllByCourse(Course course);
+
+    List<CourseAttendees> findByUser_UserId(Long userId);
 }

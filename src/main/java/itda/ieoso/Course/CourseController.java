@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -75,6 +76,12 @@ public class CourseController {
         return ResponseEntity.ok("가입되었습니다!");
     }
 
+    // 사용자가 가입한 강의실 목록 조회
+    @GetMapping("/{userId}/my-courses")
+    public ResponseEntity<List<CourseDTO>> getCoursesByUser(@PathVariable Long userId) {
+        List<CourseDTO> courses = courseService.getCoursesByUser(userId);
+        return ResponseEntity.ok(courses);
+    }
 
 }
 
