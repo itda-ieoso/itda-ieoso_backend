@@ -501,7 +501,6 @@ public class LectureService {
         }
     }
 
-    //---------
     public List<CurriculumResponseDto> getCurriculum(Long userId, Long courseId) {
 
         // 과정 찾기

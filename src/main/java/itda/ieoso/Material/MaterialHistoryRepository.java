@@ -21,4 +21,6 @@ public interface MaterialHistoryRepository extends JpaRepository<MaterialHistory
     List<MaterialHistory> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 
     MaterialHistory findByMaterialAndCourseAttendees(Material material, CourseAttendees attendees);
+
+    void deleteAllByCourse(Course course);
 }

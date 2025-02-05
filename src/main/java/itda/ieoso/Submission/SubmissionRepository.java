@@ -24,4 +24,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 
     Submission findByAssignmentAndCourseAttendees(Assignment assignment, CourseAttendees courseAttendees);
+
+    void deleteAllByCourse(Course course);
 }

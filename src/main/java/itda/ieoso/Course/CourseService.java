@@ -2,9 +2,13 @@ package itda.ieoso.Course;
 
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
+import itda.ieoso.Course.Dto.CourseOverviewUpdateDto;
+import itda.ieoso.Course.Dto.CourseUpdateDto;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.Lecture.CurriculumDto;
+import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Material.MaterialHistory;
 import itda.ieoso.Material.MaterialHistoryRepository;
@@ -22,11 +26,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,31 +48,37 @@ public class CourseService {
     private final SubmissionRepository submissionRepository;
     private final AssignmentRepository assignmentRepository;
 
-
     // 강좌 생성
-    public CourseDTO createCourse(Long userId, String courseTitle, String courseDescription, int maxStudents, LocalDate closedDate) {
+    @Transactional
+    public CourseDTO createCourse(Long userId) {
         // userId로 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
 
-        if (closedDate == null) {
-            throw new IllegalArgumentException("closedDate cannot be null.");
-        }
-
-        String entryCode = generateEntryCode();
-        // Course 객체 생성 (builder 사용)
+        // Course null 객체 생성 (builder 사용)
         Course course = Course.builder()
                 .user(user)
-                .courseTitle(courseTitle)
-                .courseDescription(courseDescription)
-                .maxStudents(maxStudents)
-                .closedDate(closedDate)
-                .courseThumbnail(null) // courseThumbnail은 null로 설정
-                .entryCode(entryCode) // entryCode도 null로 설정
+                .courseTitle("빈 강의실")
+                .courseDescription("빈 강의실 입니다.")
+                //.maxStudents(50) // default TODO 필요여부 프론트에 여쭤보기
+                .instructorName(user.getName())
+                .startDate(null)
+                .durationWeeks(-1)
+                .lectureDay(null)
+                .lectureTime(null)
+                .assignmentDueDay(null)
+                .assignmentDueTime(null)
+                .difficultyLevel(Course.DifficultyLevel.EASY)
+                .courseThumbnail(null)
+                .entryCode(generateEntryCode())
+                .init(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         course.setCreatedAt(LocalDateTime.now());
         course.setUpdatedAt(LocalDateTime.now()); // 처음 생성 시 updatedAt도 현재 시간
+
 
         // 데이터베이스에 저장
         courseRepository.save(course);
@@ -93,6 +102,7 @@ public class CourseService {
     }
 
     // 강좌 조회
+    @Transactional
     public CourseDTO getCourseById(Long courseId) {
         // 강좌 조회
         Course course = courseRepository.findById(courseId)
@@ -106,7 +116,8 @@ public class CourseService {
     }
 
     // 강좌 수정
-    public CourseDTO updateCourse(Long courseId, Long userId, String courseTitle, String courseDescription, int maxStudents, LocalDate closedDate, String courseThumbnail) {
+    @Transactional
+    public CourseDTO updateCourse(Long courseId, Long userId, CourseUpdateDto request) {
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
@@ -116,13 +127,241 @@ public class CourseService {
             throw new RuntimeException("이 강좌를 수정할 권한이 없습니다.");
         }
 
-        // 기존 객체 수정 (새로 객체를 생성하지 않고 덮어씀)
-        course.setCourseTitle(courseTitle);
-        course.setCourseDescription(courseDescription);
-        course.setMaxStudents(maxStudents);
-        course.setClosedDate(closedDate);
-        course.setCourseThumbnail(courseThumbnail);
-        course.setUpdatedAt(LocalDateTime.now());   // updatedAt 갱신
+        // 커리큘럼 주차 검증 ( durationWeeks == 1 ~ 12 )
+        validateDuration(request.getDurationWeeks());
+
+        // 초기 업데이트 여부 확인
+        if (!course.isInit()) {
+
+            // 커리큘럼 자동생성
+            initializeCourse(course, request.getStartDate(), request.getDurationWeeks(),
+                            request.getLectureDay(), request.getLectureTime(),
+                            request.getAssignmentDueDay(), request.getAssignmentDueTime());
+
+            // 초기설정여부 상태변경
+            course.updateInit();
+        }
+
+        // 기본 객체 수정 [전체업데이트시킴 but lecture를 생성하지 않음]
+
+        // 리스트를 문자열로 변환 (예: 쉼표로 구분)
+        String lectureDayString = request.getLectureDay().stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        String assignmentDueDayString = request.getAssignmentDueDay().stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+//        // 저장 후, 문자열을 다시 리스트로 변환
+//        List<Integer> lectureDayFromString = Arrays.stream(lectureDayString.split(","))
+//                .map(Integer::valueOf)
+//                .collect(Collectors.toList());
+
+        // course.setMaxStudents(maxStudents);
+        course.setCourseTitle(request.getTitle());
+        course.setInstructorName(request.getInstructorName());
+        course.setStartDate(request.getStartDate());
+        course.setDurationWeeks(request.getDurationWeeks());
+        course.setLectureDay(lectureDayString);
+        course.setLectureTime(request.getLectureTime());
+        course.setAssignmentDueDay(assignmentDueDayString);
+        course.setAssignmentDueTime(request.getAssignmentDueTime());
+        course.setDifficultyLevel(request.getDifficultyLevel());
+        course.setUpdatedAt(LocalDateTime.now());
+
+        // UserDTO 변환
+        UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
+
+        // 데이터베이스에 저장
+        CourseDTO courseDTO = CourseDTO.of(course, userInfoDto);
+        courseRepository.save(course);
+
+        return courseDTO;
+    }
+
+    private void initializeCourse(Course course, LocalDate startDate, int durationWeeks,
+                                  List<Integer> lectureDay, Time lectureTime,
+                                  List<Integer> assignmentDueDay, Time assignmentDueTime) {
+
+        // durationWeeks 만큼 lecture 생성
+        List<Lecture> lectureList = new ArrayList<>();
+        for (int i = 1; i <= durationWeeks; i++) { // 6주라고 했을떄 0~5
+            Lecture lecture = Lecture.builder()
+                    .course(course)
+                    .lectureTitle(String.format("챕터 %d", i))
+                    .lectureDescription("챕터 설명을 작성하세요.")
+                    .startDate(startDate)
+                    .endDate(startDate.plusDays(6))
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .videos(new ArrayList<>())
+                    .assignments(new ArrayList<>())
+                    .materials(new ArrayList<>())
+                    .build();
+
+            lectureList.add(lecture);
+            startDate = startDate.plusWeeks(1);
+        }
+
+        // course에 lectureList 추가
+        course.getLectures().addAll(lectureList); // FIXME 맨아래로이동?
+
+        // 요일별 video, material 생성
+        if ((lectureDay != null && !lectureDay.isEmpty()) || lectureTime != null) { // 영상, 강의자료 생성
+            // lecture 리스트 불러오기
+            for (Lecture lecture : lectureList) {
+                // 선택한 요일만큼 video, material 생성
+                List<Video> videoList = new ArrayList<>();
+                List<Material> materialList = new ArrayList<>();
+
+                for (int i = 0; i < lectureDay.size(); i++) {
+                    // video 생성
+                    Video video = createVideo(course,lecture);
+                    videoList.add(video);
+                    // material 생성
+                    Material material = createMaterial(course, lecture);
+                    materialList.add(material);
+                }
+
+                // lecture에 추가
+                lecture.getVideos().addAll(videoList);
+                lecture.getMaterials().addAll(materialList);
+            }
+        }
+
+        // 요일별 assignment 생성
+        if ((assignmentDueDay != null && !assignmentDueDay.isEmpty()) || assignmentDueTime != null) { // 과제 생성
+            // lecture 리스트 불러오기
+            for (Lecture lecture : lectureList) {
+                // 선택한 요일만큼 assignment 생성
+                List<Assignment> assignmentList = new ArrayList<>();
+                for (int i = 0; i < assignmentDueDay.size(); i++) {
+                    Assignment assignment = createAssignment(course, lecture);
+                    assignmentList.add(assignment);
+                }
+
+                // lecture에 추가
+                lecture.getAssignments().addAll(assignmentList);
+            }
+        }
+    }
+
+    private void validateDuration(int durationWeeks) {
+        if (durationWeeks < 1 || durationWeeks > 12) {
+            throw new IllegalArgumentException("커리큘럼 주차 입력은 1~12까지만 가능합니다. ");
+        }
+    }
+
+    private Video createVideo(Course course, Lecture lecture) {
+        Video video = Video.builder()
+                .course(lecture.getCourse())
+                .lecture(lecture)
+                .videoTitle("강의 영상 제목을 입력하세요.")
+                .videoUrl("영상 링크 첨부")
+                .startDate(lecture.getStartDate())
+                .endDate(lecture.getEndDate())
+                .videoHistories(new ArrayList<>())
+                .build();
+
+        // video에대한 모든 attendees의 videoHistory 추가
+        List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
+
+        List<VideoHistory> videoHistoryList = attendees.stream()
+                .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
+                .map(attendee -> VideoHistory.builder()
+                        .course(course)
+                        .video(video)
+                        .courseAttendees(attendee)
+                        .videoHistoryStatus(VideoHistoryStatus.NOT_WATCHED)
+                        .build())
+                .collect(Collectors.toList());
+
+        // vidoe에 videoHistory추가
+        video.getVideoHistories().addAll(videoHistoryList);
+
+        // video 반환
+        return video;
+    }
+
+    private Material createMaterial(Course course, Lecture lecture) {
+        Material material = Material.builder()
+                .course(lecture.getCourse())
+                .lecture(lecture)
+                .materialTitle("강의 자료 제목을 입력하세요.")
+                .materialFile("강의자료 첨부")
+                .materialHistories(new ArrayList<>())
+                .build();
+
+        // video에대한 모든 attendees의 videoHistory 추가
+        List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
+
+        List<MaterialHistory> materialHistoryList = attendees.stream()
+                .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
+                .map(attendee -> MaterialHistory.builder()
+                        .course(course)
+                        .material(material)
+                        .courseAttendees(attendee)
+                        .materialHistoryStatus(false)
+                        .build())
+                .collect(Collectors.toList());
+
+        // vidoe에 videoHistory추가
+        material.getMaterialHistories().addAll(materialHistoryList);
+
+        // video 반환
+        return material;
+    }
+
+    private Assignment createAssignment(Course course, Lecture lecture) {
+        Assignment assignment = Assignment.builder()
+                .course(lecture.getCourse())
+                .lecture(lecture)
+                .assignmentTitle("과제 제목을 입력하세요.")
+                .assignmentDescription("과제 설명")
+                .startDate(lecture.getStartDate())
+                .endDate(lecture.getEndDate())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .submissions(new ArrayList<>())
+                .build();
+
+        // assignment 에대한 모든 attendees의 submission 추가
+        List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
+
+        List<Submission> submissionList = attendees.stream()
+                .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
+                .map(attendee -> Submission.builder()
+                        .course(course)
+                        .assignment(assignment)
+                        .courseAttendees(attendee)
+                        .user(attendee.getUser())
+                        .submissionStatus(SubmissionStatus.NOT_SUBMITTED)
+                        .build())
+                .collect(Collectors.toList());
+
+        // assignment에 submission추가
+        assignment.getSubmissions().addAll(submissionList);
+
+        // assignment 반환
+        return assignment;
+    }
+
+    // 강의실 개요 편집
+    @Transactional
+    public CourseDTO updateCourseOverview(Long courseId, Long userId, CourseOverviewUpdateDto request) {
+        // 기존 강좌 조회
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
+
+        // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
+        if (!course.getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("이 강좌를 수정할 권한이 없습니다.");
+        }
+
+        // 강의실 개요수정
+        course.setCourseDescription(request.getDescription());
+        course.setCourseThumbnail(request.getCourseThumbnail());
 
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
@@ -135,6 +374,7 @@ public class CourseService {
     }
 
     // 강좌 삭제
+    @Transactional
     public void deleteCourse(Long courseId, Long userId) {
         // 강좌 조회
         Course course = courseRepository.findById(courseId)
@@ -145,6 +385,14 @@ public class CourseService {
             throw new RuntimeException("이 강좌를 삭제할 권한이 없습니다.");
         }
 
+        // 유저들의 히스토리 삭제
+        materialHistoryRepository.deleteAllByCourse(course);
+        videoHistoryRepository.deleteAllByCourse(course);
+        submissionRepository.deleteAllByCourse(course);
+
+        // 강좌에 있는 courseAttendees 모두 삭제
+        courseAttendeesRepository.deleteAllByCourse(course);
+
         // 강좌 삭제
         courseRepository.delete(course);
     }
@@ -154,6 +402,7 @@ public class CourseService {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 8);  // 예: 32자 중 앞 8자 사용
     }
 
+    // 코스 입장 (입장 유저의 히스토리 생성)
     public void enterCourse(Long courseId, Long userId, String entryCode) {
         // 1. 강의 존재 여부 확인
         Course course = courseRepository.findById(courseId)
@@ -184,8 +433,7 @@ public class CourseService {
 
         courseAttendeesRepository.save(courseAttendees);
 
-        // TODO courseAttendees에 대한 모든 history생성
-
+        // courseAttendees에 대한 모든 history생성
         // video 히스토리 생성
         List<Video> videoList = videoRepository.findAllByCourse(course);
         saveHistories(
