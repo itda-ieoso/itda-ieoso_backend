@@ -3,6 +3,7 @@ package itda.ieoso.Lecture;
 import itda.ieoso.Course.Course;
 import itda.ieoso.Response.DataResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -82,20 +83,29 @@ public class LectureController {
 
     // ------------------ 강의실 관리 ----------------------
     // 강의실 커리큘럼편집(userid = 편집자)
-    @PostMapping("/curriculum/{userId}/{courseId}")
+    @PostMapping("/curriculum/{courseId}/{userId}")
     public DataResponse<CurriculumModificationRequest> createCurriculum(@PathVariable Long userId,
-                                                                   @PathVariable Long courseId,
-                                                                   @RequestBody CurriculumModificationRequest dto) {
+                                                                        @PathVariable Long courseId,
+                                                                        @RequestBody CurriculumModificationRequest dto) {
         DataResponse<CurriculumModificationRequest> response = new DataResponse<>(lectureService.createCurriculum(userId,courseId, dto));
         return response;
     }
 
-    // 강의실 커리큘럼 조회(수강생용) TODO 개설자용 따로 만들기
-    @GetMapping("/curriculum/{userId}/{courseId}")
+    // 강의실 커리큘럼 조회(userid = 수강생) TODO 개설자용 따로 만들기
+    @GetMapping("/curriculum/{courseId}/{userId}")
     public DataResponse<List<CurriculumResponseDto>> getCurriculum(@PathVariable Long userId,
-                                              @PathVariable Long courseId) {
-
+                                                                   @PathVariable Long courseId) {
         DataResponse<List<CurriculumResponseDto>> response = new DataResponse<>(lectureService.getCurriculum(userId,courseId));
+        return response;
+    }
+
+    // 대시보드 조회(userid = 수강생)
+    @GetMapping("/dashboard/{courseId}/{userId}")
+    public DataResponse<?> getToDoList(@PathVariable Long courseId,
+                                       @PathVariable Long userId,
+                                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        // RequestParam 없음 = 전체조회 / 있음 = 해당날짜 조회
+        DataResponse<?> response = new DataResponse<>(lectureService.getToDoList(courseId, userId, date));
         return response;
     }
 }

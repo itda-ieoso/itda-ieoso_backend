@@ -163,6 +163,7 @@ public class LectureService {
     }
 
     // ------------------------------------------------------
+    // 강의실 커리큘럼 전체 생성
     @Transactional
     public CurriculumModificationRequest createCurriculum(Long userId, Long courseId, CurriculumModificationRequest request) {
 
@@ -239,6 +240,7 @@ public class LectureService {
         return request;
     }
 
+    // video 생성
     private List<Video> createVideo(List<VideoDto> videos, Course course, Lecture lecture) {
         List<Video> videoList = new ArrayList<>();
         for (VideoDto videoDto : videos) {
@@ -274,6 +276,7 @@ public class LectureService {
         return videoList;
     }
 
+    // material 생성
     private List<Material> createMaterial(List<MaterialDto> materials,Course course, Lecture lecture) {
         List<Material> materialList = new ArrayList<>();
         for (MaterialDto materialDto : materials) {
@@ -306,6 +309,7 @@ public class LectureService {
         return materialList;
     }
 
+    // assignment 생성
     private List<Assignment> createAssignment(List<AssignmentDto> assignments,Course course, Lecture lecture) {
         List<Assignment> assignmentList = new ArrayList<>();
         for (AssignmentDto assignmentDto : assignments) {
@@ -342,6 +346,8 @@ public class LectureService {
         return assignmentList;
     }
 
+    // lecture에 material, assignment, video 추가
+    // FIXME 날짜입력 추가
     private void addRequest(ModifyRequestDto modifyRequestDto, Course course) {
 
         Lecture lecture = lectureRepository.findById(modifyRequestDto.getId()).orElseThrow();
@@ -431,6 +437,7 @@ public class LectureService {
         }
     }
 
+    // lecture, material, assignment, video 업데이트
     private void updateRequest(ModifyRequestDto modifyRequestDto) {
 
         if (modifyRequestDto.getType().equals("lecture")) {
@@ -474,6 +481,7 @@ public class LectureService {
         }
     }
 
+    // material, assignment, video 삭제 TODO lecture삭제추가
     private void deleteRequest(ModifyRequestDto modifyRequestDto) {
         if (modifyRequestDto.getType().equals("material")) {
             // materialid가 getId인 materialHistory 전체삭제
@@ -501,6 +509,8 @@ public class LectureService {
         }
     }
 
+    // 커리큘럼 조회
+    @Transactional
     public List<CurriculumResponseDto> getCurriculum(Long userId, Long courseId) {
 
         // 과정 찾기
@@ -517,8 +527,6 @@ public class LectureService {
 
         // lecture 조회
         List<Lecture> lectureList = lectureRepository.findAllByCourse(course);
-
-        //
 
         return lectureList.stream().map(lecture -> {
             List<VideoResponseDto> videos = lecture.getVideos().stream()
@@ -582,6 +590,116 @@ public class LectureService {
         }).collect(Collectors.toList());
 
     }
+
+    @Transactional
+    public List<CurriculumResponseDto> getToDoList(Long courseId, Long userId, LocalDate date) {
+        // 과정 찾기
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
+
+        // 강의 수강생인지 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new IllegalArgumentException("유효한 사용자가 아닙니다."));
+
+        CourseAttendees courseAttendees = courseAttendeesRepository.findByCourseAndUser(course,user)
+                .orElseThrow(()-> new IllegalArgumentException("수강생이 아닙니다."));
+
+        // coures내에서 lectureList조회
+        List<Lecture> lectureList = lectureRepository.findAllByCourse(course);
+
+        if (date == null) {
+            // 전체조회
+        }
+
+        // 입력날짜를 기간으로 포함하는 lecture, video, assignment, material 필터링
+        return lectureList.stream().map(lecture -> {
+            List<VideoResponseDto> videos = lecture.getVideos().stream()
+                    // 입력날짜를 기간으로 포함하는 video만 필터링
+                    .filter(video -> {
+                        return (video.getStartDate() != null && video.getEndDate() != null) &&              // startDate와 endDate가 null이 아니고
+                                (date.isEqual(video.getStartDate()) || date.isEqual(video.getEndDate()) ||  // date가 startDate와 같거나, endDate와 같거나
+                                        (date.isAfter(video.getStartDate()) && date.isBefore(video.getEndDate()))); // date가 startDate보다 앞이면서 endDate보다 뒤일때
+                    })
+                    // 필터링된 video로 attendees의 videoHistory 조회
+                    .map(video -> {
+                        VideoHistory videoHistory=videoHistoryRepository.findByVideoAndCourseAttendees(video, courseAttendees);
+                        if (videoHistory == null) {
+                            throw new IllegalArgumentException("잘못된접근");
+                        }
+                        // video와 시청여부 포함한 dto 반환
+                        return VideoResponseDto.builder()
+                                .videoId(video.getVideoId())
+                                .videoTitle(video.getVideoTitle())
+                                .videoUrl(video.getVideoUrl())
+                                .startDate(video.getStartDate())
+                                .endDate(video.getEndDate())
+                                .videoHistoryStatus(videoHistory.getVideoHistoryStatus())
+                                .build();
+                    }).toList();
+
+            List<MaterialResponseDto> materials = lecture.getMaterials().stream()
+                    // 강의자료는 필터링 없음
+                    // material로 attendees의 materialHistory 조회
+                    .map(material -> {
+                        MaterialHistory materialHistory = materialHistoryRepository.findByMaterialAndCourseAttendees(material, courseAttendees);
+                        if (materialHistory == null) {
+                            throw new IllegalArgumentException("잘못된접근");
+                        }
+                        // material과 다운로드여부 포함한 dto 반환
+                        return MaterialResponseDto.builder()
+                                .materialId(material.getMaterialId())
+                                .materialTitle(material.getMaterialTitle())
+                                .materialFile(material.getMaterialFile())
+                                .materialHistoryStatus(materialHistory.isMaterialHistoryStatus())
+                                .build();
+                    }).toList();
+
+            List<AssignmentResponseDto> assignments = lecture.getAssignments().stream()
+                    // 입력날짜를 기간으로 포함하는 assignment만 필터링
+                    .filter(assignment -> {
+                        return (assignment.getStartDate() != null && assignment.getEndDate() != null) &&              // startDate와 endDate가 null이 아니고
+                                (date.isEqual(assignment.getStartDate()) || date.isEqual(assignment.getEndDate()) ||  // date가 startDate와 같거나, endDate와 같거나
+                                        (date.isAfter(assignment.getStartDate()) && date.isBefore(assignment.getEndDate()))); // date가 startDate보다 앞이면서 endDate보다 뒤일때
+                    })
+                    // 필터링된 assignment로 attendees의 submission 조회
+                    .map(assignment -> {
+                        Submission submission = submissionRepository.findByAssignmentAndCourseAttendees(assignment,courseAttendees);
+                        if (submission == null) {
+                            throw new IllegalArgumentException("잘못된접근");
+                        }
+                        // assignment와 과제제출여부 포함한 dto 반환
+                        return AssignmentResponseDto.builder()
+                                .assignmentId(assignment.getAssignmentId())
+                                .assignmentTitle(assignment.getAssignmentTitle())
+                                .assignmentDescription(assignment.getAssignmentDescription())
+                                .startDate(assignment.getStartDate())
+                                .endDate(assignment.getEndDate())
+                                .submissionStatus(submission.getSubmissionStatus())
+                                .build();
+                    }).toList();
+
+
+            // 반환된 데이터를 합쳐서 todoList로 반환 (커리큘럼 조회dto 재활용)
+            return new CurriculumResponseDto(
+                    lecture.getLectureId(),
+                    lecture.getLectureTitle(),
+                    lecture.getLectureDescription(),
+                    videos,
+                    materials,
+                    assignments,
+                    lecture.getStartDate(),
+                    lecture.getEndDate()
+            );
+        })
+        // 각 lecture에 video, assignment, material 3개가 전부 없으면 lecture도 필터링
+        .filter(curriculum -> !(curriculum.getVideos().isEmpty() &&
+                curriculum.getMaterials().isEmpty() &&
+                curriculum.getAssignments().isEmpty()))
+        .collect(Collectors.toList());
+    }
+
+    // TODO 일주일전체 조회 추가
+
 }
 
 

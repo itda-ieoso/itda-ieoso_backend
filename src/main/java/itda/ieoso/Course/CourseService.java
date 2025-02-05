@@ -255,6 +255,7 @@ public class CourseService {
         }
     }
 
+    // FIXME service위치 변경(videoService, MaterialService, AssignmentService)
     private Video createVideo(Course course, Lecture lecture) {
         Video video = Video.builder()
                 .course(lecture.getCourse())
