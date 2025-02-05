@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -84,8 +85,8 @@ public class LectureController {
     // 강의실 커리큘럼편집(userid = 편집자)
     @PostMapping("/curriculum/{userId}/{courseId}")
     public DataResponse<CurriculumModificationRequest> createCurriculum(@PathVariable Long userId,
-                                                                   @PathVariable Long courseId,
-                                                                   @RequestBody CurriculumModificationRequest dto) {
+                                                                        @PathVariable Long courseId,
+                                                                        @RequestBody CurriculumModificationRequest dto) {
         DataResponse<CurriculumModificationRequest> response = new DataResponse<>(lectureService.createCurriculum(userId,courseId, dto));
         return response;
     }

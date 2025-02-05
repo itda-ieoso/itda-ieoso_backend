@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -45,15 +46,30 @@ public class SubmissionService {
         String folder = "submissions";  // 업로드할 폴더를 "submissions"로 지정
         List<String> fileUrls = s3Service.uploadFiles(folder, files);  // MultipartFile[]로 파일 받기
 
+        // 파일 정보 리스트 (원래 이름, 파일 크기, URL)
+        // 파일 정보 리스트 (원래 이름, 파일 크기, URL)
+        List<SubmissionFile> submissionFiles = new ArrayList<>();
+
+        for (int i = 0; i < files.length; i++) {
+            MultipartFile file = files[i];
+            String originalFilename = file.getOriginalFilename();  // 원래 파일 이름
+            String fileSize = formatFileSize(file.getSize());  // 파일 크기 (KB, MB, GB)
+            String fileUrl = fileUrls.get(i);  // 파일 URL
+
+            // SubmissionFile 객체 생성 및 리스트에 추가
+            SubmissionFile submissionFile = SubmissionFile.createFile(fileUrl, originalFilename, fileSize, submission);
+            submissionFiles.add(submissionFile);
+        }
+
         // 제출 상태 변경
         if(submission.getSubmissionStatus() == SubmissionStatus.NOT_SUBMITTED) {
             submission.setTextContent(textContent);
-            submission.setFileUrls(fileUrls); // 여러 파일 URL 저장
+            submission.setSubmissionFiles(submissionFiles);
             submission.setSubmittedAt(LocalDateTime.now());
             submission.setSubmissionStatus(assignment.getEndDate().isAfter(LocalDate.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE);
         } else {
             submission.setTextContent(textContent);
-            submission.setFileUrls(fileUrls); // 여러 파일 URL 저장
+            submission.setSubmissionFiles(submissionFiles);
             submission.setSubmittedAt(LocalDateTime.now());
         }
 
@@ -65,6 +81,19 @@ public class SubmissionService {
 
         // 수정된 SubmissionDTO 반환
         return SubmissionDTO.of(submission, userInfoDto);
+    }
+
+    // 파일 크기 포맷팅 유틸리티 메서드 (KB, MB, GB)
+    private String formatFileSize(long bytes) {
+        if (bytes < 1024) {
+            return bytes + " B";
+        } else if (bytes < 1048576) { // 1024 * 1024
+            return String.format("%.2f KB", bytes / 1024.0);
+        } else if (bytes < 1073741824) { // 1024 * 1024 * 1024
+            return String.format("%.2f MB", bytes / 1048576.0);
+        } else {
+            return String.format("%.2f GB", bytes / 1073741824.0);
+        }
     }
 
     public Submission getSubmissionById(Long submissionId) {
@@ -89,7 +118,7 @@ public class SubmissionService {
 
         // 제출 정보 삭제
         submission.setTextContent(null);
-        submission.setFileUrls(null);
+        submission.setSubmissionFiles(null);
         submission.setSubmittedAt(null);
         submission.setSubmissionStatus(SubmissionStatus.NOT_SUBMITTED);
 
