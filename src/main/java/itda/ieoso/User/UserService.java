@@ -31,6 +31,8 @@ public class UserService {
         String email = jwtUtil.getEmail(token.split(" ")[1]);
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원을 조회할 수 없습니다."));
+
+
     }
 
     // 회원 가입
