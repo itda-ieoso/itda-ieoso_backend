@@ -51,8 +51,6 @@ public class SubmissionController {
     }
 
 
-
-
     // 과제 삭제(과제 상태 초기화)
     @PutMapping("/delete/{submissionId}/{userId}")
     public ResponseEntity<Void> deleteSubmission(
