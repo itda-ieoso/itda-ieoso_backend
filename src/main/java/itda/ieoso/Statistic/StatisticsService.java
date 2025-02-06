@@ -6,6 +6,7 @@ import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
+import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Submission.Submission;
 import itda.ieoso.Submission.SubmissionRepository;
@@ -55,6 +56,7 @@ public class StatisticsService {
             // 학생별 제출 상태 계산
             List<CourseAttendees> attendees = courseAttendeesRepository.findByCourse_CourseId(courseId);
             List<AssignmentStatisticsDTO.StudentSubmissionStatus> studentStatuses = attendees.stream()
+                    .filter(attendee -> attendee.getCourseAttendeesStatus() == CourseAttendeesStatus.ACTIVE)
                     .map(attendee -> {
                         User student = attendee.getUser();
                         Submission submission = submissions.stream()

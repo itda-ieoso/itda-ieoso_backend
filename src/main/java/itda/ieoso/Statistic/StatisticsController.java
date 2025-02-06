@@ -1,5 +1,6 @@
 package itda.ieoso.Statistic;
 
+import itda.ieoso.Response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +18,9 @@ public class StatisticsController {
 
     // 과제 제출 통계 조회 API
     @GetMapping("/courses/{courseId}/assignments")
-    public ResponseEntity<List<AssignmentStatisticsDTO>> getAssignmentStatistics(@PathVariable Long courseId) {
+    public Response<List<AssignmentStatisticsDTO>> getAssignmentStatistics(@PathVariable Long courseId) {
         List<AssignmentStatisticsDTO> statistics = statisticsService.getAssignmentStatistics(courseId);
-        return ResponseEntity.ok(statistics); // 성공 시 데이터 반환
+        return Response.success("통계 요약 조회", statistics); // 성공 시 데이터 반환
     }
 }
 

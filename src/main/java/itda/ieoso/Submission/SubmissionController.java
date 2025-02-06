@@ -1,6 +1,7 @@
 package itda.ieoso.Submission;
 
 import itda.ieoso.File.S3Service;
+import itda.ieoso.Response.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,7 +23,7 @@ public class SubmissionController {
 
     // 과제 제출 및 수정
     @PutMapping("/{submissionId}/{userId}")
-    public ResponseEntity<SubmissionDTO> updateSubmission(
+    public Response<SubmissionDTO> updateSubmission(
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
             @PathVariable Long userId,
@@ -32,11 +33,12 @@ public class SubmissionController {
         // 제출 정보 수정 처리
         SubmissionDTO updatedSubmissionDTO = submissionService.updateSubmission(assignmentId, submissionId, userId, textContent, files);
 
-        return ResponseEntity.ok(updatedSubmissionDTO); // 수정된 제출 정보 반환
+        return Response.success("과제 제출 및 수정", updatedSubmissionDTO); // 수정된 제출 정보 반환
     }
 
+    // 파일 다운로드 밖으로 빼기
     @GetMapping("/download")
-    public ResponseEntity<String> getDownloadUrl(@RequestParam("fileUrl") String fileUrl) {
+    public Response<String> getDownloadUrl(@RequestParam("fileUrl") String fileUrl) {
         try {
             // fileUrl에서 S3 도메인 부분 제거 후 key만 추출
             String fileKey = fileUrl.replace("https://your-s3-bucket.s3.amazonaws.com/", "");
@@ -44,16 +46,16 @@ public class SubmissionController {
             // Presigned URL 생성
             String presignedUrl = S3Service.generatePresignedUrl(fileKey);
 
-            return ResponseEntity.ok(presignedUrl);
+            return Response.success("과제 제출파일 다운로드", presignedUrl);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("파일 다운로드 URL 생성 실패: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
 
     // 과제 삭제(과제 상태 초기화)
     @PutMapping("/delete/{submissionId}/{userId}")
-    public ResponseEntity<Void> deleteSubmission(
+    public Response<Void> deleteSubmission(
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
             @PathVariable Long userId) {
@@ -61,19 +63,19 @@ public class SubmissionController {
         // 제출 정보 수정 처리
         submissionService.deleteSubmission(assignmentId, submissionId, userId);
 
-        return ResponseEntity.noContent().build(); // 삭제 완료 응답
+        return Response.success("과제 제출 삭제", null); // 삭제 완료 응답
     }
 
     // 과제 조회
     @GetMapping("/{submissionId}/{userId}")
-    public ResponseEntity<SubmissionDTO> getSubmission(
+    public Response<SubmissionDTO> getSubmission(
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
             @PathVariable Long userId) {
 
         // 제출 정보를 가져와서 SubmissionDTO로 변환
         SubmissionDTO submissionDTO = submissionService.getSubmission(assignmentId, submissionId, userId);
-        return ResponseEntity.ok(submissionDTO); // 조회한 제출 정보 반환
+        return Response.success("과제 조회", submissionDTO); // 조회한 제출 정보 반환
     }
 }
 

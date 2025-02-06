@@ -32,7 +32,7 @@ public class UserController {
     // 이메일 중복 확인
     @GetMapping("/check-email")
     public Response<Boolean> checkEmailDuplicate(@RequestParam(value = "email") String email) {
-        return Response.success("이메일 사용 가능", userService.isEmailDuplicate(email));
+        return Response.success("이메일 중복 여부", userService.isEmailDuplicate(email));
     }
 
     // 계정 삭제
