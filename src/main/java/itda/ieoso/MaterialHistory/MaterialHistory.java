@@ -1,9 +1,9 @@
-package itda.ieoso.Material;
+package itda.ieoso.MaterialHistory;
 
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.CourseAttendees.CourseAttendees;
-import itda.ieoso.Video.VideoHistoryStatus;
+import itda.ieoso.Material.Material;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
