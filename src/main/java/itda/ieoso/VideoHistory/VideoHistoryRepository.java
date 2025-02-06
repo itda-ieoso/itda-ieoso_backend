@@ -1,7 +1,8 @@
-package itda.ieoso.Video;
+package itda.ieoso.VideoHistory;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.CourseAttendees.CourseAttendees;
+import itda.ieoso.Video.Video;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
