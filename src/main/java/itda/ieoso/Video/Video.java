@@ -2,7 +2,7 @@ package itda.ieoso.Video;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.Lecture.Lecture;
-import itda.ieoso.Material.Material;
+import itda.ieoso.VideoHistory.VideoHistory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +28,8 @@ public class Video {
     private String videoTitle;
     private String videoUrl;
 
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     @ManyToOne
     @JoinColumn(name = "lecture_id", nullable = false)
@@ -50,11 +51,11 @@ public class Video {
         this.videoUrl = videoUrl;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 }
