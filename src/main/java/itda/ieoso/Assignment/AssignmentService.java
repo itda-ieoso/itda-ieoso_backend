@@ -121,6 +121,7 @@ public class AssignmentService {
     }
 
     // assignment 삭제
+    @Transactional
     public AssignmentDTO.deleteResponse deleteVideo(Long courseId, Long assignmentId, Long userId) {
         // course 조회
         Course course = courseRepository.findById(courseId)
