@@ -1,13 +1,14 @@
 package itda.ieoso.Lecture;
 
 import itda.ieoso.Submission.SubmissionStatus;
-import itda.ieoso.Video.VideoHistoryStatus;
+import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -45,8 +46,8 @@ public class CurriculumResponseDto {
         private Long assignmentId;
         private String assignmentTitle;
         private String assignmentDescription;
-        private LocalDate startDate;
-        private LocalDate endDate;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
         private SubmissionStatus submissionStatus;
     }
 
@@ -58,8 +59,8 @@ public class CurriculumResponseDto {
         private Long videoId;
         private String videoTitle;
         private String videoUrl;
-        private LocalDate startDate;
-        private LocalDate endDate;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
         private VideoHistoryStatus videoHistoryStatus;
     }
 }

@@ -1,45 +1,37 @@
-package itda.ieoso.Assignment;
+package itda.ieoso.Video;
 
 import lombok.Builder;
-import lombok.Getter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Getter
-@Builder
-public class AssignmentDTO {
+public class VideoDto {
     public record createRequest(
-            String assignmentTitle,
-            String assignmentDescription,
+            String videoTitle,
+            String videoUrl,
             LocalDateTime startDate,
             LocalDateTime endDate
 
     ) {}
 
     public record updateRequest(
-            String assignmentTitle,
-            String assignmentDescription,
+            String videoTitle,
+            String videoUrl,
             LocalDateTime startDate,
             LocalDateTime endDate
     ) {}
 
     @Builder
     public record Response(
-            Long assignmentId,
-            String assignmentTitle,
-            String assignmentDescription,
+            Long videoId,
+            String videoTitle,
+            String videoUrl,
             LocalDateTime startDate,
             LocalDateTime endDate
     ) {}
 
     @Builder
     public record deleteResponse(
-            Long assignmentId,
+            Long videoId,
             String message
     ) {}
-
 }
-
-
-

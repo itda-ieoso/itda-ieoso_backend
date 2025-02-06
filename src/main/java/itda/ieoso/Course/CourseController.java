@@ -1,16 +1,11 @@
 package itda.ieoso.Course;
 
-import itda.ieoso.Course.Dto.CourseOverviewUpdateDto;
-import itda.ieoso.Course.Dto.CourseUpdateDto;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
-import itda.ieoso.Lecture.CurriculumModificationRequest;
 import itda.ieoso.Response.DataResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/courses")
@@ -32,9 +27,9 @@ public class CourseController {
     @PutMapping("/{courseId}/{userId}/setting")
     public ResponseEntity<CourseDTO> updateCourse(@PathVariable Long courseId,
                                                   @PathVariable Long userId,
-                                                  @RequestBody CourseUpdateDto courseRequest) {
+                                                  @RequestBody CourseDTO.BasicUpdateRequest request) {
         // 강좌 수정 처리
-        CourseDTO updatedCourseDTO = courseService.updateCourse(courseId, userId, courseRequest);
+        CourseDTO updatedCourseDTO = courseService.updateCourse(courseId, userId, request);
 
         return ResponseEntity.ok(updatedCourseDTO); // 수정된 강좌 반환
     }
@@ -43,9 +38,9 @@ public class CourseController {
     @PutMapping("/{courseId}/{userId}/overview")
     public ResponseEntity<?> updateCourseOverview(@PathVariable Long courseId,
                                                   @PathVariable Long userId ,
-                                                  @RequestBody CourseOverviewUpdateDto courseRequest ) {
+                                                  @RequestBody CourseDTO.OverviewUpdateRequest request ) {
         // 강좌 수정
-        CourseDTO updateCourseDto = courseService.updateCourseOverview(courseId,userId, courseRequest);
+        CourseDTO updateCourseDto = courseService.updateCourseOverview(courseId,userId, request);
         return ResponseEntity.ok(updateCourseDto);
     }
 

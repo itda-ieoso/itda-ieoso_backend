@@ -1,4 +1,4 @@
-package itda.ieoso.Video;
+package itda.ieoso.VideoHistory;
 
 public enum VideoHistoryStatus {
     WATCHED,

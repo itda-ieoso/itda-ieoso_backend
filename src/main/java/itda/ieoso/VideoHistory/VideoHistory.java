@@ -1,9 +1,8 @@
-package itda.ieoso.Material;
-
+package itda.ieoso.VideoHistory;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.CourseAttendees.CourseAttendees;
-import itda.ieoso.Video.VideoHistoryStatus;
+import itda.ieoso.Video.Video;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,12 +14,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaterialHistory {
-
+public class VideoHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "lecture_history_id")
-    private Long materialHistoryId;
+    private Long videoHistoryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
@@ -31,12 +29,14 @@ public class MaterialHistory {
 //    private Lecture lecture;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "material_id", nullable = false)
-    private Material material;
+    @JoinColumn(name = "video_id", nullable = false)
+    private Video video;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_attendees_id", nullable = false)
     private CourseAttendees courseAttendees;
 
-    private boolean materialHistoryStatus; // false = 다운x / true = 다운o
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lecture_status", nullable = false)
+    private VideoHistoryStatus videoHistoryStatus;
 }

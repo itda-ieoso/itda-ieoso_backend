@@ -66,7 +66,7 @@ public class SubmissionService {
             submission.setTextContent(textContent);
             submission.setSubmissionFiles(submissionFiles);
             submission.setSubmittedAt(LocalDateTime.now());
-            submission.setSubmissionStatus(assignment.getEndDate().isAfter(LocalDate.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE);
+            submission.setSubmissionStatus(assignment.getEndDate().isAfter(LocalDateTime.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE);
         } else {
             submission.setTextContent(textContent);
             submission.setSubmissionFiles(submissionFiles);

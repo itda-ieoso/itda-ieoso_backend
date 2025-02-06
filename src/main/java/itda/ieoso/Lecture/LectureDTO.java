@@ -1,10 +1,14 @@
 package itda.ieoso.Lecture;
 
+import itda.ieoso.Assignment.Assignment;
+import itda.ieoso.Material.Material;
+import itda.ieoso.Video.Video;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -17,6 +21,9 @@ public class LectureDTO {
     private LocalDate endDate;  // 종료 날짜
     private LocalDateTime createdAt;  // 생성 날짜
     private LocalDateTime updatedAt;  // 수정 날짜
+    private List<Video> videoList;
+    private List<Material> materialList;
+    private List<Assignment> assignmentList; // TODO AssignmentDto로 변경?
 
     // LectureDTO를 생성하는 static 메소드
     public static LectureDTO of(Lecture lecture) {

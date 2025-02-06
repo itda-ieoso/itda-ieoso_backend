@@ -7,6 +7,8 @@ import lombok.Getter;
 
 import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -47,4 +49,21 @@ public class CourseDTO {
                 .user(userInfoDto)
                 .build();
     }
+
+    public record OverviewUpdateRequest(
+            String description,
+            String courseThumbnail
+    ) {}
+
+    public record BasicUpdateRequest(
+            String title,
+            String instructorName,
+            LocalDate startDate,
+            int durationWeeks,              // 초기 설정용
+            List<Integer>lectureDay,      // 리스트
+            Time lectureTime,
+            List<Integer> assignmentDueDay, // 리스트
+            Time assignmentDueTime,
+            DifficultyLevel difficultyLevel
+    ) {}
 }
