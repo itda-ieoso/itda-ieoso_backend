@@ -151,8 +151,10 @@ public class VideoService {
 
     // courseAttendees만큼의 videoHistory 생성
     private void addVideoHistoryToVideo(Course course, Video video) {
+        // course내의 모든 courseAttendees 조회
         List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
 
+        // history 생성
         List<VideoHistory> videoHistoryList = attendees.stream()
                 .filter(attendee -> attendee.getCourseAttendeesStatus() == CourseAttendeesStatus.ACTIVE)
                 .map(attendee -> VideoHistory.builder()
@@ -163,7 +165,7 @@ public class VideoService {
                         .build())
                 .collect(Collectors.toList());
 
-        // Add video history to the video
+        // video에 videoHistory추가
         video.getVideoHistories().addAll(videoHistoryList);
         videoRepository.save(video);
     }
