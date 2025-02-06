@@ -8,6 +8,7 @@ import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.VideoHistory.VideoHistory;
+import itda.ieoso.VideoHistory.VideoHistoryRepository;
 import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class VideoService {
     private final CourseRepository courseRepository;
     private final CourseAttendeesRepository courseAttendeesRepository;
     private final LectureRepository lectureRepository;
+    private final VideoHistoryRepository videoHistoryRepository;
 
     // video 생성
     @Transactional
@@ -124,6 +126,9 @@ public class VideoService {
         if (video == null) {
             throw new IllegalArgumentException("video를 찾을수없습니다.");
         }
+
+        // videoHistory 삭제 (추후 수정후 삭제)
+        videoHistoryRepository.deleteAllByVideo(video);
 
         // video 삭제
         videoRepository.delete(video);

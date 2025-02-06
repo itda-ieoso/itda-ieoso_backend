@@ -12,10 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface VideoHistoryRepository extends JpaRepository<VideoHistory, Long> {
-    @Modifying
-    @Query("DELETE FROM VideoHistory m WHERE m.video.videoId = :videoId")
-    @Transactional
-    void deleteAllByVideoId(@Param("videoId") Long videoId);
+    void deleteAllByVideo(Video video);
 
     List<VideoHistory> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 
