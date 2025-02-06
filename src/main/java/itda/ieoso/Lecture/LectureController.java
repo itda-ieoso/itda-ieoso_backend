@@ -2,6 +2,7 @@ package itda.ieoso.Lecture;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.Response.DataResponse;
+import itda.ieoso.Response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -23,82 +24,66 @@ public class LectureController {
 
     // 강의 생성 (과정 생성자만 가능)
     @PostMapping("/{courseId}/{userId}")
-    public ResponseEntity<LectureDTO> createLecture(@PathVariable Long courseId,
-                                                    @PathVariable Long userId,
-                                                    @RequestBody Lecture lectureRequest) {
-        // LectureService를 통해 강의 생성
-        LectureDTO lectureDTO = lectureService.createLecture(courseId, userId, lectureRequest);
-        System.out.println(lectureRequest);
-        return ResponseEntity.ok(lectureDTO);
+    public Response<LectureDTO> createLecture(@PathVariable Long courseId,
+                                              @PathVariable Long userId,
+                                              @RequestBody Lecture lectureRequest) {
+        return Response.success("강의 생성", lectureService.createLecture(courseId, userId, lectureRequest));
     }
 
     // 강의 수정
     @PutMapping("/{courseId}/{lectureId}/{userId}")
-    public ResponseEntity<LectureDTO> updateLecture(@PathVariable Long courseId,
+    public Response<LectureDTO> updateLecture(@PathVariable Long courseId,
                                                     @PathVariable Long lectureId,
                                                     @PathVariable Long userId,
                                                     @RequestBody Lecture lectureRequest) {
-        // 강의 수정 처리
-        LectureDTO updatedLectureDTO = lectureService.updateLecture(courseId, lectureId, userId, lectureRequest);
-
-        return ResponseEntity.ok(updatedLectureDTO); // 수정된 강의 반환
+        return Response.success("강의 수정", lectureService.updateLecture(courseId, lectureId, userId, lectureRequest));
     }
 
     // 강의 삭제 (과정 생성자만 가능)
     @DeleteMapping("/{courseId}/{lectureId}/{userId}")
-    public ResponseEntity<Void> deleteLecture(
+    public Response<?> deleteLecture(
             @PathVariable Long courseId,
             @PathVariable Long lectureId, // 강의 ID
             @PathVariable Long userId // 사용자 ID
     ) {
         // 강의가 속한 과정의 생성자인지 확인
         if (!lectureService.isCourseCreator(courseId, userId)) {
-            return ResponseEntity.status(403).build(); // 권한 없음 (Forbidden)
+            return Response.fail("강의 삭제 실패"); // 권한 없음 (Forbidden)
         }
 
         // LectureService를 통해 강의 삭제
-        lectureService.deleteLecture(courseId, lectureId, userId);
-        return ResponseEntity.noContent().build();
+        return Response.success("강의 삭제",null);
     }
 
     // 강의 조회
     @GetMapping("/{courseId}/{lectureId}/{userId}")
-    public ResponseEntity<LectureDTO> findByLectureId(@PathVariable Long courseId,
+    public Response<LectureDTO> findByLectureId(@PathVariable Long courseId,
                                                       @PathVariable Long lectureId,
                                                       @PathVariable Long userId) {
-        // 강의 정보 조회
-        LectureDTO lectureDTO = lectureService.getLecture(courseId, lectureId, userId);
-        return ResponseEntity.ok(lectureDTO); // 조회된 강의 반환
+        return Response.success("강의 조회", lectureService.getLecture(courseId, lectureId, userId));
     }
 
     // 강의 목록 조회
     @GetMapping("/{courseId}/lectures/{userId}")
-    public ResponseEntity<List<LectureDTO>> getLecturesByCourseId(@PathVariable Long courseId,
+    public Response<List<LectureDTO>> getLecturesByCourseId(@PathVariable Long courseId,
                                                                   @PathVariable Long userId) {
-        // 서비스 레이어에서 강의 목록을 가져옴
-        List<LectureDTO> lectures = lectureService.getLectureList(courseId,userId);
-
-        // ResponseEntity로 반환
-        return ResponseEntity.ok(lectures);
+        return Response.success("강의 목록 조회", lectureService.getLectureList(courseId,userId));
     }
 
     // ------------------ 강의실 관리 ----------------------
 
     // 강의실 커리큘럼 조회(userid = 수강생) TODO 개설자용 따로 만들기
     @GetMapping("/curriculum/{courseId}/{userId}")
-    public DataResponse<List<CurriculumResponseDto>> getCurriculum(@PathVariable Long userId,
+    public Response<List<CurriculumResponseDto>> getCurriculum(@PathVariable Long userId,
                                                                    @PathVariable Long courseId) {
-        DataResponse<List<CurriculumResponseDto>> response = new DataResponse<>(lectureService.getCurriculum(userId,courseId));
-        return response;
+        return Response.success("커리큘럼 전체 조회", lectureService.getCurriculum(userId,courseId));
     }
 
     // 대시보드 조회(userid = 수강생)
     @GetMapping("/dashboard/{courseId}/{userId}")
-    public DataResponse<?> getToDoList(@PathVariable Long courseId,
+    public Response<?> getToDoList(@PathVariable Long courseId,
                                        @PathVariable Long userId,
                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime date) {
-        // RequestParam 없음 = 전체조회 / 있음 = 해당날짜 조회
-        DataResponse<?> response = new DataResponse<>(lectureService.getToDoList(courseId, userId, date));
-        return response;
+        return Response.success("대시보드 조회(할일 목록)",lectureService.getToDoList(courseId, userId, date));
     }
 }

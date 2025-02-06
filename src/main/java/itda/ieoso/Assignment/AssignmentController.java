@@ -1,5 +1,6 @@
 package itda.ieoso.Assignment;
 
+import itda.ieoso.Response.Response;
 import itda.ieoso.Video.VideoDto;
 import itda.ieoso.Video.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,26 +16,26 @@ public class AssignmentController {
     private AssignmentService assignmentService;
 
     @PostMapping("/{courseId}/{lectureId}/{userId}")
-    public AssignmentDTO.Response createAssignment(@PathVariable Long courseId,
-                                                   @PathVariable Long lectureId,
-                                                   @PathVariable Long userId,
-                                                   @RequestBody AssignmentDTO.createRequest request) {
+    public Response<AssignmentDTO.Response> createAssignment(@PathVariable Long courseId,
+                                                            @PathVariable Long lectureId,
+                                                            @PathVariable Long userId,
+                                                            @RequestBody AssignmentDTO.createRequest request) {
 
-        return assignmentService.createVideo(courseId,lectureId,userId,request);
+        return Response.success("과제 생성" , assignmentService.createVideo(courseId,lectureId,userId,request));
     }
 
     @PatchMapping("/{courseId}/{assignmentId}/{userId}")
-    public AssignmentDTO.Response updateAssignment(@PathVariable Long courseId,
+    public Response<AssignmentDTO.Response> updateAssignment(@PathVariable Long courseId,
                                          @PathVariable Long assignmentId,
                                          @PathVariable Long userId,
                                          @RequestBody AssignmentDTO.updateRequest request) {
-        return assignmentService.updateVideo(courseId,assignmentId,userId,request);
+        return Response.success("과제 수정", assignmentService.updateVideo(courseId,assignmentId,userId,request));
     }
 
     @DeleteMapping("/{courseId}/{assignmentId}/{userId}")
-    public AssignmentDTO.deleteResponse deleteAssignment(@PathVariable Long courseId,
+    public Response<AssignmentDTO.deleteResponse> deleteAssignment(@PathVariable Long courseId,
                                                @PathVariable Long assignmentId,
                                                @PathVariable Long userId) {
-        return assignmentService.deleteVideo(courseId,assignmentId,userId);
+        return Response.success("과제 삭제", assignmentService.deleteVideo(courseId,assignmentId,userId));
     }
 }

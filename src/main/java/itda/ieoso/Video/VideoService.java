@@ -111,6 +111,7 @@ public class VideoService {
     }
 
     // video 삭제
+    @Transactional
     public VideoDto.deleteResponse deleteVideo(Long courseId, Long videoId, Long userId) {
         // course 조회
         Course course = courseRepository.findById(courseId)
