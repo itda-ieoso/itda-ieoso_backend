@@ -82,14 +82,6 @@ public class LectureController {
     }
 
     // ------------------ 강의실 관리 ----------------------
-    // 강의실 커리큘럼편집(userid = 편집자)
-    @PostMapping("/curriculum/{courseId}/{userId}")
-    public DataResponse<CurriculumModificationRequest> createCurriculum(@PathVariable Long userId,
-                                                                        @PathVariable Long courseId,
-                                                                        @RequestBody CurriculumModificationRequest dto) {
-        DataResponse<CurriculumModificationRequest> response = new DataResponse<>(lectureService.createCurriculum(userId,courseId, dto));
-        return response;
-    }
 
     // 강의실 커리큘럼 조회(userid = 수강생) TODO 개설자용 따로 만들기
     @GetMapping("/curriculum/{courseId}/{userId}")
@@ -103,7 +95,7 @@ public class LectureController {
     @GetMapping("/dashboard/{courseId}/{userId}")
     public DataResponse<?> getToDoList(@PathVariable Long courseId,
                                        @PathVariable Long userId,
-                                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+                                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime date) {
         // RequestParam 없음 = 전체조회 / 있음 = 해당날짜 조회
         DataResponse<?> response = new DataResponse<>(lectureService.getToDoList(courseId, userId, date));
         return response;
