@@ -50,7 +50,7 @@ public class SubmissionService {
             submission.setTextContent(textContent);
             submission.setFileUrls(fileUrls); // 여러 파일 URL 저장
             submission.setSubmittedAt(LocalDateTime.now());
-            submission.setSubmissionStatus(assignment.getEndDate().isAfter(LocalDate.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE);
+            submission.setSubmissionStatus(assignment.getEndDate().isAfter(LocalDateTime.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE);
         } else {
             submission.setTextContent(textContent);
             submission.setFileUrls(fileUrls); // 여러 파일 URL 저장

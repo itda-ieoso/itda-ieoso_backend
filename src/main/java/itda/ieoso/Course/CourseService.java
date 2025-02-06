@@ -2,17 +2,14 @@ package itda.ieoso.Course;
 
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
-import itda.ieoso.Course.Dto.CourseOverviewUpdateDto;
-import itda.ieoso.Course.Dto.CourseUpdateDto;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
-import itda.ieoso.Lecture.CurriculumDto;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Material.Material;
-import itda.ieoso.Material.MaterialHistory;
-import itda.ieoso.Material.MaterialHistoryRepository;
 import itda.ieoso.Material.MaterialRepository;
+import itda.ieoso.MaterialHistory.MaterialHistory;
+import itda.ieoso.MaterialHistory.MaterialHistoryRepository;
 import itda.ieoso.Submission.Submission;
 import itda.ieoso.Submission.SubmissionRepository;
 import itda.ieoso.Submission.SubmissionStatus;
@@ -21,8 +18,10 @@ import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
 import itda.ieoso.User.UserService;
 import itda.ieoso.Video.*;
+import itda.ieoso.VideoHistory.VideoHistory;
+import itda.ieoso.VideoHistory.VideoHistoryRepository;
+import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -119,7 +119,7 @@ public class CourseService {
 
     // 강좌 수정
     @Transactional
-    public CourseDTO updateCourse(Long courseId, Long userId, CourseUpdateDto request) {
+    public CourseDTO updateCourse(Long courseId, Long userId, CourseDTO.BasicUpdateRequest request) {
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
@@ -130,15 +130,15 @@ public class CourseService {
         }
 
         // 커리큘럼 주차 검증 ( durationWeeks == 1 ~ 12 )
-        validateDuration(request.getDurationWeeks());
+        // validateDuration(request.getDurationWeeks());
 
         // 초기 업데이트 여부 확인
         if (!course.isInit()) {
 
             // 커리큘럼 자동생성
-            initializeCourse(course, request.getStartDate(), request.getDurationWeeks(),
-                            request.getLectureDay(), request.getLectureTime(),
-                            request.getAssignmentDueDay(), request.getAssignmentDueTime());
+            initializeCourse(course, request.startDate(), request.durationWeeks(),
+                            request.lectureDay(), request.lectureTime(),
+                            request.assignmentDueDay(), request.assignmentDueTime());
 
             // 초기설정여부 상태변경
             course.updateInit();
@@ -147,11 +147,11 @@ public class CourseService {
         // 기본 객체 수정 [전체업데이트시킴 but lecture를 생성하지 않음]
 
         // 리스트를 문자열로 변환 (예: 쉼표로 구분)
-        String lectureDayString = request.getLectureDay().stream()
+        String lectureDayString = request.lectureDay().stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
 
-        String assignmentDueDayString = request.getAssignmentDueDay().stream()
+        String assignmentDueDayString = request.assignmentDueDay().stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
 
@@ -161,15 +161,15 @@ public class CourseService {
 //                .collect(Collectors.toList());
 
         // course.setMaxStudents(maxStudents);
-        course.setCourseTitle(request.getTitle());
-        course.setInstructorName(request.getInstructorName());
-        course.setStartDate(request.getStartDate());
-        course.setDurationWeeks(request.getDurationWeeks());
+        course.setCourseTitle(request.title());
+        course.setInstructorName(request.instructorName());
+        course.setStartDate(request.startDate());
+        course.setDurationWeeks(request.durationWeeks());
         course.setLectureDay(lectureDayString);
-        course.setLectureTime(request.getLectureTime());
+        course.setLectureTime(request.lectureTime());
         course.setAssignmentDueDay(assignmentDueDayString);
-        course.setAssignmentDueTime(request.getAssignmentDueTime());
-        course.setDifficultyLevel(request.getDifficultyLevel());
+        course.setAssignmentDueTime(request.assignmentDueTime());
+        course.setDifficultyLevel(request.difficultyLevel());
         course.setUpdatedAt(LocalDateTime.now());
 
         // UserDTO 변환
@@ -262,8 +262,8 @@ public class CourseService {
                 .lecture(lecture)
                 .videoTitle("강의 영상 제목을 입력하세요.")
                 .videoUrl("영상 링크 첨부")
-                .startDate(lecture.getStartDate())
-                .endDate(lecture.getEndDate())
+                .startDate(LocalDateTime.of(lecture.getStartDate(), LocalTime.of(23, 59, 59)))
+                .endDate(LocalDateTime.of(lecture.getEndDate(), LocalTime.of(23, 59, 59)))
                 .videoHistories(new ArrayList<>())
                 .build();
 
@@ -322,8 +322,8 @@ public class CourseService {
                 .lecture(lecture)
                 .assignmentTitle("과제 제목을 입력하세요.")
                 .assignmentDescription("과제 설명")
-                .startDate(lecture.getStartDate())
-                .endDate(lecture.getEndDate())
+                .startDate(LocalDateTime.of(lecture.getStartDate(),LocalTime.of(23, 59, 59)))
+                .endDate(LocalDateTime.of(lecture.getEndDate(),LocalTime.of(23, 59, 59)))
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .submissions(new ArrayList<>())
@@ -352,7 +352,7 @@ public class CourseService {
 
     // 강의실 개요 편집
     @Transactional
-    public CourseDTO updateCourseOverview(Long courseId, Long userId, CourseOverviewUpdateDto request) {
+    public CourseDTO updateCourseOverview(Long courseId, Long userId, CourseDTO.OverviewUpdateRequest request) {
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
@@ -363,8 +363,8 @@ public class CourseService {
         }
 
         // 강의실 개요수정
-        course.setCourseDescription(request.getDescription());
-        course.setCourseThumbnail(request.getCourseThumbnail());
+        course.setCourseDescription(request.description());
+        course.setCourseThumbnail(request.courseThumbnail());
 
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
