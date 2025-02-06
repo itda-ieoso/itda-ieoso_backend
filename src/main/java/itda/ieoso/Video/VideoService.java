@@ -130,7 +130,7 @@ public class VideoService {
 
         // 반환
         VideoDto.deleteResponse response = VideoDto.deleteResponse.builder()
-                .id(videoId)
+                .videoId(videoId)
                 .message("video 삭제 완료")
                 .build();
         return response;

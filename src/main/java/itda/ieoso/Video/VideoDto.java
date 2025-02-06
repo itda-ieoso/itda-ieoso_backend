@@ -31,7 +31,7 @@ public class VideoDto {
 
     @Builder
     public record deleteResponse(
-            Long id,
+            Long videoId,
             String message
     ) {}
 }
