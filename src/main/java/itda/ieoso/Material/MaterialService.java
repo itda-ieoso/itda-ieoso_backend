@@ -8,6 +8,7 @@ import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.MaterialHistory.MaterialHistory;
+import itda.ieoso.MaterialHistory.MaterialHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,17 +25,18 @@ public class MaterialService {
     private final CourseRepository courseRepository;
     private final LectureRepository lectureRepository;
     private final CourseAttendeesRepository courseAttendeesRepository;
+    private final MaterialHistoryRepository materialHistoryRepository;
 
-    // video 생성
+    // material 생성
     @Transactional
     public MaterialDto.Response createMaterial(Long courseId, Long lectureId, Long userId, MaterialDto.createRequest request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new IllegalArgumentException("course를 찾을수없습니다."));
 
         // lecture 조회
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(()-> new IllegalArgumentException("챕터를 찾을수없습니다."));
+                .orElseThrow(()-> new IllegalArgumentException("lecture를 찾을수없습니다."));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
@@ -66,7 +68,7 @@ public class MaterialService {
         return response;
     }
 
-    // video 업데이트
+    // material 업데이트
     @Transactional
     public MaterialDto.Response updateMaterial(Long courseId, Long materialId, Long userId, MaterialDto.updateRequest request) {
         // course 조회
@@ -100,7 +102,7 @@ public class MaterialService {
 
     }
 
-    // video 삭제
+    // material 삭제
     public MaterialDto.deleteResponse deleteMaterial(Long courseId, Long materialId, Long userId) {
         // course 조회
         Course course = courseRepository.findById(courseId)
@@ -111,19 +113,22 @@ public class MaterialService {
             throw new IllegalArgumentException("강의 개설자가 아닙니다.");
         }
 
-        // video 조회
+        // material 조회
         Material material = materialRepository.findByCourseAndMaterialId(course, materialId);
         if (material == null) {
-            throw new IllegalArgumentException("video를 찾을수없습니다.");
+            throw new IllegalArgumentException("material을 찾을수없습니다.");
         }
 
-        // video 삭제
+        // materialHistory 삭제
+        materialHistoryRepository.deleteAllByMaterial(material);
+
+        // material 삭제
         materialRepository.delete(material);
 
         // 반환
         MaterialDto.deleteResponse response = MaterialDto.deleteResponse.builder()
                 .videoId(materialId)
-                .message("video 삭제 완료")
+                .message("material 삭제 완료")
                 .build();
         return response;
 

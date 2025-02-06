@@ -12,10 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface MaterialHistoryRepository extends JpaRepository<MaterialHistory, Long> {
-    @Modifying
-    @Query("DELETE FROM MaterialHistory m WHERE m.material.materialId = :materialId")
-    @Transactional
-    void deleteAllByMaterialId(@Param("materialId") Long materialId);
+    void deleteAllByMaterial(Material material);
 
     List<MaterialHistory> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 
