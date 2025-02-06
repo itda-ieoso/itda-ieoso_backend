@@ -88,7 +88,7 @@ public class S3Service {
     }
 
     // MultipartFile을 File로 변환하는 유틸리티 메서드
-    private File convertMultipartFileToFile(MultipartFile file) throws IOException {
+    public File convertMultipartFileToFile(MultipartFile file) throws IOException {
         Path tempFile = Files.createTempFile("temp-", file.getOriginalFilename());
         file.transferTo(tempFile);
         return tempFile.toFile();
