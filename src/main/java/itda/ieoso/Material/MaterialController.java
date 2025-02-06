@@ -20,19 +20,19 @@ public class MaterialController {
         return materialService.createMaterial(courseId,lectureId,userId,request);
     }
 
-    @PatchMapping("/{courseId}/{videoId}/{userId}")
+    @PatchMapping("/{courseId}/{materialId}/{userId}")
     public MaterialDto.Response updateMaterial(@PathVariable Long courseId,
-                                         @PathVariable Long videoId,
+                                         @PathVariable Long materialId,
                                          @PathVariable Long userId,
                                          @RequestBody MaterialDto.updateRequest request) {
-        return materialService.updateMaterial(courseId,videoId,userId,request);
+        return materialService.updateMaterial(courseId,materialId,userId,request);
     }
 
-    @DeleteMapping("/{courseId}/{videoId}/{userId}")
+    @DeleteMapping("/{courseId}/{materialId}/{userId}")
     public MaterialDto.deleteResponse deleteMaterial(@PathVariable Long courseId,
-                                               @PathVariable Long videoId,
+                                               @PathVariable Long materialId,
                                                @PathVariable Long userId) {
-        return materialService.deleteMaterial(courseId,videoId,userId);
+        return materialService.deleteMaterial(courseId,materialId,userId);
     }
 
 }
