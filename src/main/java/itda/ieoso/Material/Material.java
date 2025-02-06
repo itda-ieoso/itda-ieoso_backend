@@ -2,6 +2,7 @@ package itda.ieoso.Material;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.Lecture.Lecture;
+import itda.ieoso.MaterialHistory.MaterialHistory;
 import jakarta.persistence.*;
 import lombok.*;
 
