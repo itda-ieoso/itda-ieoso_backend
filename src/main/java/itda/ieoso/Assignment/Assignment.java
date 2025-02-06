@@ -3,7 +3,6 @@ package itda.ieoso.Assignment;
 import itda.ieoso.Course.Course;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Submission.Submission;
-import itda.ieoso.Video.VideoHistory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,10 +35,10 @@ public class Assignment {
     private String assignmentDescription;
 
     @Column(nullable = false)
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     @Column(nullable = false)
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     @Column
     private LocalDateTime createdAt;
@@ -68,11 +67,11 @@ public class Assignment {
         this.assignmentDescription = assignmentDescription;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 

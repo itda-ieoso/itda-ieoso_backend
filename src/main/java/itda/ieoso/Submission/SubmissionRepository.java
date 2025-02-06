@@ -16,10 +16,7 @@ import java.util.List;
 public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findByAssignment_AssignmentId(Long assignmentId);
     
-    @Modifying
-    @Query("DELETE FROM Submission m WHERE m.assignment.assignmentId = :assignmentId")
-    @Transactional
-    void deleteAllByAssignmentId(@Param("assignmentId") Long assignmentId);
+    void deleteAllByAssignment(Assignment assignment);
 
     List<Submission> findAllByCourseAndCourseAttendees(Course course, CourseAttendees courseAttendees);
 

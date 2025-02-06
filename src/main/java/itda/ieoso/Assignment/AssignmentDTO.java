@@ -9,25 +9,36 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class AssignmentDTO {
-    private Long assignmentId;
-    private String assignmentTitle;
-    private String assignmentDescription;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    public record createRequest(
+            String assignmentTitle,
+            String assignmentDescription,
+            LocalDateTime startDate,
+            LocalDateTime endDate
 
-    public static AssignmentDTO of(Assignment assignment) {
-        return AssignmentDTO.builder()
-                .assignmentId(assignment.getAssignmentId())
-                .assignmentTitle(assignment.getAssignmentTitle())
-                .assignmentDescription(assignment.getAssignmentDescription())
-                .startDate(assignment.getStartDate())
-                .endDate(assignment.getEndDate())
-                .createdAt(assignment.getCreatedAt())
-                .updatedAt(assignment.getUpdatedAt())
-                .build();
-    }
+    ) {}
+
+    public record updateRequest(
+            String assignmentTitle,
+            String assignmentDescription,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {}
+
+    @Builder
+    public record Response(
+            Long assignmentId,
+            String assignmentTitle,
+            String assignmentDescription,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {}
+
+    @Builder
+    public record deleteResponse(
+            Long assignmentId,
+            String message
+    ) {}
+
 }
 
 
