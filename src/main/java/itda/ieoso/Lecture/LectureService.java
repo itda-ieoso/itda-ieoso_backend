@@ -172,6 +172,8 @@ public class LectureService {
     }
 
     // 커리큘럼 조회
+    // orderIndex를 각 도메인마다 추가해서 그거대로 정렬하기?
+    // 만약 순서를 변경하면 orderindex를 변경해주기
     @Transactional
     public List<CurriculumResponseDto> getCurriculum(Long userId, Long courseId) {
 
@@ -356,7 +358,7 @@ public class LectureService {
         })
         // 각 lecture에 video, assignment, material 3개가 전부 없으면 lecture도 필터링
         .filter(curriculum -> !(curriculum.getVideos().isEmpty() &&
-                curriculum.getMaterials().isEmpty() &&
+                //curriculum.getMaterials().isEmpty() &&
                 curriculum.getAssignments().isEmpty()))
         .collect(Collectors.toList());
     }
@@ -364,38 +366,3 @@ public class LectureService {
     // TODO 일주일전체 조회 추가
 
 }
-
-
-
-// video, material, assignment 추가 (lectureid, 본문내용)
-// video에대한 모든 attendees의 videoHistory 생성
-// vidoe에 videoHistory추가
-
-// course입장
-// 모든lecture의 video, material, assignment에 대한 history 생성
-
-
-
-
-
-// 히스토리 생성 시점
-// 1. 커리큘럼 추가시               -> 부자재별로 모든 attendees의 해당부자재의 히스토리 생성
-// 2. 사람유입시점                 -> course의 모든 강의에대해 attendees한명의 히스토리 전체 생성
-
-// 히스토리 삭제 시점
-// 1. 커리큘럼 삭제시                  -> 부자재별로 모든 attendees의 해당 부자재의 히스토리 삭제
-// 2. course 유저한명이 퇴장하는 시점    -> course에 모든 강의에대해 attendees한명의 히스토리 전체삭제 -> 중도포기자 포함? 수강생통계에 보여짐
-// 3. 수료되는 시점                   -> course의 모든 강의에대해 모든 attendees의 모든강의 히스토리 삭제 -> 남기기
-
-// 커리큘럼 추가시
-// 1. courseid가 엔드포인트의 courseid인 attendees 모두 불러오기
-// 2. for문 돌면서 전부 videoHistory 생성
-
-// 강의실 입장시
-// 1. attendees 생성
-// 2. courseid에 해당하는 모든 video, assignment, material 조회 -> 리스트
-// 3. for문 돌면서 video한개에 대해 videoHistory에 couserId가 입장한 강의실이고, videoid값이 2번인것 있는지 검증
-// 4. 없으면 생성
-
-// 생성 -> 검증필요없음 새롭게 생겨난데이터니깐
-// 입장 -> 기존데이터에 대해 생성하는거니깐 검증필요
