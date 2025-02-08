@@ -50,7 +50,7 @@ public class CourseService {
     private final AssignmentRepository assignmentRepository;
     private final UserService userService;
 
-    // 강좌 생성
+    // 강의실 생성
     @Transactional
     public CourseDTO createCourse(Long userId) {
         // userId로 사용자 조회
@@ -78,10 +78,6 @@ public class CourseService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        course.setCreatedAt(LocalDateTime.now());
-        course.setUpdatedAt(LocalDateTime.now()); // 처음 생성 시 updatedAt도 현재 시간
-
-
         // 데이터베이스에 저장
         courseRepository.save(course);
 
@@ -94,6 +90,7 @@ public class CourseService {
                 .build();
 
         courseAttendeesRepository.save(courseAttendees); // CourseAttendees 저장
+
         // UserDTO 생성
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
 
@@ -103,21 +100,12 @@ public class CourseService {
         return courseDTO;
     }
 
-    // 강좌 조회
-    @Transactional
-    public CourseDTO getCourseById(Long courseId) {
-        // 강좌 조회
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
-
-        // UserDTO 변환
-        UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
-
-        // CourseDTO로 변환해서 반환
-        return CourseDTO.of(course, userInfoDto);
+    // 입장코드 생성
+    private String generateEntryCode() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8);  // 예: 32자 중 앞 8자 사용
     }
 
-    // 강좌 수정
+    // 강의실 수정
     @Transactional
     public CourseDTO updateCourse(Long courseId, Long userId, CourseDTO.BasicUpdateRequest request) {
         // 기존 강좌 조회
@@ -129,13 +117,10 @@ public class CourseService {
             throw new RuntimeException("이 강좌를 수정할 권한이 없습니다.");
         }
 
-        // 커리큘럼 주차 검증 ( durationWeeks == 1 ~ 12 )
-        // validateDuration(request.getDurationWeeks());
-
         // 초기 업데이트 여부 확인
         if (!course.isInit()) {
 
-            // 커리큘럼 자동생성
+            // 초기 설정시 커리큘럼 자동생성
             initializeCourse(course, request.startDate(), request.durationWeeks(),
                             request.lectureDay(), request.lectureTime(),
                             request.assignmentDueDay(), request.assignmentDueTime());
@@ -145,7 +130,6 @@ public class CourseService {
         }
 
         // 기본 객체 수정 [전체업데이트시킴 but lecture를 생성하지 않음]
-
         // 리스트를 문자열로 변환 (예: 쉼표로 구분)
         String lectureDayString = request.lectureDay().stream()
                 .map(String::valueOf)
@@ -155,33 +139,31 @@ public class CourseService {
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
 
-//        // 저장 후, 문자열을 다시 리스트로 변환
-//        List<Integer> lectureDayFromString = Arrays.stream(lectureDayString.split(","))
-//                .map(Integer::valueOf)
-//                .collect(Collectors.toList());
-
+        // course 수정
         // course.setMaxStudents(maxStudents);
-        course.setCourseTitle(request.title());
-        course.setInstructorName(request.instructorName());
-        course.setStartDate(request.startDate());
-        course.setDurationWeeks(request.durationWeeks());
-        course.setLectureDay(lectureDayString);
-        course.setLectureTime(request.lectureTime());
-        course.setAssignmentDueDay(assignmentDueDayString);
-        course.setAssignmentDueTime(request.assignmentDueTime());
-        course.setDifficultyLevel(request.difficultyLevel());
+        if (request.title() != null && !request.title().isEmpty()) course.setCourseTitle(request.title());
+        if (request.instructorName() != null && !request.instructorName().isEmpty()) course.setInstructorName(request.instructorName());
+        if (request.startDate() != null) course.setStartDate(request.startDate());
+        if (request.durationWeeks() > 0) course.setDurationWeeks(request.durationWeeks());
+        if (!request.lectureDay().isEmpty()) course.setLectureDay(lectureDayString);
+        if (request.lectureTime() != null) course.setLectureTime(request.lectureTime());
+        if (!request.assignmentDueDay().isEmpty()) course.setAssignmentDueDay(assignmentDueDayString);
+        if (request.assignmentDueTime() != null) course.setAssignmentDueTime(request.assignmentDueTime());
+        if (request.difficultyLevel() != null) course.setDifficultyLevel(request.difficultyLevel());
         course.setUpdatedAt(LocalDateTime.now());
+
+        // 데이터베이스에 저장
+        courseRepository.save(course);
 
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
 
-        // 데이터베이스에 저장
         CourseDTO courseDTO = CourseDTO.of(course, userInfoDto);
-        courseRepository.save(course);
 
         return courseDTO;
     }
 
+    // 강의실 설정창 초기설정
     private void initializeCourse(Course course, LocalDate startDate, int durationWeeks,
                                   List<Integer> lectureDay, Time lectureTime,
                                   List<Integer> assignmentDueDay, Time assignmentDueTime) {
@@ -249,11 +231,6 @@ public class CourseService {
         }
     }
 
-    private void validateDuration(int durationWeeks) {
-        if (durationWeeks < 1 || durationWeeks > 12) {
-            throw new IllegalArgumentException("커리큘럼 주차 입력은 1~12까지만 가능합니다. ");
-        }
-    }
 
     // FIXME service위치 변경(videoService, MaterialService, AssignmentService)
     private Video createVideo(Course course, Lecture lecture) {
@@ -363,8 +340,8 @@ public class CourseService {
         }
 
         // 강의실 개요수정
-        course.setCourseDescription(request.description());
-        course.setCourseThumbnail(request.courseThumbnail());
+        if (request.description()!=null) course.setCourseDescription(request.description());
+        if (request.courseThumbnail()!=null) course.setCourseThumbnail(request.courseThumbnail());
 
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
@@ -376,7 +353,7 @@ public class CourseService {
         return courseDTO;
     }
 
-    // 강좌 삭제
+    // 강의실 삭제
     @Transactional
     public void deleteCourse(Long courseId, Long userId) {
         // 강좌 조회
@@ -400,12 +377,21 @@ public class CourseService {
         courseRepository.delete(course);
     }
 
-    // 입장코드 생성
-    private String generateEntryCode() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, 8);  // 예: 32자 중 앞 8자 사용
+    // 강의실 설정창 조회(설정 & 개요 페이지)
+    @Transactional
+    public CourseDTO getCourseById(Long courseId) {
+        // 강좌 조회
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
+
+        // UserDTO 변환
+        UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
+
+        // CourseDTO로 변환해서 반환
+        return CourseDTO.of(course, userInfoDto);
     }
 
-    // 코스 입장 (입장 유저의 히스토리 생성)
+    // 강의실 입장 (입장 유저의 히스토리 생성)
     public void enterCourse(Long courseId, Long userId, String entryCode) {
         // 1. 강의 존재 여부 확인
         Course course = courseRepository.findById(courseId)

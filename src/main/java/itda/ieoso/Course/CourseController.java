@@ -28,8 +28,8 @@ public class CourseController {
     public Response<CourseDTO> updateCourse(@PathVariable Long courseId,
                                                   @PathVariable Long userId,
                                                   @RequestBody CourseDTO.BasicUpdateRequest request) {
-        // 강좌 수정 처리
         CourseDTO updatedCourseDTO = courseService.updateCourse(courseId, userId, request);
+
 
         return Response.success("강의실 설정창 업데이트", updatedCourseDTO); // 수정된 강좌 반환
     }
@@ -39,7 +39,6 @@ public class CourseController {
     public Response<CourseDTO> updateCourseOverview(@PathVariable Long courseId,
                                                   @PathVariable Long userId ,
                                                   @RequestBody CourseDTO.OverviewUpdateRequest request ) {
-        // 강좌 수정
         CourseDTO updateCourseDto = courseService.updateCourseOverview(courseId,userId, request);
         return Response.success("강의실 개요 업데이트", updateCourseDto);
     }
@@ -51,7 +50,7 @@ public class CourseController {
         return Response.success("강의실 삭제", null);
     }
 
-    // 강의실 조회(설정 & 개요 페이지)
+    // 강의실 설정 정보 조회(설정 & 개요 페이지)
     @GetMapping("/{courseId}")
     public Response<CourseDTO> findByCourseId(@PathVariable Long courseId) {
         CourseDTO courseDTO = courseService.getCourseById(courseId);
