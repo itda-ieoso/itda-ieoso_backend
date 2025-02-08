@@ -102,7 +102,9 @@ public class MaterialService {
 
     }
 
+
     // material 삭제
+    @Transactional
     public MaterialDto.deleteResponse deleteMaterial(Long courseId, Long materialId, Long userId) {
         // course 조회
         Course course = courseRepository.findById(courseId)
