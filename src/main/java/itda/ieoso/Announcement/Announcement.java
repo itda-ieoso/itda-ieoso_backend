@@ -28,6 +28,9 @@ public class Announcement {
     private String announcementContent;
 
     @Column
+    private int viewCount;
+
+    @Column
     private LocalDateTime createdAt;
 
     @Column
@@ -43,5 +46,9 @@ public class Announcement {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public void updateViewCount() {
+        this.viewCount +=1;
     }
 }

@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
     Announcement findByCourseAndAnnouncementId(Course course, Long announcementId);
-    List<Announcement> findAllByCourse(Course course);
+    Announcement findByCourse_CourseIdAndAnnouncementId(Long courseId, Long announcementId);
+    List<Announcement> findAllByCourse_CourseId(Long courseId);
 }
