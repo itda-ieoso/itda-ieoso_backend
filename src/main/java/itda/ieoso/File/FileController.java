@@ -46,17 +46,18 @@ public class FileController {
             return ResponseEntity.status(500).body("파일 업로드 실패: " + e.getMessage());
         }
     }
-
-    // 파일 다운로드 URL 생성 API (Presigned URL)
-    @GetMapping("/download/{filename}")
-    public ResponseEntity<String> getDownloadUrl(@PathVariable String filename) {
+    @GetMapping("/download")
+    public ResponseEntity<String> getDownloadUrl(@RequestParam("fileUrl") String fileUrl) {
         try {
-            // S3에 저장된 파일의 다운로드 URL을 Presigned URL로 생성
-            String fileUrl = s3Service.generatePresignedUrl(filename);
+            // fileUrl에서 S3 도메인 부분 제거 후 key만 추출
+            String fileKey = fileUrl.replace("https://your-s3-bucket.s3.amazonaws.com/", "");
 
-            return ResponseEntity.ok(fileUrl);
+            // Presigned URL 생성
+            String presignedUrl = s3Service.generatePresignedUrl(fileKey);
+
+            return ResponseEntity.ok(presignedUrl);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("파일 다운로드 URL 생성 실패: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }

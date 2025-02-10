@@ -37,20 +37,7 @@ public class SubmissionController {
     }
 
     // 파일 다운로드 밖으로 빼기
-    @GetMapping("/download")
-    public Response<String> getDownloadUrl(@RequestParam("fileUrl") String fileUrl) {
-        try {
-            // fileUrl에서 S3 도메인 부분 제거 후 key만 추출
-            String fileKey = fileUrl.replace("https://your-s3-bucket.s3.amazonaws.com/", "");
 
-            // Presigned URL 생성
-            String presignedUrl = S3Service.generatePresignedUrl(fileKey);
-
-            return Response.success("과제 제출파일 다운로드", presignedUrl);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 
     // 과제 삭제(과제 상태 초기화)
