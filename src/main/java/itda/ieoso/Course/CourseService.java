@@ -5,6 +5,7 @@ import itda.ieoso.Assignment.AssignmentRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.File.S3Service;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Material.MaterialRepository;
@@ -25,7 +26,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,6 +53,7 @@ public class CourseService {
     private final SubmissionRepository submissionRepository;
     private final AssignmentRepository assignmentRepository;
     private final UserService userService;
+    private final S3Service s3Service;
 
     // 강의실 생성
     @Transactional
@@ -329,7 +334,7 @@ public class CourseService {
 
     // 강의실 개요 편집
     @Transactional
-    public CourseDTO updateCourseOverview(Long courseId, Long userId, CourseDTO.OverviewUpdateRequest request) {
+    public CourseDTO updateCourseOverview(Long courseId, Long userId, String description, MultipartFile file) throws IOException {
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
@@ -339,9 +344,26 @@ public class CourseService {
             throw new RuntimeException("이 강좌를 수정할 권한이 없습니다.");
         }
 
-        // 강의실 개요수정
-        if (request.description()!=null) course.setCourseDescription(request.description());
-        if (request.courseThumbnail()!=null) course.setCourseThumbnail(request.courseThumbnail());
+        // 기존 정보 가져오기
+        String currentDescription = course.getCourseDescription();
+        String currentThumbnail = course.getCourseThumbnail();
+
+        // 개요 설명 업데이트
+        if (description != null && !description.isEmpty()) {
+            course.setCourseDescription(description);  // 새로 받은 description으로 업데이트
+        }
+
+        // 파일 업데이트 (새 파일이 있을 경우)
+        if (file != null && !file.isEmpty()) {
+            // MultipartFile을 File로 변환
+            File convertedFile = s3Service.convertMultipartFileToFile(file);
+
+            // 파일을 S3에 업로드하고 URL 받기
+            String newFileUrl = s3Service.uploadFile("course-thumbnails", file.getOriginalFilename(), convertedFile);
+
+            // 새로운 썸네일 URL로 업데이트
+            course.setCourseThumbnail(newFileUrl);
+        }
 
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());

@@ -6,6 +6,9 @@ import itda.ieoso.Response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -37,10 +40,11 @@ public class CourseController {
     // 강의실 개요 업데이트
     @PutMapping("/{courseId}/{userId}/overview")
     public Response<CourseDTO> updateCourseOverview(@PathVariable Long courseId,
-                                                  @PathVariable Long userId ,
-                                                  @RequestBody CourseDTO.OverviewUpdateRequest request ) {
-        CourseDTO updateCourseDto = courseService.updateCourseOverview(courseId,userId, request);
-        return Response.success("강의실 개요 업데이트", updateCourseDto);
+                                                    @PathVariable Long userId,
+                                                    @RequestParam(value = "description", required = false) String description,
+                                                    @RequestParam(value = "courseThumbnail", required = false) MultipartFile file) throws IOException {
+        CourseDTO updatedCourseDto = courseService.updateCourseOverview(courseId, userId, description, file);
+        return Response.success("강의실 개요 업데이트", updatedCourseDto);
     }
 
     // 강의실 삭제
