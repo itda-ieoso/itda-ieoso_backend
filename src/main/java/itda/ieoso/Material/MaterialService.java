@@ -5,6 +5,7 @@ import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.File.S3Service;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.MaterialHistory.MaterialHistory;
@@ -12,7 +13,10 @@ import itda.ieoso.MaterialHistory.MaterialHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,10 +30,11 @@ public class MaterialService {
     private final LectureRepository lectureRepository;
     private final CourseAttendeesRepository courseAttendeesRepository;
     private final MaterialHistoryRepository materialHistoryRepository;
+    private final S3Service s3Service;
 
     // material 생성
     @Transactional
-    public MaterialDto.Response createMaterial(Long courseId, Long lectureId, Long userId, MaterialDto.createRequest request) {
+    public MaterialDto.Response createMaterial(Long courseId, Long lectureId, Long userId, String materialTitle, MultipartFile file) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new IllegalArgumentException("course를 찾을수없습니다."));
@@ -43,12 +48,23 @@ public class MaterialService {
             throw new IllegalArgumentException("강의 개설자가 아닙니다.");
         }
 
+        // 파일 업로드
+        String fileUrl = null;
+        if (file != null && !file.isEmpty()) {
+            try {
+                File convertedFile = s3Service.convertMultipartFileToFile(file);
+                fileUrl = s3Service.uploadFile("materials", file.getOriginalFilename(), convertedFile);
+            } catch (IOException e) {
+                throw new RuntimeException("파일 업로드 실패", e);
+            }
+        }
+
         // material 생성
         Material material = Material.builder()
                 .course(course)
                 .lecture(lecture)
-                .materialTitle(request.materialTitle())
-                .materialFile(request.materialFile())
+                .materialTitle(materialTitle)
+                .materialFile(fileUrl)
                 .materialHistories(new ArrayList<>())
                 .build();
 
@@ -56,7 +72,7 @@ public class MaterialService {
         materialRepository.save(material);
 
         // materialHistory 생성
-        addMaterialHistoryToMaterial(course,material);
+        addMaterialHistoryToMaterial(course, material);
 
         // 반환
         MaterialDto.Response response = MaterialDto.Response.builder()
@@ -70,7 +86,7 @@ public class MaterialService {
 
     // material 업데이트
     @Transactional
-    public MaterialDto.Response updateMaterial(Long courseId, Long materialId, Long userId, MaterialDto.updateRequest request) {
+    public MaterialDto.Response updateMaterial(Long courseId, Long materialId, Long userId, String materialTitle, MultipartFile file) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
@@ -86,9 +102,20 @@ public class MaterialService {
             throw new IllegalArgumentException("material를 찾을수없습니다.");
         }
 
+        // 파일 업로드 (새 파일이 있으면 업로드 후 기존 파일 대체)
+        String fileUrl = material.getMaterialFile();
+        if (file != null && !file.isEmpty()) {
+            try {
+                File convertedFile = s3Service.convertMultipartFileToFile(file);
+                fileUrl = s3Service.uploadFile("materials", file.getOriginalFilename(), convertedFile);
+            } catch (IOException e) {
+                throw new RuntimeException("파일 업로드 실패", e);
+            }
+        }
+
         // material 수정
-        if (request.materialTitle()!=null) material.setMaterialTitle(request.materialTitle());
-        if (request.materialFile()!=null) material.setMaterialFile(request.materialFile());
+        if (materialTitle!=null) material.setMaterialTitle(materialTitle);
+        material.setMaterialFile(fileUrl);
         materialRepository.save(material);
 
         // 반환
