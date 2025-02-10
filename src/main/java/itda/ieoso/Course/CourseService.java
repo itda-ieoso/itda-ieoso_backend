@@ -414,15 +414,15 @@ public class CourseService {
     }
 
     // 강의실 입장 (입장 유저의 히스토리 생성)
-    public void enterCourse(Long courseId, Long userId, String entryCode) {
+    public void enterCourse(Long userId, String entryCode) {
         // 1. 강의 존재 여부 확인
-        Course course = courseRepository.findById(courseId)
+        Course course = courseRepository.findByEntryCode(entryCode)
                 .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다."));
 
         // 2. 입장 코드 검증
-        if (!course.getEntryCode().equals(entryCode)) {
-            throw new IllegalArgumentException("잘못된 입장 코드입니다.");
-        }
+//        if (!course.getEntryCode().equals(entryCode)) {
+//            throw new IllegalArgumentException("잘못된 입장 코드입니다.");
+//        }
 
         // 3. 유저 존재 여부 확인
         User user = userRepository.findById(userId)
