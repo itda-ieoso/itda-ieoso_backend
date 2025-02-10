@@ -62,13 +62,12 @@ public class CourseController {
     }
 
     // 강의실 입장
-    @PostMapping("/{courseId}/enter/{userId}")
+    @PostMapping("/enter/{userId}")
     public Response<?> enterCourse(
-            @PathVariable Long courseId,
             @PathVariable Long userId,
             @RequestParam String entryCode) {
         // 서비스 메서드를 호출하여 강의실 입장 처리
-        courseService.enterCourse(courseId, userId, entryCode);
+        courseService.enterCourse(userId, entryCode);
 
         // 성공 메시지 반환
         return Response.success("가입되었습니다!", null);
