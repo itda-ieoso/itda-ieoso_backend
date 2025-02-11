@@ -33,6 +33,10 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    private boolean service;  // 필수 약관 동의
+    private boolean privacy;   // 필수 개인정보 동의
+    private boolean marketing; // 선택 마케팅 동의
+
     // public으로 email 제공
     public String getEmail() {
         return email;
@@ -46,11 +50,14 @@ public class User {
     public Long getUserId() { return userId; }
 
     @Builder
-    public User(String name, String email, String password, UserRole role) {
+    public User(String name, String email, String password, UserRole role, boolean service, boolean privacy, boolean marketing) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.service = service;
+        this.privacy = privacy;
+        this.marketing = marketing;
     }
 
     // S3에서 받은 URL 저장

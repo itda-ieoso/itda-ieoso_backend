@@ -1,5 +1,6 @@
 package itda.ieoso.User;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -36,12 +37,23 @@ public class UserDTO {
         @Email(message = "잘못된 이메일 형식입니다.")
         private String email;
 
+        @AssertTrue(message = "서비스 이용약관에 동의해야 합니다.")
+        private boolean service;  // 필수
+
+        @AssertTrue(message = "개인정보 처리방침에 동의해야 합니다.")
+        private boolean privacy;   // 필수
+
+        private boolean marketing; // 선택
+
         public User toUser(String encodedPassword) {
             return User.builder()
                     .name(name)
                     .password(encodedPassword)
                     .email(email)
                     .role(USER)
+                    .service(service)
+                    .privacy(privacy)
+                    .marketing(marketing)
                     .build();
         }
     }
@@ -55,6 +67,9 @@ public class UserDTO {
         private String name;
         private String email;
         private String profileImageUrl;
+        private boolean service;
+        private boolean privacy;
+        private boolean marketing;
 
         public static UserInfoDto of(User user, String profileImageUrl) {
             return UserInfoDto.builder()
@@ -62,6 +77,9 @@ public class UserDTO {
                     .profileImageUrl(profileImageUrl)
                     .name(user.getName())
                     .email(user.getEmail())
+                    .service(user.isService())
+                    .privacy(user.isPrivacy())
+                    .marketing(user.isMarketing())
                     .build();
         }
     }

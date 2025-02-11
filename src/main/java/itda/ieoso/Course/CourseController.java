@@ -1,10 +1,8 @@
 package itda.ieoso.Course;
 
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
-import itda.ieoso.Response.DataResponse;
 import itda.ieoso.Response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
