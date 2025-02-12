@@ -52,6 +52,7 @@ public class LectureController {
         }
 
         // LectureService를 통해 강의 삭제
+        lectureService.deleteLecture(courseId, lectureId, userId);
         return Response.success("강의 삭제",null);
     }
 
@@ -76,7 +77,7 @@ public class LectureController {
     @GetMapping("/curriculum/{courseId}/{userId}")
     public Response<List<CurriculumResponseDto>> getCurriculum(@PathVariable Long userId,
                                                                    @PathVariable Long courseId) {
-        return Response.success("커리큘럼 전체 조회", lectureService.getCurriculum(userId,courseId));
+        return Response.success("커리큘럼 전체 조회", lectureService.getCurriculum(courseId, userId));
     }
 
     // 대시보드 조회(userid = 수강생)
