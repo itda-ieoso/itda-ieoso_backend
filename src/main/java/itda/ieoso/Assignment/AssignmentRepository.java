@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
@@ -14,4 +15,6 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     List<Assignment> findByLecture_LectureIdIn(@Param("lectureIds") List<Long> lectureIds);
 
     List<Assignment> findAllByCourse(Course course);
+
+    Optional<Assignment> findByAssignmentId(Long assignmentId);
 }

@@ -38,4 +38,16 @@ public class AssignmentController {
                                                @PathVariable Long userId) {
         return Response.success("과제 삭제", assignmentService.deleteVideo(courseId,assignmentId,userId));
     }
+
+    // 과제 조회
+    @GetMapping("/{assignmentId}")
+    public Response<AssignmentDTO.Response> getAssignment(
+            @PathVariable Long assignmentId) {
+
+        // 과제 정보를 가져와서 AssignmentDTO로 변환
+        AssignmentDTO.Response assignmentDTO = assignmentService.getAssignment(assignmentId);
+
+        return Response.success("과제 조회", assignmentDTO); // 조회한 과제 정보 반환
+    }
+
 }
