@@ -189,5 +189,20 @@ public class AssignmentService {
         // assignmentRepository.save(assignment);
     }
 
+    public AssignmentDTO.Response getAssignment(Long assignmentId) {
+        // 과제 정보 조회
+        Assignment assignment = assignmentRepository.findByAssignmentId(assignmentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 과제가 존재하지 않거나 접근 권한이 없습니다."));
+
+        // AssignmentDTO.Response 객체 생성 및 반환
+        return AssignmentDTO.Response.builder()
+                .assignmentId(assignment.getAssignmentId())
+                .assignmentTitle(assignment.getAssignmentTitle())
+                .assignmentDescription(assignment.getAssignmentDescription())
+                .startDate(assignment.getStartDate())
+                .endDate(assignment.getEndDate())
+                .build();
+    }
+
 
 }
