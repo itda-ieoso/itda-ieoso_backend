@@ -21,6 +21,9 @@ public enum ErrorCode {
     LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "강의를 찾을 수 없습니다."),
     MATERIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "강의자료를 찾을 수 없습니다."),
     COURSE_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "강의실의 개설자가 아닙니다."),
+    ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "과제를 찾을 수 없습니다."),
+    SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "제출 정보를 찾을 수 없습니다."),
+    SUBMISSION_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "과제에 대한 권한이 없습니다."),
     ALREADY_ENROLLED(HttpStatus.CONFLICT, "이미 강의실에 등록되어 있습니다.");
     /**
      * 아래로 쭉 추가하면 됨

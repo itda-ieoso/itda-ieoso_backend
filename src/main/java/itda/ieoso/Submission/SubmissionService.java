@@ -2,6 +2,8 @@ package itda.ieoso.Submission;
 
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
+import itda.ieoso.Exception.CustomException;
+import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
 import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
@@ -31,15 +33,15 @@ public class SubmissionService {
     public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, Long userId, String textContent, MultipartFile[] files) throws IOException, IOException {
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new RuntimeException("과제를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
 
         // 제출 정보 조회
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new RuntimeException("제출 정보를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
 
         // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
         if (!submission.getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("이 과제를 수정할 권한이 없습니다.");
+            throw new CustomException(ErrorCode.SUBMISSION_PERMISSION_DENIED);
         }
 
         // 파일 업로드
@@ -98,22 +100,22 @@ public class SubmissionService {
 
     public Submission getSubmissionById(Long submissionId) {
         return submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new RuntimeException("제출 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
     }
 
     // 과제 삭제
     public void deleteSubmission(Long assignmentId, Long submissionId, Long userId) {
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new RuntimeException("과제를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
 
         // 제출 정보 조회
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new RuntimeException("제출 정보를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
 
         // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
         if (!submission.getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("이 과제를 삭제할 권한이 없습니다.");
+            throw new CustomException(ErrorCode.SUBMISSION_PERMISSION_DENIED);
         }
 
         // 제출 정보 삭제
@@ -129,16 +131,16 @@ public class SubmissionService {
     public SubmissionDTO getSubmission(Long assignmentId, Long submissionId, Long userId) {
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new RuntimeException("과제를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
 
         // 제출 정보 조회
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new RuntimeException("제출 정보를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
 
         // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
         if (!submission.getUser().getUserId().equals(userId)) {
             throw new RuntimeException("이 과제를 조회할 권한이 없습니다.");
-        }
+        }  //수정 예정-조회관련
 
         // UserDTO.UserInfoDto 생성
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(submission.getUser(), submission.getUser().getProfileImageUrl());
