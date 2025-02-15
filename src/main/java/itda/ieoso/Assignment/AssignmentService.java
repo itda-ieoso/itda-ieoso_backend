@@ -1,5 +1,6 @@
 package itda.ieoso.Assignment;
 
+import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
@@ -32,10 +33,11 @@ public class AssignmentService {
     private final CourseAttendeesRepository courseAttendeesRepository;
     private final LectureRepository lectureRepository;
     private final SubmissionRepository submissionRepository;
+    private final ContentOrderService contentOrderService;
 
     // assignment 생성
     @Transactional
-    public AssignmentDTO.Response createVideo(Long courseId, Long lectureId, Long userId, AssignmentDTO.createRequest request) {
+    public AssignmentDTO.Response createAssignment(Long courseId, Long lectureId, Long userId, AssignmentDTO.Request request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
@@ -65,24 +67,21 @@ public class AssignmentService {
         //  assignment 저장
         assignmentRepository.save(assignment);
 
+        // contentOrder 생성
+        contentOrderService.createContentOrder(course, "assignment", assignment.getAssignmentId());
+
         // submission 생성
         addSubmissionToAssignment(course,assignment);
 
         // 반환
-        AssignmentDTO.Response response = AssignmentDTO.Response.builder()
-                .assignmentId(assignment.getAssignmentId())
-                .assignmentTitle(assignment.getAssignmentTitle())
-                .assignmentDescription(assignment.getAssignmentDescription())
-                .startDate(assignment.getStartDate())
-                .endDate(assignment.getEndDate())
-                .build();
+        AssignmentDTO.Response response = AssignmentDTO.Response.of(assignment);
 
         return response;
     }
 
     // assignment 업데이트
     @Transactional
-    public AssignmentDTO.Response updateVideo(Long courseId, Long assignmentId, Long userId, AssignmentDTO.updateRequest request) {
+    public AssignmentDTO.Response updateAssignment(Long courseId, Long assignmentId, Long userId, AssignmentDTO.Request request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
@@ -108,13 +107,7 @@ public class AssignmentService {
         assignmentRepository.save(assignment);
 
         // 반환
-        AssignmentDTO.Response response = AssignmentDTO.Response.builder()
-                .assignmentId(assignment.getAssignmentId())
-                .assignmentTitle(assignment.getAssignmentTitle())
-                .assignmentDescription(assignment.getAssignmentDescription())
-                .startDate(assignment.getStartDate())
-                .endDate(assignment.getEndDate())
-                .build();
+        AssignmentDTO.Response response = AssignmentDTO.Response.of(assignment);
 
         return response;
 
@@ -122,7 +115,7 @@ public class AssignmentService {
 
     // assignment 삭제
     @Transactional
-    public AssignmentDTO.deleteResponse deleteVideo(Long courseId, Long assignmentId, Long userId) {
+    public AssignmentDTO.deleteResponse deleteAssignment(Long courseId, Long assignmentId, Long userId) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
@@ -141,6 +134,9 @@ public class AssignmentService {
         // submission 삭제 (추후 수정후 삭제)
         submissionRepository.deleteAllByAssignment(assignment);
 
+        // contentOrder 삭제
+        contentOrderService.deleteContentOrder(assignmentId, "assignment");
+
         // assignment 삭제
         assignmentRepository.delete(assignment);
 
@@ -152,17 +148,6 @@ public class AssignmentService {
         return response;
 
     }
-
-    // assignment 조회
-    public void getVideo() {
-
-    }
-
-    // assignment 목록 조회
-    public void getVideos() {
-
-    }
-
 
 
     // courseAttendees만큼의 submission 생성

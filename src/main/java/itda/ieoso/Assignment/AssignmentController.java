@@ -19,23 +19,23 @@ public class AssignmentController {
     public Response<AssignmentDTO.Response> createAssignment(@PathVariable Long courseId,
                                                             @PathVariable Long lectureId,
                                                             @PathVariable Long userId,
-                                                            @RequestBody AssignmentDTO.createRequest request) {
+                                                            @RequestBody AssignmentDTO.Request request) {
 
-        return Response.success("과제 생성" , assignmentService.createVideo(courseId,lectureId,userId,request));
+        return Response.success("과제 생성" , assignmentService.createAssignment(courseId,lectureId,userId,request));
     }
 
     @PatchMapping("/{courseId}/{assignmentId}/{userId}")
     public Response<AssignmentDTO.Response> updateAssignment(@PathVariable Long courseId,
                                          @PathVariable Long assignmentId,
                                          @PathVariable Long userId,
-                                         @RequestBody AssignmentDTO.updateRequest request) {
-        return Response.success("과제 수정", assignmentService.updateVideo(courseId,assignmentId,userId,request));
+                                         @RequestBody AssignmentDTO.Request request) {
+        return Response.success("과제 수정", assignmentService.updateAssignment(courseId,assignmentId,userId,request));
     }
 
     @DeleteMapping("/{courseId}/{assignmentId}/{userId}")
     public Response<AssignmentDTO.deleteResponse> deleteAssignment(@PathVariable Long courseId,
                                                @PathVariable Long assignmentId,
                                                @PathVariable Long userId) {
-        return Response.success("과제 삭제", assignmentService.deleteVideo(courseId,assignmentId,userId));
+        return Response.success("과제 삭제", assignmentService.deleteAssignment(courseId,assignmentId,userId));
     }
 }
