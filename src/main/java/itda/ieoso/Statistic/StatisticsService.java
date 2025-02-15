@@ -7,6 +7,8 @@ import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.Exception.CustomException;
+import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Submission.Submission;
 import itda.ieoso.Submission.SubmissionRepository;
@@ -39,7 +41,7 @@ public class StatisticsService {
     public List<AssignmentStatisticsDTO> getAssignmentStatistics(Long courseId) {
         // 1. Course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("해당 강좌를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 2. Course에 연결된 Lecture ID만 가져오기
         List<Long> lectureIds = course.getLectures().stream()
