@@ -50,6 +50,20 @@ public class SubmissionDTO {
                 .user(userInfoDto)
                 .build();
     }
+
+    public record Response(
+            Long assignmentId,
+            Long submissionId,
+            SubmissionStatus submissionStatus
+    ) {
+        public static Response of(Submission submission) {
+            return new Response(
+                    submission.getAssignment().getAssignmentId(),
+                    submission.getSubmissionId(),
+                    submission.getSubmissionStatus()
+            );
+        }
+    }
 }
 
 
