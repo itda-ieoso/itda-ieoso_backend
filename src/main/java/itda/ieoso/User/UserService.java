@@ -1,4 +1,6 @@
 package itda.ieoso.User;
+import itda.ieoso.Exception.CustomException;
+import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
 import itda.ieoso.Login.Jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -30,16 +32,14 @@ public class UserService {
     private User getUserByToken(String token) {
         String email = jwtUtil.getEmail(token.split(" ")[1]);
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원을 조회할 수 없습니다."));
-
-
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     // 회원 가입
     @Transactional
     public IdResponse signUp(UserRegistDto request) {
         if (isEmailDuplicate(request.getEmail())) {
-            throw new RuntimeException("이미 가입된 이메일입니다.");
+            throw new CustomException(ErrorCode.EMAIL_DUPLICATED);
         }
 
         User user = request.toUser(bCryptPasswordEncoder.encode(request.getPassword()));
@@ -82,30 +82,30 @@ public class UserService {
         User user = getUserByToken(token);
 
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 비어있습니다.");
+            throw new CustomException(ErrorCode.EMPTY_FILE);
         }
 
         try {
-            // 🔹 파일명: userId.jpg (고유한 ID 활용)
+            // 파일명: userId.jpg (고유한 ID 활용)
             String filename = "profile_" + user.getUserId() + ".jpg";
 
-            // 🔹 로컬 임시 파일 생성
+            // 로컬 임시 파일 생성
             File tempFile = File.createTempFile("upload-", filename);
             file.transferTo(tempFile);
 
-            // 🔹 S3에 파일 업로드
+            // S3에 파일 업로드
             String imageUrl = s3Service.uploadFile("profile_images", filename, tempFile);
 
-            // 🔹 DB에 프로필 이미지 URL 저장
+            // DB에 프로필 이미지 URL 저장
             user.updateProfileImage(imageUrl);
             userRepository.save(user);
 
-            // 🔹 임시 파일 삭제
+            // 임시 파일 삭제
             tempFile.delete();
 
             return imageUrl;
         } catch (IOException e) {
-            throw new RuntimeException("파일 업로드 실패: " + e.getMessage());
+            throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 

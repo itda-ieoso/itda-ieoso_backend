@@ -5,6 +5,8 @@ import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.Exception.CustomException;
+import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
@@ -37,15 +39,15 @@ public class MaterialService {
     public MaterialDto.Response createMaterial(Long courseId, Long lectureId, Long userId, String materialTitle, MultipartFile file) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("course를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // lecture 조회
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(()-> new IllegalArgumentException("lecture를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // 파일 업로드
@@ -55,7 +57,7 @@ public class MaterialService {
                 File convertedFile = s3Service.convertMultipartFileToFile(file);
                 fileUrl = s3Service.uploadFile("materials", file.getOriginalFilename(), convertedFile);
             } catch (IOException e) {
-                throw new RuntimeException("파일 업로드 실패", e);
+                throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
             }
         }
 
@@ -89,17 +91,17 @@ public class MaterialService {
     public MaterialDto.Response updateMaterial(Long courseId, Long materialId, Long userId, String materialTitle, MultipartFile file) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // material 조회
         Material material = materialRepository.findByCourseAndMaterialId(course, materialId);
         if (material == null) {
-            throw new IllegalArgumentException("material를 찾을수없습니다.");
+            throw new CustomException(ErrorCode.MATERIAL_NOT_FOUND);
         }
 
         // 파일 업로드 (새 파일이 있으면 업로드 후 기존 파일 대체)
@@ -109,7 +111,7 @@ public class MaterialService {
                 File convertedFile = s3Service.convertMultipartFileToFile(file);
                 fileUrl = s3Service.uploadFile("materials", file.getOriginalFilename(), convertedFile);
             } catch (IOException e) {
-                throw new RuntimeException("파일 업로드 실패", e);
+                throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
             }
         }
 
@@ -135,17 +137,17 @@ public class MaterialService {
     public MaterialDto.deleteResponse deleteMaterial(Long courseId, Long materialId, Long userId) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // material 조회
         Material material = materialRepository.findByCourseAndMaterialId(course, materialId);
         if (material == null) {
-            throw new IllegalArgumentException("material을 찾을수없습니다.");
+            throw new CustomException(ErrorCode.MATERIAL_NOT_FOUND);
         }
 
         // materialHistory 삭제

@@ -14,7 +14,17 @@ public enum ErrorCode {
     EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다. 토큰 재발행을 요청해주세요"),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다. 로그인을 다시 해주세요."),
     TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "인증에 필요한 JWT가 없습니다"),
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다.");
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."),
+    EMPTY_FILE(HttpStatus.BAD_REQUEST, "파일이 비어있습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+    COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "강의실을 찾을 수 없습니다."),
+    LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "강의를 찾을 수 없습니다."),
+    MATERIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "강의자료를 찾을 수 없습니다."),
+    COURSE_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "강의실의 개설자가 아닙니다."),
+    ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "과제를 찾을 수 없습니다."),
+    SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "제출 정보를 찾을 수 없습니다."),
+    SUBMISSION_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "과제에 대한 권한이 없습니다."),
+    ALREADY_ENROLLED(HttpStatus.CONFLICT, "이미 강의실에 등록되어 있습니다.");
     /**
      * 아래로 쭉 추가하면 됨
      */
