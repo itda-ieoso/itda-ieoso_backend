@@ -17,9 +17,11 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."),
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "파일이 비어있습니다."),
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
-    COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "강좌를 찾을 수 없습니다."),
-    COURSE_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "강좌를 수정, 삭제할 권한이 없습니다."),
-    ALREADY_ENROLLED(HttpStatus.CONFLICT, "이미 강의에 등록되어 있습니다.");
+    COURSE_NOT_FOUND(HttpStatus.NOT_FOUND, "강의실을 찾을 수 없습니다."),
+    LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "강의를 찾을 수 없습니다."),
+    MATERIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "강의자료를 찾을 수 없습니다."),
+    COURSE_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "강의실의 개설자가 아닙니다."),
+    ALREADY_ENROLLED(HttpStatus.CONFLICT, "이미 강의실에 등록되어 있습니다.");
     /**
      * 아래로 쭉 추가하면 됨
      */
