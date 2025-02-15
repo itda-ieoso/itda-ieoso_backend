@@ -1,5 +1,6 @@
 package itda.ieoso.Course;
 
+import itda.ieoso.Announcement.AnnouncementRepository;
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
@@ -52,6 +53,7 @@ public class CourseService {
     private final MaterialHistoryRepository materialHistoryRepository;
     private final SubmissionRepository submissionRepository;
     private final AssignmentRepository assignmentRepository;
+    private final AnnouncementRepository announcementRepository;
     private final UserService userService;
     private final S3Service s3Service;
 
@@ -386,6 +388,8 @@ public class CourseService {
         if (!course.getUser().getUserId().equals(userId)) {
             throw new RuntimeException("이 강좌를 삭제할 권한이 없습니다.");
         }
+
+        announcementRepository.deleteAllByCourse(course);
 
         // 유저들의 히스토리 삭제
         materialHistoryRepository.deleteAllByCourse(course);
