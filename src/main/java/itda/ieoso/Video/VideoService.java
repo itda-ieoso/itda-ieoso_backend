@@ -1,5 +1,6 @@
 package itda.ieoso.Video;
 
+import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
@@ -26,10 +27,11 @@ public class VideoService {
     private final CourseAttendeesRepository courseAttendeesRepository;
     private final LectureRepository lectureRepository;
     private final VideoHistoryRepository videoHistoryRepository;
+    private final ContentOrderService contentOrderService;
 
     // video 생성
     @Transactional
-    public VideoDto.Response createVideo(Long courseId, Long lectureId, Long userId, VideoDto.createRequest request) {
+    public VideoDto.Response createVideo(Long courseId, Long lectureId, Long userId, VideoDto.Request request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
@@ -57,24 +59,21 @@ public class VideoService {
         //  video 저장
         videoRepository.save(video);
 
+        // contentorder 생성
+        contentOrderService.createContentOrder(course, "video", video.getVideoId());
+
         // videoHistory 생성
         addVideoHistoryToVideo(course,video);
 
         // 반환
-        VideoDto.Response response = VideoDto.Response.builder()
-                .videoId(video.getVideoId())
-                .videoTitle(video.getVideoTitle())
-                .videoUrl(video.getVideoUrl())
-                .startDate(video.getStartDate())
-                .endDate(video.getEndDate())
-                .build();
+        VideoDto.Response response = VideoDto.Response.of(video);
 
         return response;
     }
 
     // video 업데이트
     @Transactional
-    public VideoDto.Response updateVideo(Long courseId, Long videoId, Long userId, VideoDto.updateRequest request) {
+    public VideoDto.Response updateVideo(Long courseId, Long videoId, Long userId, VideoDto.Request request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
@@ -98,13 +97,7 @@ public class VideoService {
         videoRepository.save(video);
 
         // 반환
-        VideoDto.Response response = VideoDto.Response.builder()
-                .videoId(video.getVideoId())
-                .videoTitle(video.getVideoTitle())
-                .videoUrl(video.getVideoUrl())
-                .startDate(video.getStartDate())
-                .endDate(video.getEndDate())
-                .build();
+        VideoDto.Response response = VideoDto.Response.of(video);
 
         return response;
 
@@ -131,6 +124,9 @@ public class VideoService {
         // videoHistory 삭제 (추후 수정후 삭제)
         videoHistoryRepository.deleteAllByVideo(video);
 
+        // contentOrder 삭제
+        contentOrderService.deleteContentOrder(videoId, "video");
+
         // video 삭제
         videoRepository.delete(video);
 
@@ -153,8 +149,6 @@ public class VideoService {
 
     }
 
-
-
     // courseAttendees만큼의 videoHistory 생성
     private void addVideoHistoryToVideo(Course course, Video video) {
         // course내의 모든 courseAttendees 조회
@@ -175,12 +169,4 @@ public class VideoService {
         video.getVideoHistories().addAll(videoHistoryList);
         videoRepository.save(video);
     }
-
-
-    // 영상 생성 -> lecutreid 받아옴 & 모든 courseAttendees의 history생성
-    // 영상 수정 -> setupdate()
-    // 영상 삭제 -> videoId받아옴 & 모든 courseAttendees의 history 삭제 & video삭제
-    // 영상 조회 -> videoDto조회 & videoDtoUserInfo(히스토리포함)
-    // 영상 목록 조회 -> videoDto조회 & videoDtoUserInfo(히스토리포함)
-    // 영상목록 조회를 추후 lectureDto의 videolist반환에 추가
 }
