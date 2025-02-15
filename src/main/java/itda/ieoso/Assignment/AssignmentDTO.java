@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class AssignmentDTO {
-    public record createRequest(
+    public record Request(
             String assignmentTitle,
             String assignmentDescription,
             LocalDateTime startDate,
@@ -17,21 +17,23 @@ public class AssignmentDTO {
 
     ) {}
 
-    public record updateRequest(
-            String assignmentTitle,
-            String assignmentDescription,
-            LocalDateTime startDate,
-            LocalDateTime endDate
-    ) {}
-
-    @Builder
     public record Response(
             Long assignmentId,
             String assignmentTitle,
             String assignmentDescription,
             LocalDateTime startDate,
             LocalDateTime endDate
-    ) {}
+    ) {
+        public static Response of(Assignment assignment) {
+            return new Response(
+                    assignment.getAssignmentId(),
+                    assignment.getAssignmentTitle(),
+                    assignment.getAssignmentDescription(),
+                    assignment.getStartDate(),
+                    assignment.getEndDate()
+            );
+        }
+    }
 
     @Builder
     public record deleteResponse(
