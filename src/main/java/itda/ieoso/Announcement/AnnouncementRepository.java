@@ -9,4 +9,6 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
     Announcement findByCourseAndAnnouncementId(Course course, Long announcementId);
     Announcement findByCourse_CourseIdAndAnnouncementId(Long courseId, Long announcementId);
     List<Announcement> findAllByCourse_CourseId(Long courseId);
+
+    void deleteAllByCourse(Course course);
 }
