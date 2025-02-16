@@ -43,19 +43,19 @@ public class AssignmentService {
     public AssignmentDTO.Response createAssignment(Long courseId, Long lectureId, Long userId, AssignmentDTO.Request request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // lecture 조회
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(()-> new IllegalArgumentException("챕터를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
-            throw new IllegalArgumentException("시간설정이 범위밖으로 벗어났습니다.");
+            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
 
         // assignment 생성
@@ -91,21 +91,21 @@ public class AssignmentService {
     public AssignmentDTO.Response updateAssignment(Long courseId, Long assignmentId, Long userId, AssignmentDTO.Request request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // assignment 조회
         Assignment assignment = assignmentRepository.findByCourseAndAssignmentId(course, assignmentId);
         if (assignment == null) {
-            throw new IllegalArgumentException("assignment를 찾을수없습니다.");
+            throw new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND);
         }
 
         if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
-            throw new IllegalArgumentException("시간설정이 범위밖으로 벗어났습니다.");
+            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
 
         // assignment 수정
@@ -129,17 +129,17 @@ public class AssignmentService {
     public AssignmentDTO.deleteResponse deleteAssignment(Long courseId, Long assignmentId, Long userId) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // assignment 조회
         Assignment assignment = assignmentRepository.findByCourseAndAssignmentId(course, assignmentId);
         if (assignment == null) {
-            throw new IllegalArgumentException("assignment를 찾을수없습니다.");
+            throw new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND);
         }
 
         // submission 삭제 (추후 수정후 삭제)

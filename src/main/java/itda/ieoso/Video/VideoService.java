@@ -6,6 +6,8 @@ import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.Exception.CustomException;
+import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.VideoHistory.VideoHistory;
@@ -36,19 +38,19 @@ public class VideoService {
     public VideoDto.Response createVideo(Long courseId, Long lectureId, Long userId, VideoDto.Request request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // lecture 조회
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(()-> new IllegalArgumentException("챕터를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
-            throw new IllegalArgumentException("시간설정이 범위밖으로 벗어났습니다.");
+            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
 
         // video 생성
@@ -82,21 +84,21 @@ public class VideoService {
     public VideoDto.Response updateVideo(Long courseId, Long videoId, Long userId, VideoDto.Request request) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // video 조회
         Video video = videoRepository.findByCourseAndVideoId(course, videoId);
         if (video == null) {
-            throw new IllegalArgumentException("video를 찾을수없습니다.");
+            throw new CustomException(ErrorCode.VIDEO_NOT_FOUND);
         }
 
         if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
-            throw new IllegalArgumentException("시간설정이 범위밖으로 벗어났습니다.");
+            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
 
         // video 수정
@@ -118,17 +120,17 @@ public class VideoService {
     public VideoDto.deleteResponse deleteVideo(Long courseId, Long videoId, Long userId) {
         // course 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("강의 개설자가 아닙니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // video 조회
         Video video = videoRepository.findByCourseAndVideoId(course, videoId);
         if (video == null) {
-            throw new IllegalArgumentException("video를 찾을수없습니다.");
+            throw new CustomException(ErrorCode.VIDEO_NOT_FOUND);
         }
 
         // videoHistory 삭제 (추후 수정후 삭제)

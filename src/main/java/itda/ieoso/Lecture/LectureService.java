@@ -11,6 +11,8 @@ import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
+import itda.ieoso.Exception.CustomException;
+import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Lecture.CurriculumResponseDto.AssignmentResponseDto;
 import itda.ieoso.Lecture.CurriculumResponseDto.MaterialResponseDto;
 import itda.ieoso.Lecture.CurriculumResponseDto.VideoResponseDto;
@@ -60,12 +62,12 @@ public class LectureService {
     public LectureDTO.Response createLecture(Long courseId, Long userId, LectureDTO.Request request) {
         // 과정 생성자인지 확인
         if (!isCourseCreator(courseId, userId)) {
-            throw new IllegalArgumentException("강의를 생성할 권한이 없습니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // 과정 찾기
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // Lecture 객체 생성 (빌더 사용)
         Lecture lecture = Lecture.builder()
@@ -95,11 +97,11 @@ public class LectureService {
     public LectureDTO.Response updateLecture(Long courseId, Long lectureId, Long userId, LectureDTO.Request request) {
         // 기존 강의 조회
         Lecture lecture = lectureRepository.findByCourse_CourseIdAndLectureId(courseId,lectureId)
-                .orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 강의를 속한 과정의 생성자 ID와 요청한 사용자 ID가 일치하는지 확인
         if (!lecture.getCourse().getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("이 강의를 수정할 권한이 없습니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         // 기존 객체 수정 (새로 객체를 생성하지 않고 덮어씀)
@@ -123,11 +125,11 @@ public class LectureService {
     public LectureDTO.deleteResponse deleteLecture(Long courseId, Long lectureId, Long userId) {
         // 강의 찾기
         Lecture lecture = lectureRepository.findByCourse_CourseIdAndLectureId(courseId,lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 강의가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 강의의 과정 생성자인지 확인
         if (!isCourseCreator(lecture.getCourse().getCourseId(), userId)) {
-            throw new IllegalArgumentException("강의를 삭제할 권한이 없습니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
 //        // contentOrder 삭제
@@ -148,7 +150,7 @@ public class LectureService {
     // 과정 생성자인지 확인
     public boolean isCourseCreator(Long courseId, Long userId) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
         return course.getUser().getUserId().equals(userId); // Course에 `creatorId` 필드가 있다고 가정
     }
 
@@ -163,11 +165,11 @@ public class LectureService {
     public List<LectureDTO.CurriculumResponse> getLectureList(Long courseId, Long userId) {
         // 과정 찾기(필요?)
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // courseAttendees 찾기(강의수강생 검증)
         if (!courseAttendeesRepository.existsByCourse_CourseIdAndUser_UserId(courseId,userId)) {
-            throw new IllegalArgumentException("수강생이 아닙니다.");
+            throw new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED);
         }
 
 
@@ -232,11 +234,11 @@ public class LectureService {
     public LectureDTO.HistoryResponse getLectureHistories(Long courseId, Long userId) {
         // 과정 찾기(필요?)
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // courseAttendees 찾기(강의수강생 검증)
         CourseAttendees courseAttendees = courseAttendeesRepository.findByCourse_CourseIdAndUser_UserId(courseId,userId)
-                .orElseThrow(()-> new IllegalArgumentException("수강생이 아닙니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED));
 
 
         // videoHistory 조회 -> mvp이후
@@ -261,21 +263,17 @@ public class LectureService {
     public List<CurriculumResponseDto> getToDoList(Long courseId, Long userId, LocalDateTime date) {
         // 과정 찾기
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 강의 수강생인지 확인
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new IllegalArgumentException("유효한 사용자가 아닙니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         CourseAttendees courseAttendees = courseAttendeesRepository.findByCourseAndUser(course,user)
-                .orElseThrow(()-> new IllegalArgumentException("수강생이 아닙니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED));
 
         // coures내에서 lectureList조회
         List<Lecture> lectureList = lectureRepository.findAllByCourse(course);
-
-        if (date == null) {
-            // 전체조회
-        }
 
 
         // 입력날짜를 기간으로 포함하는 lecture, video, assignment, material 필터링

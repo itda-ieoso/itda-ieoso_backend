@@ -125,11 +125,11 @@ public class CourseService {
     public CourseDTO updateCourse(Long courseId, Long userId, CourseDTO.BasicUpdateRequest request) {
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("이 강좌를 수정할 권한이 없습니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
 //        if (course.isInit()) {
@@ -358,7 +358,7 @@ public class CourseService {
     // 입력한 요일로 날짜 찾기
     private LocalDate findDateInWeek(LocalDate startDate, LocalDate endDate, int targetDay) {
         if (targetDay < 1 || targetDay > 7) {
-            throw new IllegalArgumentException("요일은 1(월) ~ 7(일) 사이여야 합니다.");
+            throw new CustomException(ErrorCode.INVALID_DAY_OF_WEEK);
         }
 
         DayOfWeek startDay = startDate.getDayOfWeek(); // 시작날짜의 요일(월~일: 1~7)
