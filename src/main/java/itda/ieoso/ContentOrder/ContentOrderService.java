@@ -3,6 +3,8 @@ package itda.ieoso.ContentOrder;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
+import itda.ieoso.Lecture.Lecture;
+import itda.ieoso.Lecture.LectureRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,39 +16,23 @@ import java.util.Optional;
 public class ContentOrderService {
     private final ContentOrderRepository contentOrderRepository;
     private final CourseRepository courseRepository;
+    private final LectureRepository lectureRepository;
 
     // 순서 생성
-    public ContentOrder createContentOrder(Course course, String contentType, Long contentId) {
-
-        double maxOrderIndex = contentOrderRepository.findByCourseOrderByOrderIndexAsc(course)
+    public ContentOrder createContentOrder(Course course, Lecture lecture, String contentType, Long contentId) {
+        int maxOrderIndex = contentOrderRepository.findByCourse_CourseIdAndLecture_LectureIdOrderByOrderIndexAsc(course.getCourseId(), lecture.getLectureId())
                 .stream()
-                .mapToDouble(ContentOrder::getOrderIndex)
+                .mapToInt(ContentOrder::getOrderIndex)
                 .max()
-                .orElse(0.0);
+                .orElse(0);
 
-        ContentOrder contentOrder = new ContentOrder(course, contentType, contentId, maxOrderIndex+1);
+        ContentOrder contentOrder = new ContentOrder(course, lecture, contentType, contentId, maxOrderIndex+1);
 
         return contentOrderRepository.save(contentOrder);
     }
 
-
-    // 순서 조회
-//    public ContentOrder getContentOrders(Long courseId, Long userId, ContentOrderDto request) {
-//        ContentOrder beforeContent = contentOrderRepository.findById(request.beforeContentId)
-//                .orElseThrow(()-> new RuntimeException("이전항목을 찾을수없음"));
-//
-//        ContentOrder afterContent = contentOrderRepository.findById(request.afterContentId)
-//                .orElseThrow(()-> new RuntimeException("다음항목을 찾을수없음"));
-//
-//        double newOrderIndex = (beforeContent.getOrderIndex() + afterContent.getOrderIndex()) / 2.0;
-//
-//        ContentOrder newContent = new ContentOrder(type, newOrderIndex,courseId);
-//        return contentOrderRepository.save(newContent);
-//
-//    }
-
     // 순서 변경
-    public void updateOrderIndex(Long courseId, ContentOrderDto.Request request) {
+    public void updateOrderIndex(Long courseId, Long lectureId, ContentOrderDto.Request request) {
         ContentOrder movingContent = contentOrderRepository.findById(request.contentOrderId())
                 .orElseThrow(()-> new IllegalArgumentException("순서를 찾을수없습니다."));
 
@@ -59,16 +45,18 @@ public class ContentOrderService {
         // TODO 강의개설자 검증
 
         // 해당 course의 모든 콘텐츠 순서 불러오기
-        List<ContentOrder> contentOrderList = contentOrderRepository.findByCourseOrderByOrderIndexAsc(course);
+        List<ContentOrder> contentOrderList = contentOrderRepository.findByCourse_CourseIdAndLecture_LectureIdOrderByOrderIndexAsc(courseId, lectureId);
 
         // 새 index 계산
-        double newIndex = calculateNewIndex(contentOrderList, movingContent, targetContent);
+        int newIndex = calculateNewIndex(contentOrderList, movingContent, targetContent);
 
         movingContent.setOrderIndex(newIndex);
         contentOrderRepository.save(movingContent);
+
+        normalizeIndexes(contentOrderList);
     }
 
-    private double calculateNewIndex(List<ContentOrder> contentOrderList, ContentOrder movingContent, ContentOrder targetContent) {
+    private int calculateNewIndex(List<ContentOrder> contentOrderList, ContentOrder movingContent, ContentOrder targetContent) {
         int targetIndex = contentOrderList.indexOf(targetContent);
         int movingIndex = contentOrderList.indexOf(movingContent);
 
@@ -78,9 +66,23 @@ public class ContentOrderService {
 
         contentOrderList.add(targetIndex, movingContent);
 
-        double prevIndex = (targetIndex > 0) ? contentOrderList.get(targetIndex - 1).getOrderIndex() : 0.0;
-        double nextIndex = (targetIndex < contentOrderList.size() - 1) ? contentOrderList.get(targetIndex + 1).getOrderIndex() : prevIndex+1.0;// 결함
-        return (prevIndex + nextIndex) / 2.0;
+        int prevIndex = (targetIndex > 0) ? contentOrderList.get(targetIndex - 1).getOrderIndex() : 0;
+        int nextIndex = (targetIndex < contentOrderList.size() - 1) ? contentOrderList.get(targetIndex + 1).getOrderIndex() : prevIndex+1;// 결함
+
+        if (targetIndex == contentOrderList.size() - 1) {
+            nextIndex = prevIndex + 1;
+        }
+
+        return (prevIndex + nextIndex) / 2;
+    }
+
+    private void normalizeIndexes(List<ContentOrder> contentOrderList) {
+        // 인덱스를 1부터 시작하는 정수로 재정렬
+        for (int i = 0; i < contentOrderList.size(); i++) {
+            contentOrderList.get(i).setOrderIndex(i + 1);  // 1부터 시작하는 순서로 재설정
+        }
+        // 변경된 인덱스를 저장
+        contentOrderRepository.saveAll(contentOrderList);
     }
 
     // 순서 삭제
