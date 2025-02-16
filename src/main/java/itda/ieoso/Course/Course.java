@@ -44,6 +44,9 @@ public class Course {
     private LocalDate startDate;
 
     @Column
+    private LocalDate endDate;
+
+    @Column
     private int durationWeeks; // 코스 진행 기간
 
     @Column
@@ -86,10 +89,6 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lecture> lectures = new ArrayList<>();
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -104,6 +103,9 @@ public class Course {
 
     public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
+    }
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
     public void setCourseThumbnail(String courseThumbnail) {
         this.courseThumbnail = courseThumbnail;
