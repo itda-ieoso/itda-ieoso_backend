@@ -83,8 +83,8 @@ public class LectureService {
 
         lectureRepository.save(lecture); // 저장 후 반환
 
-        // contentOrder 생성
-        contentOrderService.createContentOrder(course, "lecture", lecture.getLectureId());
+//        // contentOrder 생성
+//        contentOrderService.createContentOrder(course, "lecture", lecture.getLectureId());
 
         LectureDTO.Response response = LectureDTO.Response.of(lecture);
         return response;
@@ -130,8 +130,8 @@ public class LectureService {
             throw new IllegalArgumentException("강의를 삭제할 권한이 없습니다.");
         }
 
-        // contentOrder 삭제
-        contentOrderService.deleteContentOrder(lectureId, "lecture");
+//        // contentOrder 삭제
+//        contentOrderService.deleteContentOrder(lectureId, "lecture");
 
         // 강의 삭제
         lectureRepository.delete(lecture);
@@ -160,7 +160,7 @@ public class LectureService {
 
     // lecture조회(커리큘럼 전체조회)
     @Transactional
-    public List<ContentOrderDto.Response> getLectureList(Long courseId, Long userId) {
+    public List<LectureDTO.CurriculumResponse> getLectureList(Long courseId, Long userId) {
         // 과정 찾기(필요?)
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
@@ -170,44 +170,60 @@ public class LectureService {
             throw new IllegalArgumentException("수강생이 아닙니다.");
         }
 
-        List<ContentOrder> contentOrders = contentOrderRepository.findOrderedByCourseId(courseId);
 
-        // type(string) , list<ids>로 type별로 contentid분리하기
-        Map<String, List<Long>> contentIdsByType = new HashMap<>();
-        for (ContentOrder contentOrder : contentOrders) {
-            contentIdsByType.computeIfAbsent(contentOrder.getContentType(),
-                    k-> new ArrayList<>()).add(contentOrder.getContentId());
-        }
+        // lecutre 조회
+        List<Lecture> lectureList = lectureRepository.findAllByCourse_CourseId(courseId);
+        List<LectureDTO.CurriculumResponse> responses = lectureList.stream()
+                .map(lecture -> {
+                    // 해당 lecture에 대한 contentOrder 정보 조회
+                    List<ContentOrder> contentOrders = contentOrderRepository.findOrderedByCourseIdAndLectureId(courseId, lecture.getLectureId());
 
-        // 타입별로 한번에 id조회
-        Map<Long, Object> lectureMap = lectureRepository.findByLectureIdIn(contentIdsByType.getOrDefault("lecture", List.of()))
-                .stream().collect(Collectors.toMap(Lecture::getLectureId, LectureDTO.Response::of));
+                    return LectureDTO.CurriculumResponse.of(lecture, contentOrders);
+                })
+                .collect(Collectors.toList());
 
-        Map<Long, Object> videoMap = videoRepository.findByVideoIdIn(contentIdsByType.getOrDefault("video", List.of()))
-                .stream().collect(Collectors.toMap(Video::getVideoId, VideoDto.Response::of));
+        return responses;
 
-        Map<Long, Object> materialMap = materialRepository.findByMaterialIdIn(contentIdsByType.getOrDefault("material", List.of()))
-                .stream().collect(Collectors.toMap(Material::getMaterialId, MaterialDto.Response::of));
+//        List<ContentOrder> contentOrders = contentOrderRepository.findOrderedByCourseId(courseId);
+//
+//        // type(string) , list<ids>로 type별로 contentid분리하기
+//        Map<String, List<Long>> contentIdsByType = new HashMap<>();
+//        for (ContentOrder contentOrder : contentOrders) {
+//            contentIdsByType.computeIfAbsent(contentOrder.getContentType(),
+//                    k-> new ArrayList<>()).add(contentOrder.getContentId());
+//        }
+//
+//        // 타입별로 한번에 id조회
+//        Map<Long, Object> lectureMap = lectureRepository.findByLectureIdIn(contentIdsByType.getOrDefault("lecture", List.of()))
+//                .stream().collect(Collectors.toMap(Lecture::getLectureId, LectureDTO.Response::of));
+//
+//        Map<Long, Object> videoMap = videoRepository.findByVideoIdIn(contentIdsByType.getOrDefault("video", List.of()))
+//                .stream().collect(Collectors.toMap(Video::getVideoId, VideoDto.Response::of));
+//
+//        Map<Long, Object> materialMap = materialRepository.findByMaterialIdIn(contentIdsByType.getOrDefault("material", List.of()))
+//                .stream().collect(Collectors.toMap(Material::getMaterialId, MaterialDto.Response::of));
+//
+//        Map<Long, Object> assignmentMap = assignmentRepository.findByAssignmentIdIn(contentIdsByType.getOrDefault("assignment", List.of()))
+//                .stream().collect(Collectors.toMap(Assignment::getAssignmentId, AssignmentDTO.Response::of));
+//
+//        List<ContentOrderDto.Response> orderedList = new ArrayList<>();
+//        for (ContentOrder order : contentOrders) {
+//            Object contentData = switch (order.getContentType()) {
+//                case "lecture" -> lectureMap.get(order.getContentId());
+//                case "video" -> videoMap.get(order.getContentId());
+//                case "material" -> materialMap.get(order.getContentId());
+//                case "assignment" -> assignmentMap.get(order.getContentId());
+//                default -> null;
+//            };
+//
+//            if (contentData != null) {
+//                orderedList.add(new ContentOrderDto.Response(order.getContentOrderId(), order.getContentType(), contentData));
+//            }
+//        }
+//
+//        return orderedList;
 
-        Map<Long, Object> assignmentMap = assignmentRepository.findByAssignmentIdIn(contentIdsByType.getOrDefault("assignment", List.of()))
-                .stream().collect(Collectors.toMap(Assignment::getAssignmentId, AssignmentDTO.Response::of));
 
-        List<ContentOrderDto.Response> orderedList = new ArrayList<>();
-        for (ContentOrder order : contentOrders) {
-            Object contentData = switch (order.getContentType()) {
-                case "lecture" -> lectureMap.get(order.getContentId());
-                case "video" -> videoMap.get(order.getContentId());
-                case "material" -> materialMap.get(order.getContentId());
-                case "assignment" -> assignmentMap.get(order.getContentId());
-                default -> null;
-            };
-
-            if (contentData != null) {
-                orderedList.add(new ContentOrderDto.Response(order.getContentOrderId(), order.getContentType(), contentData));
-            }
-        }
-
-        return orderedList;
 
     }
 
@@ -240,6 +256,7 @@ public class LectureService {
         return new LectureDTO.HistoryResponse(materialHistoryDtos, submissionDtos);
     }
 
+    // 오늘 할일 조회
     @Transactional
     public List<CurriculumResponseDto> getToDoList(Long courseId, Long userId, LocalDateTime date) {
         // 과정 찾기
@@ -348,6 +365,6 @@ public class LectureService {
         .collect(Collectors.toList());
     }
 
-    // TODO 일주일전체 조회 추가
+    // 이번주 할일 조회
 
 }
