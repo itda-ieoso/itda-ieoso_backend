@@ -22,6 +22,8 @@ public class Material {
 
     private String materialTitle;
     private String materialFile;
+    private String originalFilename; // 원본 파일 이름
+    private String fileSize;        // 파일 크기
 
     @ManyToOne
     @JoinColumn(name = "lecture_id", nullable = false)
@@ -41,5 +43,15 @@ public class Material {
 
     public void setMaterialFile(String materialFile) {
         this.materialFile = materialFile;
+    }
+
+    // 원본 파일 이름 수정
+    public void setOriginalFilename(String originalFilename) {
+        this.originalFilename = originalFilename;
+    }
+
+    // 파일 크기 수정
+    public void setFileSize(String fileSize) {
+        this.fileSize = fileSize;
     }
 }
