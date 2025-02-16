@@ -209,8 +209,8 @@ public class CourseService {
         // lecture 저장
         lectureRepository.save(lecture);
 
-        // contentOrder 생성
-        contentOrderService.createContentOrder(course, "lecture", lecture.getLectureId());
+//        // contentOrder 생성
+//        contentOrderService.createContentOrder(course, "lecture", lecture.getLectureId());
 
 
         if ((lectureDay != null && !lectureDay.isEmpty()) || lectureTime != null) { // 영상, 강의자료 생성
@@ -221,7 +221,7 @@ public class CourseService {
                 // video 저장
                 videoRepository.save(video);
                 // contentOrder 생성
-                contentOrderService.createContentOrder(course, "video", video.getVideoId());
+                contentOrderService.createContentOrder(course, lecture, "video", video.getVideoId());
 
             }
 
@@ -231,7 +231,7 @@ public class CourseService {
                 // material 저장
                 materialRepository.save(material);
                 // contentOrder 생성
-                contentOrderService.createContentOrder(course, "material", material.getMaterialId());
+                contentOrderService.createContentOrder(course, lecture,"material", material.getMaterialId());
             }
 
             if ((assignmentDueDay != null && !assignmentDueDay.isEmpty()) || assignmentDueTime != null) { // 과제 생성
@@ -243,7 +243,7 @@ public class CourseService {
                     // assignment 저장
                     assignmentRepository.save(assignment);
                     // contentOrder 생성
-                    contentOrderService.createContentOrder(course, "assignment", assignment.getAssignmentId());
+                    contentOrderService.createContentOrder(course, lecture,"assignment", assignment.getAssignmentId());
                 }
             }
         }
