@@ -53,7 +53,6 @@ public class Lecture {
     @Column
     private LocalDateTime updatedAt;
 
-
     // TODO 나중에 관리를 위해 양방향 매핑시 joincolumn 추가
     @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Material> materials = new ArrayList<>();
@@ -73,9 +72,6 @@ public class Lecture {
         this.lectureDescription = lectureDescription;
         this.startDate = startDate;
         this.endDate = endDate;
-    }
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

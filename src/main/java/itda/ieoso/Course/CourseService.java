@@ -3,6 +3,7 @@ package itda.ieoso.Course;
 import itda.ieoso.Announcement.AnnouncementRepository;
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
+import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
@@ -10,6 +11,7 @@ import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
 import itda.ieoso.Lecture.Lecture;
+import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Material.MaterialRepository;
 import itda.ieoso.MaterialHistory.MaterialHistory;
@@ -58,6 +60,8 @@ public class CourseService {
     private final AnnouncementRepository announcementRepository;
     private final UserService userService;
     private final S3Service s3Service;
+    private final ContentOrderService contentOrderService;
+    private final LectureRepository lectureRepository;
 
     // 강의실 생성
     @Transactional
@@ -178,70 +182,73 @@ public class CourseService {
                                   List<Integer> assignmentDueDay, Time assignmentDueTime) {
 
         // durationWeeks 만큼 lecture 생성
-        List<Lecture> lectureList = new ArrayList<>();
         for (int i = 1; i <= durationWeeks; i++) { // 6주라고 했을떄 0~5
-            Lecture lecture = Lecture.builder()
-                    .course(course)
-                    .lectureTitle(String.format("챕터 %d", i))
-                    .lectureDescription("챕터 설명을 작성하세요.")
-                    .startDate(startDate)
-                    .endDate(startDate.plusDays(6))
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .videos(new ArrayList<>())
-                    .assignments(new ArrayList<>())
-                    .materials(new ArrayList<>())
-                    .build();
-
-            lectureList.add(lecture);
-            startDate = startDate.plusWeeks(1);
+            createLecture(course, startDate, lectureDay, lectureTime, assignmentDueDay, assignmentDueTime);
         }
+    }
 
-        // course에 lectureList 추가
-        course.getLectures().addAll(lectureList); // FIXME 맨아래로이동?
+    // lecturecreatemethod(한개당) -> lectureday, lecturetime, dueday,duetime
+    private void createLecture(Course course, LocalDate startDate,
+                                  List<Integer> lectureDay, Time lectureTime,
+                                  List<Integer> assignmentDueDay, Time assignmentDueTime) {
 
-        // 요일별 video, material 생성
+        // lecture 생성
+        Lecture lecture = Lecture.builder()
+                .course(course)
+                .lectureTitle("챕터")
+                .lectureDescription("챕터 설명을 작성하세요.")
+                .startDate(startDate)
+                .endDate(startDate.plusDays(6))
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .videos(new ArrayList<>())
+                .assignments(new ArrayList<>())
+                .materials(new ArrayList<>())
+                .build();
+
+        // lecture 저장
+        lectureRepository.save(lecture);
+
+        // contentOrder 생성
+        contentOrderService.createContentOrder(course, "lecture", lecture.getLectureId());
+
+
         if ((lectureDay != null && !lectureDay.isEmpty()) || lectureTime != null) { // 영상, 강의자료 생성
-            // lecture 리스트 불러오기
-            for (Lecture lecture : lectureList) {
-                // 선택한 요일만큼 video, material 생성
-                List<Video> videoList = new ArrayList<>();
-                List<Material> materialList = new ArrayList<>();
+            // 선택한 요일만큼 video, material 생성
+            for (int i = 0; i < lectureDay.size(); i++) {
+                // video 생성
+                Video video = createVideo(course, lecture);
+                // video 저장
+                videoRepository.save(video);
+                // contentOrder 생성
+                contentOrderService.createContentOrder(course, "video", video.getVideoId());
 
-                for (int i = 0; i < lectureDay.size(); i++) {
-                    // video 생성
-                    Video video = createVideo(course,lecture);
-                    videoList.add(video);
-                    // material 생성
-                    Material material = createMaterial(course, lecture);
-                    materialList.add(material);
-                }
-
-                // lecture에 추가
-                lecture.getVideos().addAll(videoList);
-                lecture.getMaterials().addAll(materialList);
             }
-        }
 
-        // 요일별 assignment 생성
-        if ((assignmentDueDay != null && !assignmentDueDay.isEmpty()) || assignmentDueTime != null) { // 과제 생성
-            // lecture 리스트 불러오기
-            for (Lecture lecture : lectureList) {
+            for (int i = 0; i < lectureDay.size(); i++) {
+                // material 생성
+                Material material = createMaterial(course, lecture);
+                // material 저장
+                materialRepository.save(material);
+                // contentOrder 생성
+                contentOrderService.createContentOrder(course, "material", material.getMaterialId());
+            }
+
+            if ((assignmentDueDay != null && !assignmentDueDay.isEmpty()) || assignmentDueTime != null) { // 과제 생성
+
                 // 선택한 요일만큼 assignment 생성
-                List<Assignment> assignmentList = new ArrayList<>();
                 for (int i = 0; i < assignmentDueDay.size(); i++) {
+                    // assignment 생성
                     Assignment assignment = createAssignment(course, lecture);
-                    assignmentList.add(assignment);
+                    // assignment 저장
+                    assignmentRepository.save(assignment);
+                    // contentOrder 생성
+                    contentOrderService.createContentOrder(course, "assignment", assignment.getAssignmentId());
                 }
-
-                // lecture에 추가
-                lecture.getAssignments().addAll(assignmentList);
             }
         }
     }
 
-
-    // FIXME service위치 변경(videoService, MaterialService, AssignmentService)
     private Video createVideo(Course course, Lecture lecture) {
         Video video = Video.builder()
                 .course(lecture.getCourse())

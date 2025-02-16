@@ -11,6 +11,7 @@ public interface CourseAttendeesRepository extends JpaRepository<CourseAttendees
     boolean existsByCourseAndUser(Course course, User user);
     boolean existsByCourse_CourseIdAndUser_UserId(Long courseId, Long userId);
     Optional<CourseAttendees> findByCourseAndUser(Course course, User user);
+    Optional<CourseAttendees> findByCourse_CourseIdAndUser_UserId(Long courseId, Long userId);
     List<CourseAttendees> findAllByCourse(Course course);
     List<CourseAttendees> findByCourse_CourseId(Long courseId);
 

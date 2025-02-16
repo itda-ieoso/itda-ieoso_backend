@@ -5,19 +5,12 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 public class VideoDto {
-    public record createRequest(
+    public record Request(
             String videoTitle,
             String videoUrl,
             LocalDateTime startDate,
             LocalDateTime endDate
 
-    ) {}
-
-    public record updateRequest(
-            String videoTitle,
-            String videoUrl,
-            LocalDateTime startDate,
-            LocalDateTime endDate
     ) {}
 
     @Builder
@@ -27,7 +20,17 @@ public class VideoDto {
             String videoUrl,
             LocalDateTime startDate,
             LocalDateTime endDate
-    ) {}
+    ) {
+        public static Response of(Video video) {
+            return new Response(
+                    video.getVideoId(),
+                    video.getVideoTitle(),
+                    video.getVideoUrl(),
+                    video.getStartDate(),
+                    video.getEndDate()
+            );
+        }
+    }
 
     @Builder
     public record deleteResponse(

@@ -1,5 +1,6 @@
 package itda.ieoso.Material;
 
+import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
@@ -33,6 +34,7 @@ public class MaterialService {
     private final CourseAttendeesRepository courseAttendeesRepository;
     private final MaterialHistoryRepository materialHistoryRepository;
     private final S3Service s3Service;
+    private final ContentOrderService contentOrderService;
 
     // material 생성
     @Transactional
@@ -73,15 +75,14 @@ public class MaterialService {
         // material 저장
         materialRepository.save(material);
 
+        // contentOrder 생성
+        contentOrderService.createContentOrder(course, "material", material.getMaterialId());
+
         // materialHistory 생성
         addMaterialHistoryToMaterial(course, material);
 
         // 반환
-        MaterialDto.Response response = MaterialDto.Response.builder()
-                .materialId(material.getMaterialId())
-                .materialTitle(material.getMaterialTitle())
-                .materialFile(material.getMaterialFile())
-                .build();
+        MaterialDto.Response response = MaterialDto.Response.of(material);
 
         return response;
     }
@@ -121,16 +122,11 @@ public class MaterialService {
         materialRepository.save(material);
 
         // 반환
-        MaterialDto.Response response = MaterialDto.Response.builder()
-                .materialId(material.getMaterialId())
-                .materialTitle(material.getMaterialTitle())
-                .materialFile(material.getMaterialFile())
-                .build();
+        MaterialDto.Response response = MaterialDto.Response.of(material);
 
         return response;
 
     }
-
 
     // material 삭제
     @Transactional
@@ -153,28 +149,22 @@ public class MaterialService {
         // materialHistory 삭제
         materialHistoryRepository.deleteAllByMaterial(material);
 
+        // contentOrder 삭제
+        contentOrderService.deleteContentOrder(materialId, "material");
+
         // material 삭제
         materialRepository.delete(material);
 
         // 반환
         MaterialDto.deleteResponse response = MaterialDto.deleteResponse.builder()
-                .videoId(materialId)
+                .materialId(materialId)
                 .message("material 삭제 완료")
                 .build();
         return response;
 
     }
 
-    // video 조회
-    public void getMaterial() {
-
-    }
-
-    // video 목록 조회
-    public void getMaterials() {
-
-    }
-
+    // materialHistory 생성
     private void addMaterialHistoryToMaterial(Course course, Material material) {
         // course내의 모든 courseAttendees 조회
         List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);

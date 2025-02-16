@@ -14,7 +14,7 @@ public class VideoController {
     public Response<VideoDto.Response> createVideo(@PathVariable Long courseId,
                                                   @PathVariable Long lectureId,
                                                   @PathVariable Long userId,
-                                                  @RequestBody VideoDto.createRequest request) {
+                                                  @RequestBody VideoDto.Request request) {
 
         return Response.success("강의영상 생성", videoService.createVideo(courseId,lectureId,userId,request));
     }
@@ -23,7 +23,7 @@ public class VideoController {
     public Response<VideoDto.Response> updateVideo(@PathVariable Long courseId,
                                          @PathVariable Long videoId,
                                          @PathVariable Long userId,
-                                         @RequestBody VideoDto.updateRequest request) {
+                                         @RequestBody VideoDto.Request request) {
         return Response.success("강의영상 수정", videoService.updateVideo(courseId,videoId,userId,request));
     }
 

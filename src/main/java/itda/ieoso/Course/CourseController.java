@@ -52,7 +52,7 @@ public class CourseController {
         return Response.success("강의실 삭제", null);
     }
 
-    // 강의실 설정 정보 조회(설정 & 개요 페이지)
+    // 강의실 조회(설정 & 개요 페이지)
     @GetMapping("/{courseId}")
     public Response<CourseDTO> findByCourseId(@PathVariable Long courseId) {
         CourseDTO courseDTO = courseService.getCourseById(courseId);
@@ -65,7 +65,7 @@ public class CourseController {
             @PathVariable Long userId,
             @RequestParam String entryCode) {
         // 서비스 메서드를 호출하여 강의실 입장 처리
-        courseService.enterCourse(userId, entryCode);
+        courseService.enterCourse( userId, entryCode);
 
         // 성공 메시지 반환
         return Response.success("가입되었습니다!", null);
