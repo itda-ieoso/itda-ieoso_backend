@@ -14,10 +14,11 @@ public class ContentOrderController {
     ContentOrderService contentOrderService;
 
     // 순서 변경
-    @PutMapping("/{courseId}/reorder")
+    @PutMapping("/{courseId}/{lectureId}/reorder")
     public Response<?> updateOrderIndex(@PathVariable Long courseId,
+                                        @PathVariable Long lectureId,
                                         @RequestBody ContentOrderDto.Request request) {
-        contentOrderService.updateOrderIndex(courseId, request);
+        contentOrderService.updateOrderIndex(courseId, lectureId, request);
         return Response.success("커리큘럼 순서변경",null);
     }
 

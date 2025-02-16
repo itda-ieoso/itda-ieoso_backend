@@ -76,7 +76,7 @@ public class MaterialService {
         materialRepository.save(material);
 
         // contentOrder 생성
-        contentOrderService.createContentOrder(course, "material", material.getMaterialId());
+        contentOrderService.createContentOrder(course, lecture,"material", material.getMaterialId());
 
         // materialHistory 생성
         addMaterialHistoryToMaterial(course, material);

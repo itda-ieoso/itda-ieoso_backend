@@ -59,7 +59,7 @@ public class LectureController {
 
     // 강의실 커리큘럼 전체조회 (개설자, 수강생용)
     @GetMapping("/curriculum/{courseId}/{userId}")
-    public Response<List<ContentOrderDto.Response>> getLectureList(@PathVariable Long userId,
+    public Response<List<LectureDTO.CurriculumResponse>> getLectureList(@PathVariable Long userId,
                                                                    @PathVariable Long courseId) {
         return Response.success("커리큘럼 전체 조회", lectureService.getLectureList(courseId, userId));
     }

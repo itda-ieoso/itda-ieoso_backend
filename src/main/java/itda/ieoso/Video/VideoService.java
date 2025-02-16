@@ -60,7 +60,7 @@ public class VideoService {
         videoRepository.save(video);
 
         // contentorder 생성
-        contentOrderService.createContentOrder(course, "video", video.getVideoId());
+        contentOrderService.createContentOrder(course, lecture, "video", video.getVideoId());
 
         // videoHistory 생성
         addVideoHistoryToVideo(course,video);

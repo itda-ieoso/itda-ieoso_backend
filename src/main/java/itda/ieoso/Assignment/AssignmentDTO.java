@@ -1,5 +1,6 @@
 package itda.ieoso.Assignment;
 
+import itda.ieoso.ContentOrder.ContentOrder;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,15 +23,34 @@ public class AssignmentDTO {
             String assignmentTitle,
             String assignmentDescription,
             LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDateTime endDate,
+            Long contentOrderId,
+            String contentType,
+            Integer contentOrderIndex
     ) {
+        public static Response of(Assignment assignment, ContentOrder contentOrder) {
+            return new Response(
+                    assignment.getAssignmentId(),
+                    assignment.getAssignmentTitle(),
+                    assignment.getAssignmentDescription(),
+                    assignment.getStartDate(),
+                    assignment.getEndDate(),
+                    contentOrder.getContentOrderId(),
+                    contentOrder.getContentType(),
+                    contentOrder.getOrderIndex()
+            );
+        }
+
         public static Response of(Assignment assignment) {
             return new Response(
                     assignment.getAssignmentId(),
                     assignment.getAssignmentTitle(),
                     assignment.getAssignmentDescription(),
                     assignment.getStartDate(),
-                    assignment.getEndDate()
+                    assignment.getEndDate(),
+                    null,
+                    null,
+                    null
             );
         }
     }
