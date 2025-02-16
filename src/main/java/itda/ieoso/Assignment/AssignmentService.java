@@ -6,6 +6,8 @@ import itda.ieoso.Course.CourseRepository;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.CourseAttendees.CourseAttendeesStatus;
+import itda.ieoso.Exception.CustomException;
+import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.Submission.Submission;
@@ -177,17 +179,9 @@ public class AssignmentService {
     public AssignmentDTO.Response getAssignment(Long assignmentId) {
         // 과제 정보 조회
         Assignment assignment = assignmentRepository.findByAssignmentId(assignmentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 과제가 존재하지 않거나 접근 권한이 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
 
-        // AssignmentDTO.Response 객체 생성 및 반환
-        return AssignmentDTO.Response.builder()
-                .assignmentId(assignment.getAssignmentId())
-                .assignmentTitle(assignment.getAssignmentTitle())
-                .assignmentDescription(assignment.getAssignmentDescription())
-                .startDate(assignment.getStartDate())
-                .endDate(assignment.getEndDate())
-                .build();
+        return AssignmentDTO.Response.of(assignment);
     }
-
 
 }
