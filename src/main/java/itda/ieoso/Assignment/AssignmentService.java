@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,13 +54,17 @@ public class AssignmentService {
             throw new IllegalArgumentException("강의 개설자가 아닙니다.");
         }
 
+        if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
+            throw new IllegalArgumentException("시간설정이 범위밖으로 벗어났습니다.");
+        }
+
         // assignment 생성
         Assignment assignment = Assignment.builder()
                 .course(course)
                 .lecture(lecture)
                 .assignmentTitle(request.assignmentTitle())
                 .assignmentDescription(request.assignmentDescription())
-                .startDate(request.startDate())
+                .startDate(LocalDateTime.of(course.getStartDate(), LocalTime.of(00, 00, 00)))
                 .endDate(request.endDate())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -99,10 +104,14 @@ public class AssignmentService {
             throw new IllegalArgumentException("assignment를 찾을수없습니다.");
         }
 
+        if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
+            throw new IllegalArgumentException("시간설정이 범위밖으로 벗어났습니다.");
+        }
+
         // assignment 수정
         if (request.assignmentTitle()!=null) assignment.setAssignmentTitle(request.assignmentTitle());
         if (request.assignmentDescription()!=null) assignment.setAssignmentDescription(request.assignmentDescription());
-        if (request.startDate()!=null) assignment.setStartDate(request.startDate());
+        // if (request.startDate()!=null) assignment.setStartDate(request.startDate());
         if (request.endDate()!=null) assignment.setEndDate(request.endDate());
         assignment.setUpdatedAt(LocalDateTime.now());
 
