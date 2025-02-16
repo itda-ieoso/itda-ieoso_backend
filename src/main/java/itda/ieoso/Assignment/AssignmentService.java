@@ -70,7 +70,7 @@ public class AssignmentService {
         assignmentRepository.save(assignment);
 
         // contentOrder 생성
-        contentOrderService.createContentOrder(course, "assignment", assignment.getAssignmentId());
+        contentOrderService.createContentOrder(course, lecture,"assignment", assignment.getAssignmentId());
 
         // submission 생성
         addSubmissionToAssignment(course,assignment);
