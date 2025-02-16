@@ -2,6 +2,7 @@ package itda.ieoso.Submission;
 
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
+import itda.ieoso.Course.Course;
 import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
@@ -137,9 +138,12 @@ public class SubmissionService {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
 
+        Course course = assignment.getCourse();
+        Long courseOwnerId = course.getUser().getUserId();
+
         // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
-        if (!submission.getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("이 과제를 조회할 권한이 없습니다.");
+        if (!submission.getUser().getUserId().equals(userId) && !courseOwnerId.equals(userId)) {
+            throw new CustomException(ErrorCode.SUBMISSION_PERMISSION_DENIED);
         }  //수정 예정-조회관련
 
         // UserDTO.UserInfoDto 생성

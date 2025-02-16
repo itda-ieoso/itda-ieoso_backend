@@ -36,10 +36,6 @@ public class SubmissionController {
         return Response.success("과제 제출 및 수정", updatedSubmissionDTO); // 수정된 제출 정보 반환
     }
 
-    // 파일 다운로드 밖으로 빼기
-
-
-
     // 과제 삭제(과제 상태 초기화)
     @PutMapping("/delete/{submissionId}/{userId}")
     public Response<Void> deleteSubmission(

@@ -54,10 +54,15 @@ public class MaterialService {
 
         // 파일 업로드
         String fileUrl = null;
+        String originalFilename = null;
+        String fileSize = null;
+
         if (file != null && !file.isEmpty()) {
             try {
                 File convertedFile = s3Service.convertMultipartFileToFile(file);
                 fileUrl = s3Service.uploadFile("materials", file.getOriginalFilename(), convertedFile);
+                originalFilename = file.getOriginalFilename();
+                fileSize = formatFileSize(file.getSize());
             } catch (IOException e) {
                 throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
             }
@@ -69,6 +74,8 @@ public class MaterialService {
                 .lecture(lecture)
                 .materialTitle(materialTitle)
                 .materialFile(fileUrl)
+                .originalFilename(originalFilename)
+                .fileSize(fileSize)
                 .materialHistories(new ArrayList<>())
                 .build();
 
@@ -107,10 +114,15 @@ public class MaterialService {
 
         // 파일 업로드 (새 파일이 있으면 업로드 후 기존 파일 대체)
         String fileUrl = material.getMaterialFile();
+        String originalFilename = material.getOriginalFilename();
+        String fileSize = material.getFileSize();
+
         if (file != null && !file.isEmpty()) {
             try {
                 File convertedFile = s3Service.convertMultipartFileToFile(file);
                 fileUrl = s3Service.uploadFile("materials", file.getOriginalFilename(), convertedFile);
+                originalFilename = file.getOriginalFilename();
+                fileSize = formatFileSize(file.getSize());
             } catch (IOException e) {
                 throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
             }
@@ -119,6 +131,9 @@ public class MaterialService {
         // material 수정
         if (materialTitle!=null) material.setMaterialTitle(materialTitle);
         material.setMaterialFile(fileUrl);
+        material.setOriginalFilename(originalFilename);
+        material.setFileSize(fileSize);
+
         materialRepository.save(material);
 
         // 반환
@@ -126,6 +141,18 @@ public class MaterialService {
 
         return response;
 
+    }
+
+    private String formatFileSize(long bytes) {
+        if (bytes < 1024) {
+            return bytes + " B";
+        } else if (bytes < 1048576) { // 1KB 이상
+            return String.format("%.2f KB", bytes / 1024.0);
+        } else if (bytes < 1073741824) { // 1MB 이상
+            return String.format("%.2f MB", bytes / 1048576.0);
+        } else { // 1GB 이상
+            return String.format("%.2f GB", bytes / 1073741824.0);
+        }
     }
 
     // material 삭제
