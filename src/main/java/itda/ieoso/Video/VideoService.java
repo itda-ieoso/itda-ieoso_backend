@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,6 +47,10 @@ public class VideoService {
             throw new IllegalArgumentException("강의 개설자가 아닙니다.");
         }
 
+        if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
+            throw new IllegalArgumentException("시간설정이 범위밖으로 벗어났습니다.");
+        }
+
         // video 생성
         Video video = Video.builder()
                 .course(course)
@@ -52,7 +58,7 @@ public class VideoService {
                 .videoTitle(request.videoTitle())
                 .videoUrl(request.videoUrl())
                 .startDate(request.startDate())
-                .endDate(request.endDate())
+                .endDate(LocalDateTime.of(course.getEndDate(), LocalTime.of(23, 59, 59)))
                 .videoHistories(new ArrayList<>())
                 .build();
 
@@ -89,11 +95,15 @@ public class VideoService {
             throw new IllegalArgumentException("video를 찾을수없습니다.");
         }
 
+        if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
+            throw new IllegalArgumentException("시간설정이 범위밖으로 벗어났습니다.");
+        }
+
         // video 수정
         if (request.videoTitle()!=null) video.setVideoTitle(request.videoTitle());
         if (request.videoUrl()!=null) video.setVideoUrl(request.videoUrl());
         if (request.startDate()!=null) video.setStartDate(request.startDate());
-        if (request.endDate()!=null) video.setEndDate(request.endDate());
+        //if (request.endDate()!=null) video.setEndDate(request.endDate());
         videoRepository.save(video);
 
         // 반환

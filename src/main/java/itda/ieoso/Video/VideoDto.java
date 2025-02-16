@@ -11,8 +11,8 @@ public class VideoDto {
     public record Request(
             String videoTitle,
             String videoUrl,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDateTime startDate
+            // LocalDateTime endDate
 
     ) {}
 
