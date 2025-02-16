@@ -2,6 +2,7 @@ package itda.ieoso.Lecture;
 
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentDTO;
+import itda.ieoso.ContentOrder.ContentOrder;
 import itda.ieoso.Material.Material;
 import itda.ieoso.Material.MaterialDto;
 import itda.ieoso.MaterialHistory.MaterialHistoryDto;
@@ -13,7 +14,9 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
@@ -62,17 +65,39 @@ public class LectureDTO {
             List<MaterialDto.Response> materials,
             List<AssignmentDTO.Response> assignments
     ) {
-        public static CurriculumResponse of(Lecture lecture) {
+        public static CurriculumResponse of(Lecture lecture, List<ContentOrder> contentOrders) {
+            // contentOrder 를 type별로 매핑
+            Map<Long, ContentOrder> videoOrders = new HashMap<>();
+            Map<Long, ContentOrder> materialOrders = new HashMap<>();
+            Map<Long, ContentOrder> assignmentOrders = new HashMap<>();
+
+            for (ContentOrder contentOrder : contentOrders) {
+                switch (contentOrder.getContentType()) {
+                    case "video" -> videoOrders.put(contentOrder.getContentId(), contentOrder);
+                    case "material" -> materialOrders.put(contentOrder.getContentId(), contentOrder);
+                    case "assignment" -> assignmentOrders.put(contentOrder.getContentId(), contentOrder);
+                }
+            }
+
             List<VideoDto.Response> videoDtos = lecture.getVideos().stream()
-                    .map(VideoDto.Response::of)
+                    .map(video -> {
+                        ContentOrder order = videoOrders.get(video.getVideoId());
+                        return VideoDto.Response.of(video, order);
+                    })
                     .collect(Collectors.toList());
 
             List<MaterialDto.Response> materialDtos = lecture.getMaterials().stream()
-                    .map(MaterialDto.Response::of)
+                    .map(material -> {
+                        ContentOrder order = materialOrders.get(material.getMaterialId());
+                        return MaterialDto.Response.of(material, order);
+                    })
                     .collect(Collectors.toList());
 
             List<AssignmentDTO.Response> assignmentDtos = lecture.getAssignments().stream()
-                    .map(AssignmentDTO.Response::of)
+                    .map(assignment -> {
+                        ContentOrder order = assignmentOrders.get(assignment.getAssignmentId());
+                        return AssignmentDTO.Response.of(assignment, order);
+                    })
                     .collect(Collectors.toList());
 
             return new LectureDTO.CurriculumResponse (
