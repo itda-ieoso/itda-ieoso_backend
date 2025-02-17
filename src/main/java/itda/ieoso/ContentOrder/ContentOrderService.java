@@ -3,6 +3,8 @@ package itda.ieoso.ContentOrder;
 
 import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
+import itda.ieoso.Exception.CustomException;
+import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,13 +36,13 @@ public class ContentOrderService {
     // 순서 변경
     public void updateOrderIndex(Long courseId, Long lectureId, ContentOrderDto.Request request) {
         ContentOrder movingContent = contentOrderRepository.findById(request.contentOrderId())
-                .orElseThrow(()-> new IllegalArgumentException("순서를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.CONTENTORDER_NOT_FOUND));
 
         ContentOrder targetContent = contentOrderRepository.findById(request.targetContentOrderId())
-                .orElseThrow(()-> new IllegalArgumentException("순서를 찾을수없습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.CONTENTORDER_NOT_FOUND));
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(()-> new IllegalArgumentException("강좌를 찾을수없습닏."));
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // TODO 강의개설자 검증
 

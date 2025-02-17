@@ -13,7 +13,7 @@ public class AssignmentDTO {
     public record Request(
             String assignmentTitle,
             String assignmentDescription,
-            LocalDateTime startDate,
+            // LocalDateTime startDate,
             LocalDateTime endDate
 
     ) {}

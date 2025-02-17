@@ -36,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Time;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -78,6 +79,7 @@ public class CourseService {
                 //.maxStudents(50) // default TODO 필요여부 프론트에 여쭤보기
                 .instructorName(user.getName())
                 .startDate(null)
+                .endDate(null)
                 .durationWeeks(-1)
                 .lectureDay(null)
                 .lectureTime(null)
@@ -123,24 +125,16 @@ public class CourseService {
     public CourseDTO updateCourse(Long courseId, Long userId, CourseDTO.BasicUpdateRequest request) {
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("이 강좌를 수정할 권한이 없습니다.");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
-        // 초기 업데이트 여부 확인
-        if (!course.isInit()) {
-
-            // 초기 설정시 커리큘럼 자동생성
-            initializeCourse(course, request.startDate(), request.durationWeeks(),
-                            request.lectureDay(), request.lectureTime(),
-                            request.assignmentDueDay(), request.assignmentDueTime());
-
-            // 초기설정여부 상태변경
-            course.updateInit();
-        }
+//        if (course.isInit()) {
+//            throw new IllegalArgumentException("추가설정을 할수없습니다.");
+//        }
 
         // 기본 객체 수정 [전체업데이트시킴 but lecture를 생성하지 않음]
         // 리스트를 문자열로 변환 (예: 쉼표로 구분)
@@ -163,10 +157,23 @@ public class CourseService {
         if (!request.assignmentDueDay().isEmpty()) course.setAssignmentDueDay(assignmentDueDayString);
         if (request.assignmentDueTime() != null) course.setAssignmentDueTime(request.assignmentDueTime());
         if (request.difficultyLevel() != null) course.setDifficultyLevel(request.difficultyLevel());
+        if (request.startDate() !=null) course.setEndDate((request.startDate().plusWeeks(request.durationWeeks()-1)).plusDays(6));
         course.setUpdatedAt(LocalDateTime.now());
 
         // 데이터베이스에 저장
         courseRepository.save(course);
+
+        // 초기 업데이트 여부 확인
+        if (!course.isInit()) {
+
+            // 초기 설정시 커리큘럼 자동생성
+            initializeCourse(course, request.startDate(), request.durationWeeks(),
+                    request.lectureDay(), request.lectureTime(),
+                    request.assignmentDueDay(), request.assignmentDueTime());
+
+            // 초기설정여부 상태변경
+            course.updateInit();
+        }
 
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
@@ -184,6 +191,7 @@ public class CourseService {
         // durationWeeks 만큼 lecture 생성
         for (int i = 1; i <= durationWeeks; i++) { // 6주라고 했을떄 0~5
             createLecture(course, startDate, lectureDay, lectureTime, assignmentDueDay, assignmentDueTime);
+            startDate = startDate.plusWeeks(1);
         }
     }
 
@@ -209,15 +217,12 @@ public class CourseService {
         // lecture 저장
         lectureRepository.save(lecture);
 
-//        // contentOrder 생성
-//        contentOrderService.createContentOrder(course, "lecture", lecture.getLectureId());
-
-
         if ((lectureDay != null && !lectureDay.isEmpty()) || lectureTime != null) { // 영상, 강의자료 생성
             // 선택한 요일만큼 video, material 생성
             for (int i = 0; i < lectureDay.size(); i++) {
                 // video 생성
-                Video video = createVideo(course, lecture);
+                int day = lectureDay.get(i); // 요일값(그주의 요일 찾기)
+                Video video = createVideo(course, lecture, day, lectureTime);
                 // video 저장
                 videoRepository.save(video);
                 // contentOrder 생성
@@ -225,21 +230,22 @@ public class CourseService {
 
             }
 
-            for (int i = 0; i < lectureDay.size(); i++) {
-                // material 생성
-                Material material = createMaterial(course, lecture);
-                // material 저장
-                materialRepository.save(material);
-                // contentOrder 생성
-                contentOrderService.createContentOrder(course, lecture,"material", material.getMaterialId());
-            }
+//            for (int i = 0; i < lectureDay.size(); i++) {
+//                // material 생성
+//                Material material = createMaterial(course, lecture);
+//                // material 저장
+//                materialRepository.save(material);
+//                // contentOrder 생성
+//                contentOrderService.createContentOrder(course, lecture,"material", material.getMaterialId());
+//            }
 
             if ((assignmentDueDay != null && !assignmentDueDay.isEmpty()) || assignmentDueTime != null) { // 과제 생성
 
                 // 선택한 요일만큼 assignment 생성
                 for (int i = 0; i < assignmentDueDay.size(); i++) {
                     // assignment 생성
-                    Assignment assignment = createAssignment(course, lecture);
+                    int day = assignmentDueDay.get(i); // 요일값(그주의 요일 찾기)
+                    Assignment assignment = createAssignment(course, lecture, day, assignmentDueTime);
                     // assignment 저장
                     assignmentRepository.save(assignment);
                     // contentOrder 생성
@@ -249,14 +255,17 @@ public class CourseService {
         }
     }
 
-    private Video createVideo(Course course, Lecture lecture) {
+    private Video createVideo(Course course, Lecture lecture, int day, Time lectureTime) {
+        // 날짜 반환
+        LocalDate startDate = findDateInWeek(lecture.getStartDate(), lecture.getEndDate(), day);
+
         Video video = Video.builder()
                 .course(lecture.getCourse())
                 .lecture(lecture)
                 .videoTitle("강의 영상 제목을 입력하세요.")
                 .videoUrl("영상 링크 첨부")
-                .startDate(LocalDateTime.of(lecture.getStartDate(), LocalTime.of(23, 59, 59)))
-                .endDate(LocalDateTime.of(lecture.getEndDate(), LocalTime.of(23, 59, 59)))
+                .startDate(LocalDateTime.of(startDate, lectureTime.toLocalTime()))
+                .endDate(LocalDateTime.of(course.getEndDate(), LocalTime.of(23, 59, 59))) // 강좌종료
                 .videoHistories(new ArrayList<>())
                 .build();
 
@@ -280,43 +289,46 @@ public class CourseService {
         return video;
     }
 
-    private Material createMaterial(Course course, Lecture lecture) {
-        Material material = Material.builder()
-                .course(lecture.getCourse())
-                .lecture(lecture)
-                .materialTitle("강의 자료 제목을 입력하세요.")
-                .materialFile("강의자료 첨부")
-                .materialHistories(new ArrayList<>())
-                .build();
+//    private Material createMaterial(Course course, Lecture lecture) {
+//        Material material = Material.builder()
+//                .course(lecture.getCourse())
+//                .lecture(lecture)
+//                .materialTitle("강의 자료 제목을 입력하세요.")
+//                .materialFile("강의자료 첨부")
+//                .materialHistories(new ArrayList<>())
+//                .build();
+//
+//        // video에대한 모든 attendees의 videoHistory 추가
+//        List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
+//
+//        List<MaterialHistory> materialHistoryList = attendees.stream()
+//                .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
+//                .map(attendee -> MaterialHistory.builder()
+//                        .course(course)
+//                        .material(material)
+//                        .courseAttendees(attendee)
+//                        .materialHistoryStatus(false)
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        // vidoe에 videoHistory추가
+//        material.getMaterialHistories().addAll(materialHistoryList);
+//
+//        // video 반환
+//        return material;
+//    }
 
-        // video에대한 모든 attendees의 videoHistory 추가
-        List<CourseAttendees> attendees = courseAttendeesRepository.findAllByCourse(course);
+    private Assignment createAssignment(Course course, Lecture lecture, int day, Time assignmentDueTime) {
+        // 요일 받아오기
+        LocalDate endDate = findDateInWeek(lecture.getStartDate(), lecture.getEndDate(), day);
 
-        List<MaterialHistory> materialHistoryList = attendees.stream()
-                .filter(attendee -> attendee.getCourseAttendeesStatus()== CourseAttendeesStatus.ACTIVE)
-                .map(attendee -> MaterialHistory.builder()
-                        .course(course)
-                        .material(material)
-                        .courseAttendees(attendee)
-                        .materialHistoryStatus(false)
-                        .build())
-                .collect(Collectors.toList());
-
-        // vidoe에 videoHistory추가
-        material.getMaterialHistories().addAll(materialHistoryList);
-
-        // video 반환
-        return material;
-    }
-
-    private Assignment createAssignment(Course course, Lecture lecture) {
         Assignment assignment = Assignment.builder()
                 .course(lecture.getCourse())
                 .lecture(lecture)
                 .assignmentTitle("과제 제목을 입력하세요.")
                 .assignmentDescription("과제 설명")
-                .startDate(LocalDateTime.of(lecture.getStartDate(),LocalTime.of(23, 59, 59)))
-                .endDate(LocalDateTime.of(lecture.getEndDate(),LocalTime.of(23, 59, 59)))
+                .startDate(LocalDateTime.of(course.getStartDate(),LocalTime.of(00, 00, 00))) // 강좌시작일
+                .endDate(LocalDateTime.of(endDate, assignmentDueTime.toLocalTime()))
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .submissions(new ArrayList<>())
@@ -341,6 +353,24 @@ public class CourseService {
 
         // assignment 반환
         return assignment;
+    }
+
+    // 입력한 요일로 날짜 찾기
+    private LocalDate findDateInWeek(LocalDate startDate, LocalDate endDate, int targetDay) {
+        if (targetDay < 1 || targetDay > 7) {
+            throw new CustomException(ErrorCode.INVALID_DAY_OF_WEEK);
+        }
+
+        DayOfWeek startDay = startDate.getDayOfWeek(); // 시작날짜의 요일(월~일: 1~7)
+        int startDayInt = startDay.getValue();
+
+        int daysToAdd = targetDay - startDayInt;
+        if (daysToAdd < 0) {
+            daysToAdd += 7; // 음수면 +7로 양수로 변경
+        }
+
+        LocalDate resultDate = startDate.plusDays(daysToAdd);
+        return resultDate.isAfter(endDate) ? null : resultDate;
     }
 
     // 강의실 개요 편집

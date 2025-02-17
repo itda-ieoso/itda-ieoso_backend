@@ -64,7 +64,7 @@ public class AnnouncementService {
         // 공지 조회
         Announcement announcement = announcementRepository.findByCourseAndAnnouncementId(course,announcementId);
         if (announcement == null) {
-            throw new IllegalArgumentException("공지를 찾을수없습니다.");
+            throw new CustomException(ErrorCode.ANNOUNCEMENT_NOT_FOUND);
         }
 
         // 수정
@@ -95,7 +95,7 @@ public class AnnouncementService {
         // 공지 조회
         Announcement announcement = announcementRepository.findByCourseAndAnnouncementId(course,announcementId);
         if (announcement == null) {
-            throw new IllegalArgumentException("공지를 찾을수없습니다.");
+            throw new CustomException(ErrorCode.ANNOUNCEMENT_NOT_FOUND);
         }
 
         // 삭제
@@ -115,7 +115,7 @@ public class AnnouncementService {
     public List<AnnouncementDto.Response> getAnnouncements(Long courseId, Long userId) {
         // 강좌 조회(개설자, 수강생 검증)
         if (!validateCourseAttendees(courseId,userId)) {
-            throw new IllegalArgumentException("공지사항을 볼 권한이 없습니다.");
+            throw new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED);
         }
 
         // 공지 목록 조회
@@ -140,13 +140,13 @@ public class AnnouncementService {
     public AnnouncementDto.Response getAnnouncement(Long courseId, Long userId, Long announcementId) {
         // 강좌 조회(개설자, 수강생 검증)
         if (!validateCourseAttendees(courseId,userId)) {
-            throw new IllegalArgumentException("공지사항을 볼 권한이 없습니다.");
+            throw new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED);
         }
 
         // 공지 조회
         Announcement announcement = announcementRepository.findByCourse_CourseIdAndAnnouncementId(courseId,announcementId);
         if (announcement == null) {
-            throw new IllegalArgumentException("공지를 찾을수없습니다.");
+            throw new CustomException(ErrorCode.ANNOUNCEMENT_NOT_FOUND);
         }
 
         // 조회수 업데이트
@@ -173,11 +173,11 @@ public class AnnouncementService {
     private Course validateCourseCreator(Long courseId, Long userId) {
         // 강좌 조회
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 과정이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 개설자인지 검증
         if (!course.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("권한없음");
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
         return course;
