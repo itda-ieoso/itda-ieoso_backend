@@ -108,7 +108,7 @@ public class CourseService {
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
 
         // CourseDTO로 변환하여 반환
-        CourseDTO courseDTO = CourseDTO.of(course, userInfoDto);
+        CourseDTO courseDTO = CourseDTO.of(course, userInfoDto, null);
 
         return courseDTO;
     }
@@ -171,7 +171,7 @@ public class CourseService {
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
 
-        CourseDTO courseDTO = CourseDTO.of(course, userInfoDto);
+        CourseDTO courseDTO = CourseDTO.of(course, userInfoDto, null);
 
         return courseDTO;
     }
@@ -380,7 +380,7 @@ public class CourseService {
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
 
         // 데이터베이스에 저장
-        CourseDTO courseDTO = CourseDTO.of(course, userInfoDto);
+        CourseDTO courseDTO = CourseDTO.of(course, userInfoDto, null);
         courseRepository.save(course);
 
         return courseDTO;
@@ -419,11 +419,13 @@ public class CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
+        String presignedThumbnailUrl = s3Service.generatePresignedUrl(course.getCourseThumbnail());
+
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
 
         // CourseDTO로 변환해서 반환
-        return CourseDTO.of(course, userInfoDto);
+        return CourseDTO.of(course, userInfoDto, presignedThumbnailUrl);
     }
 
     // 강의실 입장 (입장 유저의 히스토리 생성)
@@ -573,8 +575,10 @@ public class CourseService {
             Course course = courseAttendees.getCourse();
             UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getName());
 
+            String presignedThumbnailUrl = s3Service.generatePresignedUrl(course.getCourseThumbnail());
+
             // CourseDTO 생성
-            CourseDTO courseDTO = CourseDTO.of(course, userInfoDto);
+            CourseDTO courseDTO = CourseDTO.of(course, userInfoDto, presignedThumbnailUrl);
             courseDTOList.add(courseDTO);
         }
 
