@@ -449,7 +449,10 @@ public class CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
-        String presignedThumbnailUrl = s3Service.generatePresignedUrl(course.getCourseThumbnail());
+        String presignedThumbnailUrl = null;
+        if (course.getCourseThumbnail() != null) {
+            presignedThumbnailUrl = s3Service.generatePresignedUrl(course.getCourseThumbnail());
+        }
 
         // UserDTO 변환
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getProfileImageUrl());
@@ -605,7 +608,10 @@ public class CourseService {
             Course course = courseAttendees.getCourse();
             UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(course.getUser(), course.getUser().getName());
 
-            String presignedThumbnailUrl = s3Service.generatePresignedUrl(course.getCourseThumbnail());
+            String presignedThumbnailUrl = null;
+            if (course.getCourseThumbnail() != null) {
+                presignedThumbnailUrl = s3Service.generatePresignedUrl(course.getCourseThumbnail());
+            }
 
             // CourseDTO 생성
             CourseDTO courseDTO = CourseDTO.of(course, userInfoDto, presignedThumbnailUrl);
