@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/materials")
 public class MaterialController {
@@ -20,8 +22,9 @@ public class MaterialController {
                                                          @PathVariable Long lectureId,
                                                          @PathVariable Long userId,
                                                          @RequestParam("materialTitle") String materialTitle,
-                                                         @RequestParam(value = "file", required = false) MultipartFile file) {
-        return Response.success("강의자료 생성", materialService.createMaterial(courseId, lectureId, userId, materialTitle, file));
+                                                         @RequestParam(value = "file", required = false) MultipartFile file,
+                                                         @RequestParam("startDate") LocalDate startDate) {
+        return Response.success("강의자료 생성", materialService.createMaterial(courseId, lectureId, userId, materialTitle, file, startDate));
     }
 
     @PatchMapping("/{courseId}/{materialId}/{userId}")
@@ -29,8 +32,9 @@ public class MaterialController {
                                                          @PathVariable Long materialId,
                                                          @PathVariable Long userId,
                                                          @RequestParam(value = "materialTitle", required = false) String materialTitle,
-                                                         @RequestParam(value = "file", required = false) MultipartFile file) {
-        return Response.success("강의자료 수정", materialService.updateMaterial(courseId, materialId, userId, materialTitle, file));
+                                                         @RequestParam(value = "file", required = false) MultipartFile file,
+                                                         @RequestParam(value = "startDate", required = false) LocalDate startDate) {
+        return Response.success("강의자료 수정", materialService.updateMaterial(courseId, materialId, userId, materialTitle, file, startDate));
     }
 
     @DeleteMapping("/{courseId}/{materialId}/{userId}")
