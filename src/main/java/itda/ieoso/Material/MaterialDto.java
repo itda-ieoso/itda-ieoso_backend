@@ -19,6 +19,7 @@ public class MaterialDto {
             String fileSize,
             String originalFilename,
             LocalDate startDate,
+            LocalDate endDate,
             Long contentOrderId,
             String contentType,
             Integer contentOrderIndex
@@ -31,6 +32,7 @@ public class MaterialDto {
                     material.getFileSize(),
                     material.getOriginalFilename(),
                     material.getStartDate(),
+                    material.getEndDate(),
                     contentOrder.getContentOrderId(),
                     contentOrder.getContentType(),
                     contentOrder.getOrderIndex()
@@ -46,6 +48,7 @@ public class MaterialDto {
                     material.getFileSize(),
                     material.getOriginalFilename(),
                     material.getStartDate(),
+                    material.getEndDate(),
                     null,
                     null,
                     null
