@@ -30,7 +30,7 @@ public class CourseDTO {
     private UserDTO.UserInfoDto user;  // User 정보를 UserDTO로 변경
 
     // Course와 UserDTO를 합쳐서 반환
-    public static CourseDTO of(Course course, UserDTO.UserInfoDto userInfoDto) {
+    public static CourseDTO of(Course course, UserDTO.UserInfoDto userInfoDto, String presignedThumbnailUrl) {
         return CourseDTO.builder()
                 .courseId(course.getCourseId())
                 .courseTitle(course.getCourseTitle())
@@ -43,7 +43,7 @@ public class CourseDTO {
                 .assignmentDueDay(course.getAssignmentDueDay())
                 .assignmentDueTime(course.getAssignmentDueTime())
                 .difficultyLevel(course.getDifficultyLevel())
-                .courseThumbnail(course.getCourseThumbnail())
+                .courseThumbnail(presignedThumbnailUrl != null ? presignedThumbnailUrl : course.getCourseThumbnail())
                 .entryCode(course.getEntryCode())
                 .init(course.isInit())
                 .user(userInfoDto)
