@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ public class MaterialService {
 
     // material 생성
     @Transactional
-    public MaterialDto.Response createMaterial(Long courseId, Long lectureId, Long userId, String materialTitle, MultipartFile file) {
+    public MaterialDto.Response createMaterial(Long courseId, Long lectureId, Long userId, String materialTitle, MultipartFile file, LocalDate startDate) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -68,6 +69,12 @@ public class MaterialService {
             }
         }
 
+        LocalDate endDate = course.getEndDate();
+
+        if (startDate.isBefore(course.getStartDate())) {
+            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+        }
+
         // material 생성
         Material material = Material.builder()
                 .course(course)
@@ -76,6 +83,8 @@ public class MaterialService {
                 .materialFile(fileUrl)
                 .originalFilename(originalFilename)
                 .fileSize(fileSize)
+                .startDate(startDate)
+                .endDate(endDate)
                 .materialHistories(new ArrayList<>())
                 .build();
 
@@ -96,7 +105,7 @@ public class MaterialService {
 
     // material 업데이트
     @Transactional
-    public MaterialDto.Response updateMaterial(Long courseId, Long materialId, Long userId, String materialTitle, MultipartFile file) {
+    public MaterialDto.Response updateMaterial(Long courseId, Long materialId, Long userId, String materialTitle, MultipartFile file, LocalDate startDate) {
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -133,6 +142,13 @@ public class MaterialService {
         material.setMaterialFile(fileUrl);
         material.setOriginalFilename(originalFilename);
         material.setFileSize(fileSize);
+
+        if (startDate != null) {
+            if (startDate.isBefore(course.getStartDate())) {
+                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+            }
+            material.setStartDate(startDate); // 유효한 startDate라면 설정
+        }
 
         materialRepository.save(material);
 

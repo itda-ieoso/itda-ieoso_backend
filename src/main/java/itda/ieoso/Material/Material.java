@@ -6,6 +6,7 @@ import itda.ieoso.MaterialHistory.MaterialHistory;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +23,10 @@ public class Material {
 
     private String materialTitle;
     private String materialFile;
-    private String originalFilename; // 원본 파일 이름
-    private String fileSize;        // 파일 크기
+    private String originalFilename;
+    private String fileSize;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     @ManyToOne
     @JoinColumn(name = "lecture_id", nullable = false)
@@ -54,4 +57,6 @@ public class Material {
     public void setFileSize(String fileSize) {
         this.fileSize = fileSize;
     }
+
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
 }
