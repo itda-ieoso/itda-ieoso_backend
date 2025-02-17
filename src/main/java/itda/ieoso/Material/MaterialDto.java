@@ -3,6 +3,7 @@ package itda.ieoso.Material;
 import itda.ieoso.ContentOrder.ContentOrder;
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class MaterialDto {
@@ -15,7 +16,9 @@ public class MaterialDto {
             Long materialId,
             String materialTitle,
             String materialFile,
-            // int fileSize,
+            String fileSize,
+            String originalFilename,
+            LocalDate startDate,
             Long contentOrderId,
             String contentType,
             Integer contentOrderIndex
@@ -25,6 +28,9 @@ public class MaterialDto {
                     material.getMaterialId(),
                     material.getMaterialTitle(),
                     material.getMaterialFile(),
+                    material.getFileSize(),
+                    material.getOriginalFilename(),
+                    material.getStartDate(),
                     contentOrder.getContentOrderId(),
                     contentOrder.getContentType(),
                     contentOrder.getOrderIndex()
@@ -37,6 +43,9 @@ public class MaterialDto {
                     material.getMaterialId(),
                     material.getMaterialTitle(),
                     material.getMaterialFile(),
+                    material.getFileSize(),
+                    material.getOriginalFilename(),
+                    material.getStartDate(),
                     null,
                     null,
                     null
