@@ -1,5 +1,7 @@
 package itda.ieoso.Submission;
 
+import itda.ieoso.MaterialHistory.MaterialHistory;
+import itda.ieoso.MaterialHistory.MaterialHistoryDto;
 import itda.ieoso.User.UserDTO;
 import lombok.Builder;
 import lombok.Getter;
@@ -61,6 +63,30 @@ public class SubmissionDTO {
                     submission.getAssignment().getAssignmentId(),
                     submission.getSubmissionId(),
                     submission.getSubmissionStatus()
+            );
+        }
+    }
+
+    public record ToDoListResponse(
+            Long assignmentId,
+            String assignmentTitle,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Long submissionId,
+            SubmissionStatus submissionStatus,
+            Long lectureId,
+            Integer orderIndex
+    ) {
+        public static ToDoListResponse of(Long assignmentId, String assignmentTitle, Submission history, Integer order) {
+            return new ToDoListResponse(
+                    assignmentId,
+                    assignmentTitle,
+                    history.getAssignment().getStartDate(),
+                    history.getAssignment().getEndDate(),
+                    history.getSubmissionId(),
+                    history.getSubmissionStatus(),
+                    history.getAssignment().getLecture().getLectureId(),
+                    order
             );
         }
     }

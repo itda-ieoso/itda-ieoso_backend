@@ -66,7 +66,7 @@ public class AssignmentService {
                 .lecture(lecture)
                 .assignmentTitle(request.assignmentTitle())
                 .assignmentDescription(request.assignmentDescription())
-                .startDate(LocalDateTime.of(course.getStartDate(), LocalTime.of(00, 00, 00)))
+                .startDate(LocalDateTime.of(course.getStartDate(), LocalTime.of(0, 0, 0)))
                 .endDate(request.endDate())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())

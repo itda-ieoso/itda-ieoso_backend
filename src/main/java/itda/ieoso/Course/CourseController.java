@@ -15,7 +15,6 @@ public class CourseController {
 
     @Autowired
     private CourseService courseService;
-    private CourseAttendeesRepository courseAttendeesRepository;
 
     // 강의실 생성 및 입장 코드 생성
     @PostMapping("/{userId}")
