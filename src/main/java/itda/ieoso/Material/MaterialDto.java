@@ -18,8 +18,8 @@ public class MaterialDto {
             String materialFile,
             String fileSize,
             String originalFilename,
-            LocalDate startDate,
-            LocalDate endDate,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
             Long contentOrderId,
             String contentType,
             Integer contentOrderIndex

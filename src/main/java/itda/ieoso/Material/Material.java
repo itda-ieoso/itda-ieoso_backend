@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +26,8 @@ public class Material {
     private String materialFile;
     private String originalFilename;
     private String fileSize;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     @ManyToOne
     @JoinColumn(name = "lecture_id", nullable = false)
@@ -58,5 +59,5 @@ public class Material {
         this.fileSize = fileSize;
     }
 
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+    public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
 }
