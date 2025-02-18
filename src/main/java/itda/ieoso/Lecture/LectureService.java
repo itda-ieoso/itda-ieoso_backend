@@ -1,10 +1,8 @@
 package itda.ieoso.Lecture;
 
 import itda.ieoso.Assignment.Assignment;
-import itda.ieoso.Assignment.AssignmentDTO;
 import itda.ieoso.Assignment.AssignmentRepository;
 import itda.ieoso.ContentOrder.ContentOrder;
-import itda.ieoso.ContentOrder.ContentOrderDto;
 import itda.ieoso.ContentOrder.ContentOrderRepository;
 import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.Course.Course;
@@ -13,11 +11,7 @@ import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
-import itda.ieoso.Lecture.CurriculumResponseDto.AssignmentResponseDto;
-import itda.ieoso.Lecture.CurriculumResponseDto.MaterialResponseDto;
-import itda.ieoso.Lecture.CurriculumResponseDto.VideoResponseDto;
 import itda.ieoso.Material.Material;
-import itda.ieoso.Material.MaterialDto;
 import itda.ieoso.Material.MaterialRepository;
 import itda.ieoso.MaterialHistory.MaterialHistory;
 import itda.ieoso.MaterialHistory.MaterialHistoryDto;
@@ -28,14 +22,17 @@ import itda.ieoso.Submission.SubmissionRepository;
 import itda.ieoso.User.User;
 import itda.ieoso.User.UserRepository;
 import itda.ieoso.Video.Video;
-import itda.ieoso.Video.VideoDto;
 import itda.ieoso.Video.VideoRepository;
 import itda.ieoso.VideoHistory.VideoHistory;
+import itda.ieoso.VideoHistory.VideoHistoryDto;
 import itda.ieoso.VideoHistory.VideoHistoryRepository;
+import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -260,109 +257,129 @@ public class LectureService {
 
     // 오늘 할일 조회
     @Transactional
-    public List<CurriculumResponseDto> getToDoList(Long courseId, Long userId, LocalDateTime date) {
-        // 과정 찾기
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
-
+    public List<LectureDTO.TodayToDoListResponse> getDayTodoList(Long userId, LocalDateTime time) {
         // 강의 수강생인지 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        CourseAttendees courseAttendees = courseAttendeesRepository.findByCourseAndUser(course,user)
-                .orElseThrow(()-> new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED));
+        List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(userId);
+        if (courseAttendeesList.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        // coures내에서 lectureList조회
-        List<Lecture> lectureList = lectureRepository.findAllByCourse(course);
+        // 오늘거 조회
+        LocalDateTime today = time;
+
+        List<LectureDTO.TodayToDoListResponse> toDoListResponses = new ArrayList<>();
+        for (CourseAttendees courseAttendee : courseAttendeesList) {
+            // 조회
+            List<Video> videos = videoRepository.findByStartDateBeforeAndEndDateAfter(today, today);
+            System.out.println("videos = " + videos.size());
+            List<Material> materials = materialRepository.findByStartDateBeforeAndEndDateAfter(today, today);
+            List<Assignment> assignments = assignmentRepository.findByStartDateBeforeAndEndDateAfter(today, today);
+
+            // 각 Video의 videoId에 대한 contentOrder를 조회하여 Map<Long, Integer> 생성
+            Map<Long, Integer> videoOrderMap = contentOrderRepository.findByContentTypeAndContentIdIn("video",
+                            videos.stream().map(Video::getVideoId).toList())
+                    .stream()
+                    .collect(Collectors.toMap(ContentOrder::getContentId, ContentOrder::getOrderIndex));
+            Map<Long, Integer> materialOrderMap = contentOrderRepository.findByContentTypeAndContentIdIn("material",
+                            materials.stream().map(Material::getMaterialId).toList())
+                    .stream()
+                    .collect(Collectors.toMap(ContentOrder::getContentId, ContentOrder::getOrderIndex));
+            Map<Long, Integer> assignmentOrderMap = contentOrderRepository.findByContentTypeAndContentIdIn("assignment",
+                            assignments.stream().map(Assignment::getAssignmentId).toList())
+                    .stream()
+                    .collect(Collectors.toMap(ContentOrder::getContentId, ContentOrder::getOrderIndex));
+
+            // 각 Video의 videoId에 해당하는 videoHistoryDtos를 조회하여 Map<Long, VideoHistoryDto> 생성
+            Map<Long, VideoHistory> videoHistoryMap = videoHistoryRepository.findByVideo_VideoIdInAndCourseAttendeesIn(
+                            videos.stream().map(Video::getVideoId).toList(), courseAttendee) // long 타입 사용
+                    .stream()
+                    .collect(Collectors.toMap(
+                            videoHistory -> videoHistory.getVideo().getVideoId(), // VideoId를 키로 사용
+                            videoHistory -> videoHistory // VideoHistoryStatus 객체를 값으로 사용
+                    ));
+            Map<Long, MaterialHistory> materialHistoryMap = materialHistoryRepository.findByMaterial_MaterialIdInAndCourseAttendeesIn(
+                            materials.stream().map(Material::getMaterialId).toList(), courseAttendee) // long 타입 사용
+                    .stream()
+                    .collect(Collectors.toMap(
+                            materialHistory -> materialHistory.getMaterial().getMaterialId(),
+                            materialHistory -> materialHistory
+                    ));
+            Map<Long, Submission> submissionMap = submissionRepository.findByAssignment_AssignmentIdInAndCourseAttendeesIn(
+                            assignments.stream().map(Assignment::getAssignmentId).toList(), courseAttendee)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            submission -> submission.getAssignment().getAssignmentId(),
+                            submission -> submission
+                    ));
 
 
-        // 입력날짜를 기간으로 포함하는 lecture, video, assignment, material 필터링
-        return lectureList.stream().map(lecture -> {
-            List<VideoResponseDto> videos = lecture.getVideos().stream()
-                    // 입력날짜를 기간으로 포함하는 video만 필터링
-                    .filter(video -> {
-                        return (video.getStartDate() != null && video.getEndDate() != null) &&              // startDate와 endDate가 null이 아니고
-                                (date.isEqual(video.getStartDate()) || date.isEqual(video.getEndDate()) ||  // date가 startDate와 같거나, endDate와 같거나
-                                        (date.isAfter(video.getStartDate()) && date.isBefore(video.getEndDate()))); // date가 startDate보다 앞이면서 endDate보다 뒤일때
-                    })
-                    // 필터링된 video로 attendees의 videoHistory 조회
+            // 변환
+            List<VideoHistoryDto.Response> videoHistoryDto = videos.stream()
                     .map(video -> {
-                        VideoHistory videoHistory=videoHistoryRepository.findByVideoAndCourseAttendees(video, courseAttendees);
-                        if (videoHistory == null) {
-                            throw new IllegalArgumentException("잘못된접근");
-                        }
-                        // video와 시청여부 포함한 dto 반환
-                        return VideoResponseDto.builder()
-                                .videoId(video.getVideoId())
-                                .videoTitle(video.getVideoTitle())
-                                .videoUrl(video.getVideoUrl())
-                                .startDate(video.getStartDate())
-                                .endDate(video.getEndDate())
-                                .videoHistoryStatus(videoHistory.getVideoHistoryStatus())
-                                .build();
-                    }).toList();
+                        // 각 Video의 title, description, videoHistoryStatus, videoOrder를 가져옴
+                        Long videoId = video.getVideoId();
+                        String videoTitle = video.getVideoTitle();
+                        VideoHistory videoHistory = videoHistoryMap.get(video.getVideoId());
+                        Integer videoOrder = videoOrderMap.get(video.getVideoId());
 
-            List<MaterialResponseDto> materials = lecture.getMaterials().stream()
-                    // 강의자료는 필터링 없음
-                    // material로 attendees의 materialHistory 조회
-                    .map(material -> {
-                        MaterialHistory materialHistory = materialHistoryRepository.findByMaterialAndCourseAttendees(material, courseAttendees);
-                        if (materialHistory == null) {
-                            throw new IllegalArgumentException("잘못된접근");
-                        }
-                        // material과 다운로드여부 포함한 dto 반환
-                        return MaterialResponseDto.builder()
-                                .materialId(material.getMaterialId())
-                                .materialTitle(material.getMaterialTitle())
-                                .materialFile(material.getMaterialFile())
-                                .materialHistoryStatus(materialHistory.isMaterialHistoryStatus())
-                                .build();
-                    }).toList();
-
-            List<AssignmentResponseDto> assignments = lecture.getAssignments().stream()
-                    // 입력날짜를 기간으로 포함하는 assignment만 필터링
-                    .filter(assignment -> {
-                        return (assignment.getStartDate() != null && assignment.getEndDate() != null) &&              // startDate와 endDate가 null이 아니고
-                                (date.isEqual(assignment.getStartDate()) || date.isEqual(assignment.getEndDate()) ||  // date가 startDate와 같거나, endDate와 같거나
-                                        (date.isAfter(assignment.getStartDate()) && date.isBefore(assignment.getEndDate()))); // date가 startDate보다 앞이면서 endDate보다 뒤일때
+                        // VideoDetailsDto 객체 생성
+                        return VideoHistoryDto.Response.of(videoId, videoTitle, videoHistory, videoOrder);
                     })
-                    // 필터링된 assignment로 attendees의 submission 조회
+                    .collect(Collectors.toList());
+
+            List<MaterialHistoryDto.ToDoListResponse> materialHistoryDto = materials.stream()
+                    .map(material -> {
+                        Long materialId = material.getMaterialId();
+                        String materialTitle = material.getMaterialTitle();
+                        MaterialHistory materialHistory = materialHistoryMap.get(material.getMaterialId());
+                        Integer materialOrder = materialOrderMap.get(material.getMaterialId());
+
+                        return MaterialHistoryDto.ToDoListResponse.of(materialId, materialTitle, materialHistory, materialOrder);
+                    })
+                    .collect(Collectors.toList());
+
+            List<SubmissionDTO.ToDoListResponse> submissionDto = assignments.stream()
                     .map(assignment -> {
-                        Submission submission = submissionRepository.findByAssignmentAndCourseAttendees(assignment,courseAttendees);
-                        if (submission == null) {
-                            throw new IllegalArgumentException("잘못된접근");
-                        }
-                        // assignment와 과제제출여부 포함한 dto 반환
-                        return AssignmentResponseDto.builder()
-                                .assignmentId(assignment.getAssignmentId())
-                                .assignmentTitle(assignment.getAssignmentTitle())
-                                .assignmentDescription(assignment.getAssignmentDescription())
-                                .startDate(assignment.getStartDate())
-                                .endDate(assignment.getEndDate())
-                                .submissionStatus(submission.getSubmissionStatus())
-                                .build();
-                    }).toList();
+                        Long assignmentId = assignment.getAssignmentId();
+                        String assignmentTitle = assignment.getAssignmentTitle();
+                        Submission submission = submissionMap.get(assignment.getAssignmentId());
+                        Integer assignmentOrder = assignmentOrderMap.get(assignment.getAssignmentId());
+
+                        return SubmissionDTO.ToDoListResponse.of(assignmentId, assignmentTitle, submission, assignmentOrder);
+                    })
+                    .collect(Collectors.toList());
 
 
-            // 반환된 데이터를 합쳐서 todoList로 반환 (커리큘럼 조회dto 재활용)
-            return new CurriculumResponseDto(
-                    lecture.getLectureId(),
-                    lecture.getLectureTitle(),
-                    lecture.getLectureDescription(),
-                    videos,
-                    materials,
-                    assignments,
-                    lecture.getStartDate(),
-                    lecture.getEndDate()
-            );
-        })
-        // 각 lecture에 video, assignment, material 3개가 전부 없으면 lecture도 필터링
-        .filter(curriculum -> !(curriculum.getVideos().isEmpty() &&
-                //curriculum.getMaterials().isEmpty() &&
-                curriculum.getAssignments().isEmpty()))
-        .collect(Collectors.toList());
+
+            toDoListResponses.add(LectureDTO.TodayToDoListResponse.of(courseAttendee.getCourse(), videoHistoryDto, materialHistoryDto, submissionDto));
+        }
+
+        return toDoListResponses;
+
     }
 
     // 이번주 할일 조회
+//    @Transactional
+//    public boolean getWeekTodoList(Long courseId, Long userId, LocalDateTime date) {
+//        // 오늘 날짜와 시간 구하기
+//        LocalDateTime today = LocalDateTime.now();
+//
+//        // 오늘의 요일 구하기
+//        DayOfWeek dayOfWeek = today.getDayOfWeek();
+//
+//        // 이번 주 월요일 날짜와 시간 구하기
+//        LocalDateTime monday = today.minusDays(dayOfWeek.getValue() - DayOfWeek.MONDAY.getValue()).toLocalDate().atStartOfDay();
+//
+//        List<LectureDTO.TodayToDoListResponse> week;
+//        for (int i = 0; i < 7; i++) {
+//            LocalDateTime currentDay = monday.plusDays(i);
+//            System.out.println(currentDay);
+//        }
+//
+//        return true;
+//    }
 
 }

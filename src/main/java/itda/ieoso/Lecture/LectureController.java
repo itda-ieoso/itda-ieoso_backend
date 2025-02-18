@@ -73,11 +73,13 @@ public class LectureController {
     }
 
     // 대시보드 조회(userid = 수강생)
-    @GetMapping("/dashboard/{courseId}/{userId}")
-    public Response<?> getToDoList(@PathVariable Long courseId,
-                                       @PathVariable Long userId,
-                                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime date) {
-        return Response.success("대시보드 조회(할일 목록)",lectureService.getToDoList(courseId, userId, date));
+    @GetMapping("/dashboard/today/{userId}")
+    public Response<?> getTodayDashboard(@PathVariable Long userId) {
+        return Response.success("대시보드 조회(할일 목록)",lectureService.getDayTodoList(userId, LocalDateTime.now()));
     }
 
+//    @GetMapping("/dashbard/week/{userId}")
+//    public Response<?> getWeeklyDashboard(@PathVariable Long userId) {
+//        return Response.success("대시보드 조회(이번주)" , lectureService.getWeekTodoList(userId, LocalDateTime.now()));
+//    }
 }

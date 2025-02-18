@@ -30,7 +30,8 @@ public enum ErrorCode {
     COURSEATTENDEES_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "강의실 접근권한이 없습니다."),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "시간설정이 범위를 벗어났습니다."),
     INVALID_DAY_OF_WEEK(HttpStatus.BAD_REQUEST, "요일 범위설정을 벗어났습니다."),
-    CONTENTORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "순서도메인을 찾을수없습니다.");
+    CONTENTORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "순서도메인을 찾을수없습니다."),
+    INVALID_DURATION_WEEK(HttpStatus.BAD_REQUEST, "커리큘럼주차가 올바르지 않습니다.");
     /**
      * 아래로 쭉 추가하면 됨
      */

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/materials")
@@ -23,7 +24,7 @@ public class MaterialController {
                                                          @PathVariable Long userId,
                                                          @RequestParam("materialTitle") String materialTitle,
                                                          @RequestParam(value = "file", required = false) MultipartFile file,
-                                                         @RequestParam("startDate") LocalDate startDate) {
+                                                         @RequestParam("startDate") LocalDateTime startDate) {
         return Response.success("강의자료 생성", materialService.createMaterial(courseId, lectureId, userId, materialTitle, file, startDate));
     }
 
@@ -33,7 +34,7 @@ public class MaterialController {
                                                          @PathVariable Long userId,
                                                          @RequestParam(value = "materialTitle", required = false) String materialTitle,
                                                          @RequestParam(value = "file", required = false) MultipartFile file,
-                                                         @RequestParam(value = "startDate", required = false) LocalDate startDate) {
+                                                         @RequestParam(value = "startDate", required = false) LocalDateTime startDate) {
         return Response.success("강의자료 수정", materialService.updateMaterial(courseId, materialId, userId, materialTitle, file, startDate));
     }
 
