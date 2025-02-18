@@ -54,8 +54,10 @@ public class AssignmentService {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
-        if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
-            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+        if (request.endDate() !=null) {
+            if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
+                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+            }
         }
 
         // assignment 생성
@@ -104,8 +106,10 @@ public class AssignmentService {
             throw new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND);
         }
 
-        if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
-            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+        if (request.endDate() != null) {
+            if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
+                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+            }
         }
 
         // assignment 수정
