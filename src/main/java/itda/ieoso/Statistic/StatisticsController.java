@@ -22,6 +22,13 @@ public class StatisticsController {
         List<AssignmentStatisticsDTO> statistics = statisticsService.getAssignmentStatistics(courseId);
         return Response.success("통계 요약 조회", statistics); // 성공 시 데이터 반환
     }
+
+    // 과제 제출 결과 조회 API
+    @GetMapping("/courses/{courseId}/assignments/submissions")
+    public Response<List<AssignmentSubmissionDTO>> getAllAssignmentSubmissions(@PathVariable Long courseId) {
+        List<AssignmentSubmissionDTO> submissionDetails = statisticsService.getAllAssignmentSubmissions(courseId);
+        return Response.success("모든 과제 제출 결과 조회", submissionDetails);
+    }
 }
 
 
