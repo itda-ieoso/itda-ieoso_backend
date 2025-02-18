@@ -18,7 +18,8 @@ public class CourseDTO {
     private String courseDescription;
     private String instructorName;
     private LocalDate startDate;
-    private int durationWeeks;
+    private LocalDate endDate;
+    private Integer durationWeeks;
     private String lectureDay;
     private Time lectureTime;
     private String assignmentDueDay;
@@ -37,6 +38,7 @@ public class CourseDTO {
                 .courseDescription(course.getCourseDescription())
                 .instructorName(course.getInstructorName())
                 .startDate(course.getStartDate())
+                .endDate(course.getEndDate())
                 .durationWeeks(course.getDurationWeeks())
                 .lectureDay(course.getLectureDay())
                 .lectureTime(course.getLectureTime())
@@ -59,7 +61,7 @@ public class CourseDTO {
             String title,
             String instructorName,
             LocalDate startDate,
-            int durationWeeks,              // 초기 설정용
+            Integer durationWeeks,              // 초기 설정용
             List<Integer>lectureDay,      // 리스트
             Time lectureTime,
             List<Integer> assignmentDueDay, // 리스트

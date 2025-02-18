@@ -47,7 +47,7 @@ public class Course {
     private LocalDate endDate;
 
     @Column
-    private int durationWeeks; // 코스 진행 기간
+    private Integer durationWeeks; // 코스 진행 기간
 
     @Column
     private String lectureDay; // 강의요일: 월 1, 화 2, 수 3, 목 4, 금 5, 토 6, 일 7 (여러개 선택가능)
