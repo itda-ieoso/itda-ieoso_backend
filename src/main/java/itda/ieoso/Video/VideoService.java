@@ -49,8 +49,10 @@ public class VideoService {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
-        if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
-            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+        if (request.startDate() !=null) {
+            if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
+                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+            }
         }
 
         // video 생성
@@ -97,8 +99,10 @@ public class VideoService {
             throw new CustomException(ErrorCode.VIDEO_NOT_FOUND);
         }
 
-        if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
-            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+        if (request.startDate() !=null) {
+            if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
+                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+            }
         }
 
         // video 수정
