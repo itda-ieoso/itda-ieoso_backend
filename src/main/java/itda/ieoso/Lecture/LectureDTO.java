@@ -60,6 +60,7 @@ public class LectureDTO {
 
     @Builder
     public record CurriculumResponse(
+            String instructorName,
             Long lectureId,
             String lectureTitle,
             String lectureDescription,
@@ -105,6 +106,7 @@ public class LectureDTO {
                     .collect(Collectors.toList());
 
             return new LectureDTO.CurriculumResponse (
+                    lecture.getCourse().getInstructorName(),
                     lecture.getLectureId(),
                     lecture.getLectureTitle(),
                     lecture.getLectureDescription(),
