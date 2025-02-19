@@ -10,6 +10,7 @@ import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SubmissionService {
@@ -26,12 +28,16 @@ public class SubmissionService {
     private AssignmentRepository assignmentRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private SubmissionFileRepository submissionFileRepository;
 
     @Autowired
     private S3Service s3Service;
 
+    @Transactional
     // 과제 제출 및 수정
-    public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, Long userId, String textContent, MultipartFile[] files) throws IOException, IOException {
+    public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, Long userId, String textContent, List<String> existingFileUrls,
+                                          List<String> deleteFileUrls, MultipartFile[] newFiles) throws IOException, IOException {
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
@@ -45,35 +51,44 @@ public class SubmissionService {
             throw new CustomException(ErrorCode.SUBMISSION_PERMISSION_DENIED);
         }
 
-        // 파일 업로드
-        String folder = "submissions";  // 업로드할 폴더를 "submissions"로 지정
-        List<String> fileUrls = s3Service.uploadFiles(folder, files);  // MultipartFile[]로 파일 받기
-
-        // 파일 정보 리스트 (원래 이름, 파일 크기, URL)
-        // 파일 정보 리스트 (원래 이름, 파일 크기, URL)
-        List<SubmissionFile> submissionFiles = new ArrayList<>();
-
-        for (int i = 0; i < files.length; i++) {
-            MultipartFile file = files[i];
-            String originalFilename = file.getOriginalFilename();  // 원래 파일 이름
-            String fileSize = formatFileSize(file.getSize());  // 파일 크기 (KB, MB, GB)
-            String fileUrl = fileUrls.get(i);  // 파일 URL
-
-            // SubmissionFile 객체 생성 및 리스트에 추가
-            SubmissionFile submissionFile = SubmissionFile.createFile(fileUrl, originalFilename, fileSize, submission);
-            submissionFiles.add(submissionFile);
+        //기존 파일 유지 (existingFileUrls에 포함된 파일만 유지)
+        if (existingFileUrls != null) {
+            submission.setSubmissionFiles(
+                    submission.getSubmissionFiles().stream()
+                            .filter(file -> existingFileUrls.contains(file.getSubmissionFileUrl()))
+                            .collect(Collectors.toList())
+            );
         }
 
-        // 제출 상태 변경
-        if(submission.getSubmissionStatus() == SubmissionStatus.NOT_SUBMITTED) {
-            submission.setTextContent(textContent);
-            submission.setSubmissionFiles(submissionFiles);
-            submission.setSubmittedAt(LocalDateTime.now());
-            submission.setSubmissionStatus(assignment.getEndDate().isAfter(LocalDateTime.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE);
-        } else {
-            submission.setTextContent(textContent);
-            submission.setSubmissionFiles(submissionFiles);
-            submission.setSubmittedAt(LocalDateTime.now());
+        // 삭제할 파일 처리 (DB에서만 삭제)
+        if (deleteFileUrls != null) {
+            submissionFileRepository.deleteBySubmissionFileUrlIn(deleteFileUrls);
+        }
+
+        if (newFiles != null) {
+            // 파일 업로드
+            String folder = "submissions";  // 업로드할 폴더를 "submissions"로 지정
+            List<String> newFileUrls = s3Service.uploadFiles(folder, newFiles);  // MultipartFile[]로 파일 받기
+
+            for (int i = 0; i < newFiles.length; i++) {
+                MultipartFile file = newFiles[i];
+                SubmissionFile submissionFile = SubmissionFile.createFile(
+                        newFileUrls.get(i),
+                        file.getOriginalFilename(),
+                        formatFileSize(file.getSize()),
+                        submission
+                );
+                submission.getSubmissionFiles().add(submissionFile);
+            }
+        }
+
+        submission.setTextContent(textContent);
+        submission.setSubmittedAt(LocalDateTime.now());
+
+        if (submission.getSubmissionStatus() == SubmissionStatus.NOT_SUBMITTED) {
+            submission.setSubmissionStatus(
+                    assignment.getEndDate().isAfter(LocalDateTime.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE
+            );
         }
 
         // 수정된 제출 정보 저장
@@ -104,6 +119,7 @@ public class SubmissionService {
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
     }
 
+    @Transactional
     // 과제 삭제
     public void deleteSubmission(Long assignmentId, Long submissionId, Long userId) {
         // 과제 조회
@@ -121,9 +137,20 @@ public class SubmissionService {
 
         // 제출 정보 삭제
         submission.setTextContent(null);
-        submission.setSubmissionFiles(null);
         submission.setSubmittedAt(null);
         submission.setSubmissionStatus(SubmissionStatus.NOT_SUBMITTED);
+
+        // 제출 파일 삭제 (DB에서만 삭제)
+        List<String> fileUrlsToDelete = submission.getSubmissionFiles().stream()
+                .map(SubmissionFile::getSubmissionFileUrl)  // 파일 URL 리스트 추출
+                .collect(Collectors.toList());
+
+        if (!fileUrlsToDelete.isEmpty()) {
+            submissionFileRepository.deleteBySubmissionFileUrlIn(fileUrlsToDelete);  // 파일 URL들로 DB에서 삭제
+        }
+
+        // 파일 리스트를 초기화 (이미 DB에서 삭제했으므로 비워도 됨)
+        submission.setSubmissionFiles(new ArrayList<>());
 
         submissionRepository.save(submission);
     }
