@@ -7,6 +7,7 @@ import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
 import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Material.MaterialDto;
+import itda.ieoso.User.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +23,12 @@ public class AnnouncementService {
     private final AnnouncementRepository announcementRepository;
     private final CourseRepository courseRepository;
     private final CourseAttendeesRepository courseAttendeesRepository;
+    private final UserService userService;
 
     // 공지 생성(개설자만)
     @Transactional
-    public AnnouncementDto.Response createAnnouncement(Long courseId, Long userId, AnnouncementDto.Request requestDto) {
+    public AnnouncementDto.Response createAnnouncement(Long courseId, String token, AnnouncementDto.Request requestDto) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 강좌 조회(개설자 검증)
         Course course = validateCourseCreator(courseId,userId);
 
@@ -57,7 +60,8 @@ public class AnnouncementService {
 
     // 공지 수정(개설자만)
     @Transactional
-    public AnnouncementDto.Response updateAnnouncement(Long courseId, Long userId, Long announcementId, AnnouncementDto.Request requestDto) {
+    public AnnouncementDto.Response updateAnnouncement(Long courseId, String token, Long announcementId, AnnouncementDto.Request requestDto) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 강좌 조회(개설자 검증)
         Course course = validateCourseCreator(courseId,userId);
 
@@ -88,7 +92,8 @@ public class AnnouncementService {
 
     // 공지 삭제(개설자만)
     @Transactional
-    public AnnouncementDto.deleteResponse deleteAnnouncement(Long courseId, Long userId, Long announcementId) {
+    public AnnouncementDto.deleteResponse deleteAnnouncement(Long courseId, String token, Long announcementId) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 강좌조회(개설자 검증)
         Course course = validateCourseCreator(courseId,userId);
 
@@ -112,7 +117,8 @@ public class AnnouncementService {
 
     // 공지 목록 조회(개설자, 수강생)
     @Transactional
-    public List<AnnouncementDto.Response> getAnnouncements(Long courseId, Long userId) {
+    public List<AnnouncementDto.Response> getAnnouncements(Long courseId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 강좌 조회(개설자, 수강생 검증)
         if (!validateCourseAttendees(courseId,userId)) {
             throw new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED);
@@ -137,7 +143,8 @@ public class AnnouncementService {
 
     // 공지 상세 조회(개설자, 수강생)
     @Transactional
-    public AnnouncementDto.Response getAnnouncement(Long courseId, Long userId, Long announcementId) {
+    public AnnouncementDto.Response getAnnouncement(Long courseId, String token, Long announcementId) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 강좌 조회(개설자, 수강생 검증)
         if (!validateCourseAttendees(courseId,userId)) {
             throw new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED);
