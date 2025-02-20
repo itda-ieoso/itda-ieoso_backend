@@ -13,10 +13,9 @@ public class VideoController {
     @PostMapping("/{courseId}/{lectureId}/{userId}")
     public Response<VideoDto.Response> createVideo(@PathVariable Long courseId,
                                                   @PathVariable Long lectureId,
-                                                  @PathVariable Long userId,
-                                                  @RequestBody VideoDto.Request request) {
+                                                  @PathVariable Long userId) {
 
-        return Response.success("강의영상 생성", videoService.createVideo(courseId,lectureId,userId,request));
+        return Response.success("강의영상 생성", videoService.createVideo(courseId,lectureId,userId));
     }
 
     @PatchMapping("/{courseId}/{videoId}/{userId}")
