@@ -129,8 +129,8 @@ public class LectureService {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
-//        // contentOrder 삭제
-//        contentOrderService.deleteContentOrder(lectureId, "lecture");
+        // contentOrder 삭제
+        contentOrderRepository.deleteAllByLecture(lecture);
 
         // 강의 삭제
         lectureRepository.delete(lecture);
