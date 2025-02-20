@@ -18,10 +18,9 @@ public class AssignmentController {
     @PostMapping("/{courseId}/{lectureId}/{userId}")
     public Response<AssignmentDTO.Response> createAssignment(@PathVariable Long courseId,
                                                             @PathVariable Long lectureId,
-                                                            @PathVariable Long userId,
-                                                            @RequestBody AssignmentDTO.Request request) {
+                                                            @PathVariable Long userId) {
 
-        return Response.success("과제 생성" , assignmentService.createAssignment(courseId,lectureId,userId,request));
+        return Response.success("과제 생성" , assignmentService.createAssignment(courseId,lectureId,userId));
     }
 
     @PatchMapping("/{courseId}/{assignmentId}/{userId}")
