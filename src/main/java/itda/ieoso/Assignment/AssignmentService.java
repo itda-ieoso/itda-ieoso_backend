@@ -13,6 +13,7 @@ import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.Submission.Submission;
 import itda.ieoso.Submission.SubmissionRepository;
 import itda.ieoso.Submission.SubmissionStatus;
+import itda.ieoso.User.UserService;
 import itda.ieoso.Video.Video;
 import itda.ieoso.Video.VideoDto;
 import itda.ieoso.VideoHistory.VideoHistory;
@@ -37,10 +38,12 @@ public class AssignmentService {
     private final LectureRepository lectureRepository;
     private final SubmissionRepository submissionRepository;
     private final ContentOrderService contentOrderService;
+    private final UserService userService;
 
     // assignment 생성
     @Transactional
-    public AssignmentDTO.Response createAssignment(Long courseId, Long lectureId, Long userId, AssignmentDTO.Request request) {
+    public AssignmentDTO.Response createAssignment(Long courseId, Long lectureId, String token, AssignmentDTO.Request request) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -90,7 +93,8 @@ public class AssignmentService {
 
     // assignment 업데이트
     @Transactional
-    public AssignmentDTO.Response updateAssignment(Long courseId, Long assignmentId, Long userId, AssignmentDTO.Request request) {
+    public AssignmentDTO.Response updateAssignment(Long courseId, Long assignmentId, String token, AssignmentDTO.Request request) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -130,7 +134,8 @@ public class AssignmentService {
 
     // assignment 삭제
     @Transactional
-    public AssignmentDTO.deleteResponse deleteAssignment(Long courseId, Long assignmentId, Long userId) {
+    public AssignmentDTO.deleteResponse deleteAssignment(Long courseId, Long assignmentId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));

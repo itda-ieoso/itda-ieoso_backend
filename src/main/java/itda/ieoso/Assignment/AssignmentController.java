@@ -19,24 +19,24 @@ public class AssignmentController {
     public Response<AssignmentDTO.Response> createAssignment(@PathVariable Long courseId,
                                                             @PathVariable Long lectureId,
                                                             @PathVariable Long userId,
-                                                            @RequestBody AssignmentDTO.Request request) {
+                                                            @RequestBody AssignmentDTO.Request request, @RequestHeader("Authorization") String token) {
 
-        return Response.success("과제 생성" , assignmentService.createAssignment(courseId,lectureId,userId,request));
+        return Response.success("과제 생성" , assignmentService.createAssignment(courseId,lectureId,token,request));
     }
 
     @PatchMapping("/{courseId}/{assignmentId}/{userId}")
     public Response<AssignmentDTO.Response> updateAssignment(@PathVariable Long courseId,
                                          @PathVariable Long assignmentId,
                                          @PathVariable Long userId,
-                                         @RequestBody AssignmentDTO.Request request) {
-        return Response.success("과제 수정", assignmentService.updateAssignment(courseId,assignmentId,userId,request));
+                                         @RequestBody AssignmentDTO.Request request, @RequestHeader("Authorization") String token) {
+        return Response.success("과제 수정", assignmentService.updateAssignment(courseId,assignmentId,token,request));
     }
 
     @DeleteMapping("/{courseId}/{assignmentId}/{userId}")
     public Response<AssignmentDTO.deleteResponse> deleteAssignment(@PathVariable Long courseId,
                                                @PathVariable Long assignmentId,
-                                               @PathVariable Long userId) {
-        return Response.success("과제 삭제", assignmentService.deleteAssignment(courseId,assignmentId,userId));
+                                               @PathVariable Long userId, @RequestHeader("Authorization") String token) {
+        return Response.success("과제 삭제", assignmentService.deleteAssignment(courseId,assignmentId,token));
     }
 
     // 과제 조회
