@@ -63,6 +63,13 @@ public class SubmissionService {
         // 삭제할 파일 처리 (DB에서만 삭제)
         if (deleteFileUrls != null) {
             submissionFileRepository.deleteBySubmissionFileUrlIn(deleteFileUrls);
+
+            // 메모리에서도 삭제
+            submission.setSubmissionFiles(
+                    submission.getSubmissionFiles().stream()
+                            .filter(file -> !deleteFileUrls.contains(file.getSubmissionFileUrl())) // 삭제 리스트에 없는 파일만 유지
+                            .collect(Collectors.toList())
+            );
         }
 
         if (newFiles != null) {
