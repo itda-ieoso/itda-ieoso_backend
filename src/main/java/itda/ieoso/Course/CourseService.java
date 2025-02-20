@@ -3,6 +3,7 @@ package itda.ieoso.Course;
 import itda.ieoso.Announcement.AnnouncementRepository;
 import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentRepository;
+import itda.ieoso.ContentOrder.ContentOrderRepository;
 import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.CourseAttendees.CourseAttendeesRepository;
@@ -63,6 +64,7 @@ public class CourseService {
     private final S3Service s3Service;
     private final ContentOrderService contentOrderService;
     private final LectureRepository lectureRepository;
+    private final ContentOrderRepository contentOrderRepository;
 
     // 강의실 생성
     @Transactional
@@ -444,6 +446,7 @@ public class CourseService {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
+        // 공지 삭제
         announcementRepository.deleteAllByCourse(course);
 
         // 유저들의 히스토리 삭제
@@ -453,6 +456,9 @@ public class CourseService {
 
         // 강좌에 있는 courseAttendees 모두 삭제
         courseAttendeesRepository.deleteAllByCourse(course);
+
+        // contentOrder 삭제
+        contentOrderRepository.deleteAllByCourse(course);
 
         // 강좌 삭제
         courseRepository.delete(course);
