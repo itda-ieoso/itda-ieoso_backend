@@ -37,7 +37,7 @@ public class VideoService {
 
     // video 생성
     @Transactional
-    public VideoDto.Response createVideo(Long courseId, Long lectureId, String token, VideoDto.Request request) {
+    public VideoDto.Response createVideo(Long courseId, Long lectureId, String token) {
         Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
@@ -52,19 +52,13 @@ public class VideoService {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
-        if (request.startDate() !=null) {
-            if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
-                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
-            }
-        }
-
         // video 생성
         Video video = Video.builder()
                 .course(course)
                 .lecture(lecture)
-                .videoTitle(request.videoTitle())
-                .videoUrl(request.videoUrl())
-                .startDate(request.startDate())
+                .videoTitle(null)
+                .videoUrl(null)
+                .startDate(null)
                 .endDate(LocalDateTime.of(course.getEndDate(), LocalTime.of(23, 59, 59)))
                 .videoHistories(new ArrayList<>())
                 .build();

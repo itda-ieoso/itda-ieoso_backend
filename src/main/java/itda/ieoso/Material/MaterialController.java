@@ -22,10 +22,8 @@ public class MaterialController {
     public Response<MaterialDto.Response> createMaterial(@PathVariable Long courseId,
                                                          @PathVariable Long lectureId,
                                                          @PathVariable Long userId,
-                                                         @RequestParam("materialTitle") String materialTitle,
-                                                         @RequestParam(value = "file", required = false) MultipartFile file,
-                                                         @RequestParam("startDate") LocalDateTime startDate, @RequestHeader("Authorization") String token) {
-        return Response.success("강의자료 생성", materialService.createMaterial(courseId, lectureId, token, materialTitle, file, startDate));
+                                                         @RequestHeader("Authorization") String token) {
+        return Response.success("강의자료 생성", materialService.createMaterial(courseId, lectureId, token));
     }
 
     @PatchMapping("/{courseId}/{materialId}/{userId}")

@@ -43,8 +43,9 @@ public class MaterialService {
 
     // material 생성
     @Transactional
-    public MaterialDto.Response createMaterial(Long courseId, Long lectureId, String token, String materialTitle, MultipartFile file, LocalDateTime startDate) {
+    public MaterialDto.Response createMaterial(Long courseId, Long lectureId, String token) {
         Long userId = userService.getUserByToken(token).getUserId();
+
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -59,36 +60,36 @@ public class MaterialService {
         }
 
         // 파일 업로드
-        String fileUrl = null;
-        String originalFilename = null;
-        String fileSize = null;
-
-        if (file != null && !file.isEmpty()) {
-            try {
-                File convertedFile = s3Service.convertMultipartFileToFile(file);
-                fileUrl = s3Service.uploadFile("materials", file.getOriginalFilename(), convertedFile);
-                originalFilename = file.getOriginalFilename();
-                fileSize = formatFileSize(file.getSize());
-            } catch (IOException e) {
-                throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
-            }
-        }
-
-        LocalDate endDate = course.getEndDate();
-
-        if (startDate.toLocalDate().isBefore(course.getStartDate())) {
-            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
-        }
+//        String fileUrl = null;
+//        String originalFilename = null;
+//        String fileSize = null;
+//
+//        if (file != null && !file.isEmpty()) {
+//            try {
+//                File convertedFile = s3Service.convertMultipartFileToFile(file);
+//                fileUrl = s3Service.uploadFile("materials", file.getOriginalFilename(), convertedFile);
+//                originalFilename = file.getOriginalFilename();
+//                fileSize = formatFileSize(file.getSize());
+//            } catch (IOException e) {
+//                throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
+//            }
+//        }
+//
+//        LocalDate endDate = course.getEndDate();
+//
+//        if (startDate.toLocalDate().isBefore(course.getStartDate())) {
+//            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+//        }
 
         // material 생성
         Material material = Material.builder()
                 .course(course)
                 .lecture(lecture)
-                .materialTitle(materialTitle)
-                .materialFile(fileUrl)
-                .originalFilename(originalFilename)
-                .fileSize(fileSize)
-                .startDate(startDate)
+                .materialTitle(null)
+                .materialFile(null)
+                .originalFilename(null)
+                .fileSize(null)
+                .startDate(null)
                 .endDate(LocalDateTime.of(course.getEndDate(), LocalTime.of(23, 59, 59)))
                 .materialHistories(new ArrayList<>())
                 .build();

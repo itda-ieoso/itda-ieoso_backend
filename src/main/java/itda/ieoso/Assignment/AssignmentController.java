@@ -19,9 +19,10 @@ public class AssignmentController {
     public Response<AssignmentDTO.Response> createAssignment(@PathVariable Long courseId,
                                                             @PathVariable Long lectureId,
                                                             @PathVariable Long userId,
-                                                            @RequestBody AssignmentDTO.Request request, @RequestHeader("Authorization") String token) {
+                                                            @RequestHeader("Authorization") String token) {
 
-        return Response.success("과제 생성" , assignmentService.createAssignment(courseId,lectureId,token,request));
+        return Response.success("과제 생성" , assignmentService.createAssignment(courseId,lectureId,token));
+
     }
 
     @PatchMapping("/{courseId}/{assignmentId}/{userId}")

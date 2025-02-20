@@ -14,9 +14,9 @@ public class VideoController {
     public Response<VideoDto.Response> createVideo(@PathVariable Long courseId,
                                                   @PathVariable Long lectureId,
                                                   @PathVariable Long userId,
-                                                  @RequestBody VideoDto.Request request, @RequestHeader("Authorization") String token) {
+                                                  @RequestHeader("Authorization") String token) {
 
-        return Response.success("강의영상 생성", videoService.createVideo(courseId,lectureId,token,request));
+        return Response.success("강의영상 생성", videoService.createVideo(courseId,lectureId,token));
     }
 
     @PatchMapping("/{courseId}/{videoId}/{userId}")

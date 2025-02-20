@@ -42,7 +42,7 @@ public class AssignmentService {
 
     // assignment 생성
     @Transactional
-    public AssignmentDTO.Response createAssignment(Long courseId, Long lectureId, String token, AssignmentDTO.Request request) {
+    public AssignmentDTO.Response createAssignment(Long courseId, Long lectureId, String token) {
         Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
@@ -57,20 +57,14 @@ public class AssignmentService {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
-        if (request.endDate() !=null) {
-            if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
-                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
-            }
-        }
-
         // assignment 생성
         Assignment assignment = Assignment.builder()
                 .course(course)
                 .lecture(lecture)
-                .assignmentTitle(request.assignmentTitle())
-                .assignmentDescription(request.assignmentDescription())
+                .assignmentTitle(null)
+                .assignmentDescription(null)
                 .startDate(LocalDateTime.of(course.getStartDate(), LocalTime.of(0, 0, 0)))
-                .endDate(request.endDate())
+                .endDate(null)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .submissions(new ArrayList<>())
