@@ -28,16 +28,13 @@ public class Assignment {
     @Column(name = "assignment_id", nullable = false)
     private Long assignmentId;
 
-    @Column(nullable = false, length = 200)
+    @Column(length = 200)
     private String assignmentTitle;
 
     @Column(length = 1000)
     private String assignmentDescription;
 
-    @Column(nullable = false)
     private LocalDateTime startDate;
-
-    @Column(nullable = false)
     private LocalDateTime endDate;
 
     @Column
