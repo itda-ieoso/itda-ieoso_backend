@@ -21,6 +21,7 @@ import itda.ieoso.Submission.SubmissionDTO;
 import itda.ieoso.Submission.SubmissionRepository;
 import itda.ieoso.User.User;
 import itda.ieoso.User.UserRepository;
+import itda.ieoso.User.UserService;
 import itda.ieoso.Video.Video;
 import itda.ieoso.Video.VideoRepository;
 import itda.ieoso.VideoHistory.VideoHistory;
@@ -52,11 +53,13 @@ public class LectureService {
     private final VideoRepository videoRepository;
     private final MaterialRepository materialRepository;
     private final AssignmentRepository assignmentRepository;
+    private final UserService userService;
 
 
     // 강의 생성
     @Transactional
-    public LectureDTO.Response createLecture(Long courseId, Long userId, LectureDTO.Request request) {
+    public LectureDTO.Response createLecture(Long courseId, String token, LectureDTO.Request request) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 과정 생성자인지 확인
         if (!isCourseCreator(courseId, userId)) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
@@ -91,7 +94,8 @@ public class LectureService {
 
     // 강의 수정
     @Transactional
-    public LectureDTO.Response updateLecture(Long courseId, Long lectureId, Long userId, LectureDTO.Request request) {
+    public LectureDTO.Response updateLecture(Long courseId, Long lectureId, String token, LectureDTO.Request request) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 기존 강의 조회
         Lecture lecture = lectureRepository.findByCourse_CourseIdAndLectureId(courseId,lectureId)
                 .orElseThrow(() -> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
@@ -119,7 +123,8 @@ public class LectureService {
 
     // 강의 삭제
     @Transactional
-    public LectureDTO.deleteResponse deleteLecture(Long courseId, Long lectureId, Long userId) {
+    public LectureDTO.deleteResponse deleteLecture(Long courseId, Long lectureId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 강의 찾기
         Lecture lecture = lectureRepository.findByCourse_CourseIdAndLectureId(courseId,lectureId)
                 .orElseThrow(() -> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
@@ -152,14 +157,16 @@ public class LectureService {
     }
 
     // 과정 참여자인지 확인
-    public boolean isCourseAttendee(Long courseId, Long userId) {
+    public boolean isCourseAttendee(Long courseId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // CourseAttendees 테이블에서 courseId와 userId로 참여 상태 확인
         return courseAttendeesRepository.existsByCourse_CourseIdAndUser_UserId(courseId, userId);
     }
 
     // lecture조회(커리큘럼 전체조회)
     @Transactional
-    public List<LectureDTO.CurriculumResponse> getLectureList(Long courseId, Long userId) {
+    public List<LectureDTO.CurriculumResponse> getLectureList(Long courseId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 과정 찾기(필요?)
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -228,7 +235,8 @@ public class LectureService {
 
     // 수강생 히스토리 전체 조회
     @Transactional
-    public LectureDTO.HistoryResponse getLectureHistories(Long courseId, Long userId) {
+    public LectureDTO.HistoryResponse getLectureHistories(Long courseId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 과정 찾기(필요?)
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -257,7 +265,8 @@ public class LectureService {
 
     // 오늘 할일 조회
     @Transactional
-    public List<LectureDTO.TodayToDoListResponse> getDayTodoList(Long userId, LocalDateTime time) {
+    public List<LectureDTO.TodayToDoListResponse> getDayTodoList(String token, LocalDateTime time) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 강의 수강생인지 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
