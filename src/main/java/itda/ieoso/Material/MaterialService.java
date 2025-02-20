@@ -13,6 +13,7 @@ import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.MaterialHistory.MaterialHistory;
 import itda.ieoso.MaterialHistory.MaterialHistoryRepository;
+import itda.ieoso.User.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,10 +39,12 @@ public class MaterialService {
     private final MaterialHistoryRepository materialHistoryRepository;
     private final S3Service s3Service;
     private final ContentOrderService contentOrderService;
+    private final UserService userService;
 
     // material 생성
     @Transactional
-    public MaterialDto.Response createMaterial(Long courseId, Long lectureId, Long userId, String materialTitle, MultipartFile file, LocalDateTime startDate) {
+    public MaterialDto.Response createMaterial(Long courseId, Long lectureId, String token, String materialTitle, MultipartFile file, LocalDateTime startDate) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -107,7 +110,8 @@ public class MaterialService {
 
     // material 업데이트
     @Transactional
-    public MaterialDto.Response updateMaterial(Long courseId, Long materialId, Long userId, String materialTitle, MultipartFile file, LocalDateTime startDate) {
+    public MaterialDto.Response updateMaterial(Long courseId, Long materialId, String token, String materialTitle, MultipartFile file, LocalDateTime startDate) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -176,7 +180,8 @@ public class MaterialService {
 
     // material 삭제
     @Transactional
-    public MaterialDto.deleteResponse deleteMaterial(Long courseId, Long materialId, Long userId) {
+    public MaterialDto.deleteResponse deleteMaterial(Long courseId, Long materialId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));

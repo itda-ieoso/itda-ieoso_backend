@@ -24,8 +24,8 @@ public class MaterialController {
                                                          @PathVariable Long userId,
                                                          @RequestParam("materialTitle") String materialTitle,
                                                          @RequestParam(value = "file", required = false) MultipartFile file,
-                                                         @RequestParam("startDate") LocalDateTime startDate) {
-        return Response.success("강의자료 생성", materialService.createMaterial(courseId, lectureId, userId, materialTitle, file, startDate));
+                                                         @RequestParam("startDate") LocalDateTime startDate, @RequestHeader("Authorization") String token) {
+        return Response.success("강의자료 생성", materialService.createMaterial(courseId, lectureId, token, materialTitle, file, startDate));
     }
 
     @PatchMapping("/{courseId}/{materialId}/{userId}")
@@ -34,15 +34,16 @@ public class MaterialController {
                                                          @PathVariable Long userId,
                                                          @RequestParam(value = "materialTitle", required = false) String materialTitle,
                                                          @RequestParam(value = "file", required = false) MultipartFile file,
-                                                         @RequestParam(value = "startDate", required = false) LocalDateTime startDate) {
-        return Response.success("강의자료 수정", materialService.updateMaterial(courseId, materialId, userId, materialTitle, file, startDate));
+                                                         @RequestParam(value = "startDate", required = false) LocalDateTime startDate,
+                                                         @RequestHeader("Authorization") String token) {
+        return Response.success("강의자료 수정", materialService.updateMaterial(courseId, materialId, token, materialTitle, file, startDate));
     }
 
     @DeleteMapping("/{courseId}/{materialId}/{userId}")
     public Response<MaterialDto.deleteResponse> deleteMaterial(@PathVariable Long courseId,
                                                @PathVariable Long materialId,
-                                               @PathVariable Long userId) {
-        return Response.success("강의자료 삭제", materialService.deleteMaterial(courseId,materialId,userId));
+                                               @PathVariable Long userId, @RequestHeader("Authorization") String token) {
+        return Response.success("강의자료 삭제", materialService.deleteMaterial(courseId,materialId,token));
     }
 
 }
