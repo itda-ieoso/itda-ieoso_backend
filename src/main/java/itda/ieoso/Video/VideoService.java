@@ -10,6 +10,7 @@ import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
+import itda.ieoso.User.UserService;
 import itda.ieoso.VideoHistory.VideoHistory;
 import itda.ieoso.VideoHistory.VideoHistoryRepository;
 import itda.ieoso.VideoHistory.VideoHistoryStatus;
@@ -32,10 +33,12 @@ public class VideoService {
     private final LectureRepository lectureRepository;
     private final VideoHistoryRepository videoHistoryRepository;
     private final ContentOrderService contentOrderService;
+    private final UserService userService;
 
     // video 생성
     @Transactional
-    public VideoDto.Response createVideo(Long courseId, Long lectureId, Long userId, VideoDto.Request request) {
+    public VideoDto.Response createVideo(Long courseId, Long lectureId, String token, VideoDto.Request request) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -83,7 +86,8 @@ public class VideoService {
 
     // video 업데이트
     @Transactional
-    public VideoDto.Response updateVideo(Long courseId, Long videoId, Long userId, VideoDto.Request request) {
+    public VideoDto.Response updateVideo(Long courseId, Long videoId, String token, VideoDto.Request request) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -121,7 +125,8 @@ public class VideoService {
 
     // video 삭제
     @Transactional
-    public VideoDto.deleteResponse deleteVideo(Long courseId, Long videoId, Long userId) {
+    public VideoDto.deleteResponse deleteVideo(Long courseId, Long videoId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
