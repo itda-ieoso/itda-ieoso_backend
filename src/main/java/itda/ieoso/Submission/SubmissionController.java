@@ -28,10 +28,10 @@ public class SubmissionController {
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
             @PathVariable Long userId,
-            @RequestParam(value = "textContent") String textContent,
+            @RequestParam(required = false, value = "textContent") String textContent,
             @RequestParam(required = false) List<String> existingFileUrls,  // 기존 파일 URL
             @RequestParam(required = false) List<String> deleteFileUrls,    // 삭제할 파일 URL
-            @RequestParam(value = "files") MultipartFile[] newFiles) throws IOException {  // MultipartFile[]로 받기
+            @RequestParam(required = false, value = "files") MultipartFile[] newFiles) throws IOException {  // MultipartFile[]로 받기
 
         // 제출 정보 수정 처리
         SubmissionDTO updatedSubmissionDTO = submissionService.updateSubmission(assignmentId,
