@@ -14,6 +14,7 @@ public interface ContentOrderRepository extends JpaRepository<ContentOrder, Long
     List<ContentOrder> findByCourse_CourseIdAndLecture_LectureIdOrderByOrderIndexAsc(Long course, Long lecture);
     void deleteByContentIdAndContentType(Long contentId, String contentType);
     void deleteAllByCourse(Course course);
+    void deleteAllByLecture(Lecture lecture);
     @Query("SELECT co FROM ContentOrder co WHERE co.course.courseId = :courseId AND co.lecture.lectureId = :lectureId ORDER BY co.orderIndex ASC")
     List<ContentOrder> findOrderedByCourseIdAndLectureId(@Param("courseId") Long courseId, @Param("lectureId") Long lectureId);
 
