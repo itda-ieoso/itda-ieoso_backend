@@ -31,12 +31,13 @@ public class SubmissionController {
             @RequestParam(required = false, value = "textContent") String textContent,
             @RequestParam(required = false) List<String> existingFileUrls,  // 기존 파일 URL
             @RequestParam(required = false) List<String> deleteFileUrls,    // 삭제할 파일 URL
-            @RequestParam(required = false, value = "files") MultipartFile[] newFiles) throws IOException {  // MultipartFile[]로 받기
+            @RequestParam(required = false, value = "files") MultipartFile[] newFiles,
+            @RequestHeader("Authorization") String token) throws IOException {  // MultipartFile[]로 받기
 
         // 제출 정보 수정 처리
         SubmissionDTO updatedSubmissionDTO = submissionService.updateSubmission(assignmentId,
                 submissionId,
-                userId,
+                token,
                 textContent,
                 existingFileUrls,   // 새로운 파라미터 추가
                 deleteFileUrls,     // 새로운 파라미터 추가
@@ -50,10 +51,11 @@ public class SubmissionController {
     public Response<Void> deleteSubmission(
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
-            @PathVariable Long userId) {
+            @PathVariable Long userId,
+            @RequestHeader("Authorization") String token) {
 
         // 제출 정보 수정 처리
-        submissionService.deleteSubmission(assignmentId, submissionId, userId);
+        submissionService.deleteSubmission(assignmentId, submissionId, token);
 
         return Response.success("과제 제출 삭제", null); // 삭제 완료 응답
     }
@@ -63,10 +65,11 @@ public class SubmissionController {
     public Response<SubmissionDTO> getSubmission(
             @PathVariable Long assignmentId,
             @PathVariable Long submissionId,
-            @PathVariable Long userId) {
+            @PathVariable Long userId,
+            @RequestHeader("Authorization") String token) {
 
         // 제출 정보를 가져와서 SubmissionDTO로 변환
-        SubmissionDTO submissionDTO = submissionService.getSubmission(assignmentId, submissionId, userId);
+        SubmissionDTO submissionDTO = submissionService.getSubmission(assignmentId, submissionId, token);
         return Response.success("과제 조회", submissionDTO); // 조회한 제출 정보 반환
     }
 }

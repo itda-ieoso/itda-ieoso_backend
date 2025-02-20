@@ -8,6 +8,7 @@ import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
 import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
+import itda.ieoso.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +35,14 @@ public class SubmissionService {
     @Autowired
     private S3Service s3Service;
 
+    @Autowired
+    private UserService userService;
+
     @Transactional
     // 과제 제출 및 수정
-    public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, Long userId, String textContent, List<String> existingFileUrls,
+    public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, String token, String textContent, List<String> existingFileUrls,
                                           List<String> deleteFileUrls, MultipartFile[] newFiles) throws IOException, IOException {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
@@ -128,7 +133,8 @@ public class SubmissionService {
 
     @Transactional
     // 과제 삭제
-    public void deleteSubmission(Long assignmentId, Long submissionId, Long userId) {
+    public void deleteSubmission(Long assignmentId, Long submissionId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
@@ -163,7 +169,8 @@ public class SubmissionService {
     }
 
     // 과제 조회
-    public SubmissionDTO getSubmission(Long assignmentId, Long submissionId, Long userId) {
+    public SubmissionDTO getSubmission(Long assignmentId, Long submissionId, String token) {
+        Long userId = userService.getUserByToken(token).getUserId();
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
