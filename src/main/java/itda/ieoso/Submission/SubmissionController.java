@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/assignments/{assignmentId}/submissions")
@@ -28,10 +29,18 @@ public class SubmissionController {
             @PathVariable Long submissionId,
             @PathVariable Long userId,
             @RequestParam(value = "textContent") String textContent,
-            @RequestParam(value = "files") MultipartFile[] files) throws IOException {  // MultipartFile[]로 받기
+            @RequestParam(required = false) List<String> existingFileUrls,  // 기존 파일 URL
+            @RequestParam(required = false) List<String> deleteFileUrls,    // 삭제할 파일 URL
+            @RequestParam(value = "files") MultipartFile[] newFiles) throws IOException {  // MultipartFile[]로 받기
 
         // 제출 정보 수정 처리
-        SubmissionDTO updatedSubmissionDTO = submissionService.updateSubmission(assignmentId, submissionId, userId, textContent, files);
+        SubmissionDTO updatedSubmissionDTO = submissionService.updateSubmission(assignmentId,
+                submissionId,
+                userId,
+                textContent,
+                existingFileUrls,   // 새로운 파라미터 추가
+                deleteFileUrls,     // 새로운 파라미터 추가
+                newFiles);
 
         return Response.success("과제 제출 및 수정", updatedSubmissionDTO); // 수정된 제출 정보 반환
     }
