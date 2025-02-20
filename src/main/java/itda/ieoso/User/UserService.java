@@ -29,7 +29,7 @@ public class UserService {
     }
 
     // 토큰으로 사용자 조회
-    private User getUserByToken(String token) {
+    public User getUserByToken(String token) {
         String email = jwtUtil.getEmail(token.split(" ")[1]);
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
