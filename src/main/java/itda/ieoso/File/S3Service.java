@@ -14,6 +14,8 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -101,9 +103,12 @@ public class S3Service {
         // URL에서 "https://"와 "s3.ap-northeast-2.amazonaws.com"을 제거하고, 경로를 남깁니다.
         String withoutS3Prefix = s3Url.replace("https://", "").replace("s3.ap-northeast-2.amazonaws.com/", "").replace("itdaawsbucket.", "");
         String filePath = withoutS3Prefix;
+        // 파일 이름을 URL 인코딩
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
 
         // Content-Disposition 설정: 브라우저가 파일 다운로드하도록 지정
-        String contentDisposition = "attachment; filename=\"" + filePath.substring(filePath.lastIndexOf("/") + 1) + "\"";
+        String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
         String contentType = Files.probeContentType(Paths.get(filePath));
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
