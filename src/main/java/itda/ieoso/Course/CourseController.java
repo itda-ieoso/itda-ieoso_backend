@@ -53,7 +53,7 @@ public class CourseController {
 
     // 강의실 조회(설정 & 개요 페이지)
     @GetMapping("/{courseId}")
-    public Response<CourseDTO> findByCourseId(@PathVariable Long courseId) {
+    public Response<CourseDTO> findByCourseId(@PathVariable Long courseId) throws IOException {
         CourseDTO courseDTO = courseService.getCourseById(courseId);
         return Response.success("강의실 조회(설정&개요 페이지)", courseDTO);
     }
@@ -72,7 +72,7 @@ public class CourseController {
 
     // 사용자가 가입한 강의실 목록 조회
     @GetMapping("/{userId}/my-courses")
-    public Response<List<CourseDTO>> getCoursesByUser(@PathVariable Long userId) {
+    public Response<List<CourseDTO>> getCoursesByUser(@PathVariable Long userId) throws IOException {
         List<CourseDTO> courses = courseService.getCoursesByUser(userId);
         return Response.success("강의실 목록 조회", courses);
     }

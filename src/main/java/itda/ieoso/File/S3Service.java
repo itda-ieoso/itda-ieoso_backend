@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +96,7 @@ public class S3Service {
     }
 
     // S3 파일 다운로드 URL 생성 (Presigned URL)
-    public String generatePresignedUrl(String s3Url) {
+    public String generatePresignedUrl(String s3Url) throws IOException {
 
         // URL에서 "https://"와 "s3.ap-northeast-2.amazonaws.com"을 제거하고, 경로를 남깁니다.
         String withoutS3Prefix = s3Url.replace("https://", "").replace("s3.ap-northeast-2.amazonaws.com/", "").replace("itdaawsbucket.", "");
@@ -103,10 +104,12 @@ public class S3Service {
 
         // Content-Disposition 설정: 브라우저가 파일 다운로드하도록 지정
         String contentDisposition = "attachment; filename=\"" + filePath.substring(filePath.lastIndexOf("/") + 1) + "\"";
+        String contentType = Files.probeContentType(Paths.get(filePath));
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(s3Config.getBucketName())
                 .key(filePath)
+                .responseContentType(contentType)
                 .responseContentDisposition(contentDisposition)
                 .build();
 

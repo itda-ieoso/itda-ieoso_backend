@@ -466,7 +466,7 @@ public class CourseService {
 
     // 강의실 설정창 조회(설정 & 개요 페이지)
     @Transactional
-    public CourseDTO getCourseById(Long courseId) {
+    public CourseDTO getCourseById(Long courseId) throws IOException {
         // 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -615,7 +615,7 @@ public class CourseService {
     }
 
     // 사용자가 가입한 강의실 목록 조회
-    public List<CourseDTO> getCoursesByUser(Long userId) {
+    public List<CourseDTO> getCoursesByUser(Long userId) throws IOException {
         List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(userId);
 
         // 강의실 목록 반환 (DTO 변환)
