@@ -72,7 +72,7 @@ public class CourseController {
 
     // 사용자가 가입한 강의실 목록 조회
     @GetMapping("/{userId}/my-courses")
-    public Response<List<CourseDTO>> getCoursesByUser(@PathVariable Long userId) {
+    public Response<List<CourseDTO>> getCoursesByUser(@PathVariable Long userId) throws IOException {
         List<CourseDTO> courses = courseService.getCoursesByUser(userId);
         return Response.success("강의실 목록 조회", courses);
     }
