@@ -53,7 +53,7 @@ public class CourseController {
 
     // 강의실 조회(설정 & 개요 페이지)
     @GetMapping("/{courseId}")
-    public Response<CourseDTO> findByCourseId(@PathVariable Long courseId) {
+    public Response<CourseDTO> findByCourseId(@PathVariable Long courseId) throws IOException {
         CourseDTO courseDTO = courseService.getCourseById(courseId);
         return Response.success("강의실 조회(설정&개요 페이지)", courseDTO);
     }
