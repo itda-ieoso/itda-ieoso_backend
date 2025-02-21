@@ -101,9 +101,13 @@ public class S3Service {
         String withoutS3Prefix = s3Url.replace("https://", "").replace("s3.ap-northeast-2.amazonaws.com/", "").replace("itdaawsbucket.", "");
         String filePath = withoutS3Prefix;
 
+        // Content-Disposition 설정: 브라우저가 파일 다운로드하도록 지정
+        String contentDisposition = "attachment; filename=\"" + filePath.substring(filePath.lastIndexOf("/") + 1) + "\"";
+
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(s3Config.getBucketName())
                 .key(filePath)
+                .responseContentDisposition(contentDisposition)
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
