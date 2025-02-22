@@ -115,6 +115,7 @@ public class StatisticsService {
                         String fileName = null;
                         String fileUrl = null;
                         LocalDateTime submittedAt = null;
+                        String textContent = null;
 
                         // 제출 데이터가 있는 경우
                         if (submission != null) {
@@ -126,6 +127,8 @@ public class StatisticsService {
                                 status = "SUBMITTED";
                             }
                             submittedAt = submission.getSubmittedAt();
+                            textContent = submission.getTextContent();
+
 
                             // SubmissionFile에서 파일 정보 가져오기
                             if (submission.getSubmissionFiles() != null && !submission.getSubmissionFiles().isEmpty()) {
@@ -141,7 +144,8 @@ public class StatisticsService {
                                 fileName,
                                 fileUrl,
                                 submittedAt,
-                                status
+                                status,
+                                textContent
                         );
                     })
                     .collect(Collectors.toList());
