@@ -20,8 +20,8 @@ public class VideoHistoryDto {
             String videoTitle,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            Long videoHistoryId,
-            VideoHistoryStatus videoHistoryStatus,
+            //Long videoHistoryId,
+            //VideoHistoryStatus videoHistoryStatus,
             Long lectureId,
             Integer orderIndex
     ) {
@@ -31,8 +31,8 @@ public class VideoHistoryDto {
                     videoTitle,
                     history.getVideo().getStartDate(),
                     history.getVideo().getEndDate(),
-                    history.getVideoHistoryId(),
-                    history.getVideoHistoryStatus(),
+                    //history.getVideoHistoryId(),
+                    //history.getVideoHistoryStatus(),
                     history.getVideo().getLecture().getLectureId(),
                     order
             );
