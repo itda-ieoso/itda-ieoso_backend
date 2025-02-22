@@ -20,4 +20,5 @@ public interface ContentOrderRepository extends JpaRepository<ContentOrder, Long
 
     List<ContentOrder> findByContentTypeAndContentIdIn(String contentType, List<Long> contentId);
 
+    ContentOrder findByContentTypeAndContentId(String contentType, Long contentId);
 }
