@@ -13,6 +13,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -60,8 +61,13 @@ public class S3Service {
     }
 
     // S3 파일 업로드 (폴더 지정)
-    public String uploadFile(String folder, String filename, File file) {
-        String filePath = folder + "/" + filename;
+    public String uploadFile(String folder, String filename, File file) throws UnsupportedEncodingException {
+
+        // 파일명 URL 인코딩 (한글 및 특수문자 처리)
+        String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
+                .replaceAll("\\+", "%20"); // "+"를 "%20"으로 변경 (URL-safe한 공백 처리)
+
+        String filePath = folder + "/" + encodedFilename;
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(s3Config.getBucketName())
@@ -105,10 +111,9 @@ public class S3Service {
         String filePath = withoutS3Prefix;
         // 파일 이름을 URL 인코딩
         String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
 
         // Content-Disposition 설정: 브라우저가 파일 다운로드하도록 지정
-        String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
+        String contentDisposition = "attachment; filename=\"" + fileName + "\"";
         String contentType = Files.probeContentType(Paths.get(filePath));
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
