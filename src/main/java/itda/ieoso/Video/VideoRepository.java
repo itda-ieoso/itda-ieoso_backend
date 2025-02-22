@@ -10,6 +10,5 @@ import java.util.List;
 public interface VideoRepository extends JpaRepository<Video, Long> {
     Video findByCourseAndVideoId(Course course, Long videoId);
     List<Video> findAllByCourse(Course course);
-    List<Video> findByVideoIdIn(List<Long> videoIds);
-    List<Video> findByStartDateBeforeAndEndDateAfter(LocalDateTime start, LocalDateTime end);
+    List<Video> findByCourseAndStartDateBeforeAndEndDateAfter(Course course, LocalDateTime start, LocalDateTime end);
 }
