@@ -1,6 +1,10 @@
 package itda.ieoso.Assignment;
 
 import itda.ieoso.ContentOrder.ContentOrder;
+import itda.ieoso.Submission.SubmissionStatus;
+import itda.ieoso.Video.Video;
+import itda.ieoso.Video.VideoDto;
+import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -28,6 +32,19 @@ public class AssignmentDTO {
             String contentType,
             Integer contentOrderIndex
     ) {
+        public static Response of(Assignment assignment) {
+            return new Response(
+                    assignment.getAssignmentId(),
+                    assignment.getAssignmentTitle(),
+                    assignment.getAssignmentDescription(),
+                    assignment.getStartDate(),
+                    assignment.getEndDate(),
+                    null,
+                    null,
+                    null
+            );
+        }
+
         public static Response of(Assignment assignment, ContentOrder contentOrder) {
             return new Response(
                     assignment.getAssignmentId(),
@@ -40,17 +57,32 @@ public class AssignmentDTO {
                     contentOrder.getOrderIndex()
             );
         }
+    }
 
-        public static Response of(Assignment assignment) {
-            return new Response(
+    //@JsonInclude(JsonInclude.Include.NON_NULL)
+    public record ToDoResponse(
+            Long assignmentId,
+            String assignmentTitle,
+            String getAssignmentDescription,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            SubmissionStatus submissionStatus,
+            Long contentOrderId,
+            String contentType,
+            Integer contentOrderIndex
+
+    ) {
+        public static AssignmentDTO.ToDoResponse of(Assignment assignment, SubmissionStatus submissionStatus, ContentOrder contentOrder) {
+            return new AssignmentDTO.ToDoResponse(
                     assignment.getAssignmentId(),
                     assignment.getAssignmentTitle(),
                     assignment.getAssignmentDescription(),
                     assignment.getStartDate(),
                     assignment.getEndDate(),
-                    null,
-                    null,
-                    null
+                    submissionStatus,
+                    contentOrder.getContentOrderId(),
+                    contentOrder.getContentType(),
+                    contentOrder.getOrderIndex()
             );
         }
     }
