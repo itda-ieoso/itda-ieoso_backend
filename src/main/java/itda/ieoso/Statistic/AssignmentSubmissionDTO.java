@@ -37,5 +37,6 @@ public class AssignmentSubmissionDTO {
         private String fileUrl;     // 제출된 파일 URL
         private LocalDateTime submittedAt; // 제출 일시
         private String status;      // 제출 상태 ("SUBMITTED", "NOT_SUBMITTED", "LATE")
+        private String textContent;
     }
 }
