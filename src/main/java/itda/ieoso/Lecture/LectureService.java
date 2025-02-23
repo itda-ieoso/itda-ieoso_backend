@@ -23,6 +23,7 @@ import itda.ieoso.Submission.Submission;
 import itda.ieoso.Submission.SubmissionDTO;
 import itda.ieoso.Submission.SubmissionRepository;
 import itda.ieoso.Submission.SubmissionStatus;
+import itda.ieoso.User.User;
 import itda.ieoso.User.UserRepository;
 import itda.ieoso.Video.Video;
 import itda.ieoso.Video.VideoDto;
@@ -31,6 +32,8 @@ import itda.ieoso.VideoHistory.VideoHistory;
 import itda.ieoso.VideoHistory.VideoHistoryRepository;
 import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,12 +58,21 @@ public class LectureService {
     private final MaterialRepository materialRepository;
     private final AssignmentRepository assignmentRepository;
 
+    // SecurityContext에서 현재 사용자 조회
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
 
     // 강의 생성
     @Transactional
     public LectureDTO.Response createLecture(Long courseId, Long userId, LectureDTO.Request request) {
+
+        User authenticatedUser = getAuthenticatedUser();
         // 과정 생성자인지 확인
-        if (!isCourseCreator(courseId, userId)) {
+        if (!isCourseCreator(courseId, authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -94,12 +106,13 @@ public class LectureService {
     // 강의 수정
     @Transactional
     public LectureDTO.Response updateLecture(Long courseId, Long lectureId, Long userId, LectureDTO.Request request) {
+        User authenticatedUser = getAuthenticatedUser();
         // 기존 강의 조회
         Lecture lecture = lectureRepository.findByCourse_CourseIdAndLectureId(courseId,lectureId)
                 .orElseThrow(() -> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 강의를 속한 과정의 생성자 ID와 요청한 사용자 ID가 일치하는지 확인
-        if (!lecture.getCourse().getUser().getUserId().equals(userId)) {
+        if (!lecture.getCourse().getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -122,12 +135,13 @@ public class LectureService {
     // 강의 삭제
     @Transactional
     public LectureDTO.deleteResponse deleteLecture(Long courseId, Long lectureId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // 강의 찾기
         Lecture lecture = lectureRepository.findByCourse_CourseIdAndLectureId(courseId,lectureId)
                 .orElseThrow(() -> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 강의의 과정 생성자인지 확인
-        if (!isCourseCreator(lecture.getCourse().getCourseId(), userId)) {
+        if (!isCourseCreator(lecture.getCourse().getCourseId(), authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -162,12 +176,13 @@ public class LectureService {
     // lecture조회(커리큘럼 전체조회)
     @Transactional
     public List<LectureDTO.CurriculumResponse> getLectureList(Long courseId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // 과정 찾기(필요?)
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // courseAttendees 찾기(강의수강생 검증)
-        if (!courseAttendeesRepository.existsByCourse_CourseIdAndUser_UserId(courseId,userId)) {
+        if (!courseAttendeesRepository.existsByCourse_CourseIdAndUser_UserId(courseId,authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED);
         }
 
@@ -231,12 +246,13 @@ public class LectureService {
     // 수강생 히스토리 전체 조회
     @Transactional
     public LectureDTO.HistoryResponse getLectureHistories(Long courseId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // 과정 찾기(필요?)
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // courseAttendees 찾기(강의수강생 검증)
-        CourseAttendees courseAttendees = courseAttendeesRepository.findByCourse_CourseIdAndUser_UserId(courseId,userId)
+        CourseAttendees courseAttendees = courseAttendeesRepository.findByCourse_CourseIdAndUser_UserId(courseId,authenticatedUser.getUserId())
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED));
 
 
@@ -260,9 +276,11 @@ public class LectureService {
     // 오늘 할일 조회
     @Transactional
     public List<LectureDTO.ToDoResponse> getDayTodoList(Long userId, LocalDate date) {
+        User authenticatedUser = getAuthenticatedUser();
+
 
         // 유저가 속한 강의목록 불러오기
-        List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(userId);
+        List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(authenticatedUser.getUserId());
         if (courseAttendeesList.isEmpty()) {
             return Collections.emptyList();
         }

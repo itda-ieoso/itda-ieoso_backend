@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -112,9 +113,9 @@ public class StatisticsService {
                                 .orElse(null);
 
                         String status = "NOT_SUBMITTED";
-                        String fileName = null;
-                        String fileUrl = null;
                         LocalDateTime submittedAt = null;
+                        String textContent = null;
+                        List<AssignmentSubmissionDTO.SubmissionFileDTO> fileList = new ArrayList<>();
 
                         // 제출 데이터가 있는 경우
                         if (submission != null) {
@@ -126,22 +127,27 @@ public class StatisticsService {
                                 status = "SUBMITTED";
                             }
                             submittedAt = submission.getSubmittedAt();
+                            textContent = submission.getTextContent();
 
-                            // SubmissionFile에서 파일 정보 가져오기
+
+                            // SubmissionFile 전체 리스트를 저장
                             if (submission.getSubmissionFiles() != null && !submission.getSubmissionFiles().isEmpty()) {
-                                SubmissionFile submissionFile = submission.getSubmissionFiles().get(0);
-                                fileName = submissionFile.getSubmissionOriginalFilename();
-                                fileUrl = submissionFile.getSubmissionFileUrl();
+                                fileList = submission.getSubmissionFiles().stream()
+                                        .map(file -> new AssignmentSubmissionDTO.SubmissionFileDTO(
+                                                file.getSubmissionOriginalFilename(),
+                                                file.getSubmissionFileUrl()
+                                        ))
+                                        .collect(Collectors.toList());
                             }
                         }
 
                         return new AssignmentSubmissionDTO.StudentSubmissionResult(
                                 student.getUserId(),
                                 student.getName(),
-                                fileName,
-                                fileUrl,
+                                fileList,
                                 submittedAt,
-                                status
+                                status,
+                                textContent
                         );
                     })
                     .collect(Collectors.toList());

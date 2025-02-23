@@ -6,9 +6,12 @@ import itda.ieoso.Course.Course;
 import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
+import itda.ieoso.User.User;
 import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,10 +37,19 @@ public class SubmissionService {
     @Autowired
     private S3Service s3Service;
 
+    // SecurityContext에서 현재 사용자 조회
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
     @Transactional
     // 과제 제출 및 수정
     public SubmissionDTO updateSubmission(Long assignmentId, Long submissionId, Long userId, String textContent, List<String> existingFileUrls,
                                           List<String> deleteFileUrls, MultipartFile[] newFiles) throws IOException, IOException {
+        User authenticatedUser = getAuthenticatedUser();
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
@@ -47,7 +59,7 @@ public class SubmissionService {
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
 
         // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
-        if (!submission.getUser().getUserId().equals(userId)) {
+        if (!submission.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.SUBMISSION_PERMISSION_DENIED);
         }
 
@@ -129,6 +141,7 @@ public class SubmissionService {
     @Transactional
     // 과제 삭제
     public void deleteSubmission(Long assignmentId, Long submissionId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
@@ -138,7 +151,7 @@ public class SubmissionService {
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
 
         // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
-        if (!submission.getUser().getUserId().equals(userId)) {
+        if (!submission.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.SUBMISSION_PERMISSION_DENIED);
         }
 
@@ -164,6 +177,7 @@ public class SubmissionService {
 
     // 과제 조회
     public SubmissionDTO getSubmission(Long assignmentId, Long submissionId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
@@ -176,7 +190,7 @@ public class SubmissionService {
         Long courseOwnerId = course.getUser().getUserId();
 
         // 제출한 사용자가 요청한 사용자 ID와 일치하는지 확인
-        if (!submission.getUser().getUserId().equals(userId) && !courseOwnerId.equals(userId)) {
+        if (!submission.getUser().getUserId().equals(authenticatedUser.getUserId()) && !courseOwnerId.equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.SUBMISSION_PERMISSION_DENIED);
         }  //수정 예정-조회관련
 

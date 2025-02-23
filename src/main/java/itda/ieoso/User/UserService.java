@@ -4,6 +4,8 @@ import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
 import itda.ieoso.Login.Jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +37,14 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
+    // SecurityContext에서 현재 사용자 조회
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
     // 회원 가입
     @Transactional
     public IdResponse signUp(UserRegistDto request) {
@@ -51,16 +61,24 @@ public class UserService {
     // 계정 삭제
     @Transactional
     public void deleteAccount(String token) {
-        User user = getUserByToken(token);
-        userRepository.delete(user);
+        User tokenUser = getUserByToken(token);
+        User authenticatedUser = getAuthenticatedUser();
+        if (!tokenUser.getUserId().equals(authenticatedUser.getUserId())) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+        userRepository.delete(authenticatedUser);
     }
 
     // 회원 정보 조회
     @Transactional(readOnly = true)
     public UserInfoDto getUserInfo(String token) {
-        User user = getUserByToken(token);
+        User tokenUser = getUserByToken(token);
+        User authenticatedUser = getAuthenticatedUser();
+        if (!tokenUser.getUserId().equals(authenticatedUser.getUserId())) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
         String imageUrl = null;
-        return UserInfoDto.of(user, imageUrl);
+        return UserInfoDto.of(authenticatedUser, imageUrl);
     }
 
     // 모든 사용자 정보 조회
@@ -79,7 +97,11 @@ public class UserService {
     // 프로필 사진 업로드
     @Transactional
     public String uploadProfileImage(String token, MultipartFile file) {
-        User user = getUserByToken(token);
+        User tokenUser = getUserByToken(token);
+        User authenticatedUser = getAuthenticatedUser();
+        if (!tokenUser.getUserId().equals(authenticatedUser.getUserId())) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
 
         if (file.isEmpty()) {
             throw new CustomException(ErrorCode.EMPTY_FILE);
@@ -87,7 +109,7 @@ public class UserService {
 
         try {
             // 파일명: userId.jpg (고유한 ID 활용)
-            String filename = "profile_" + user.getUserId() + ".jpg";
+            String filename = "profile_" + authenticatedUser.getUserId() + ".jpg";
 
             // 로컬 임시 파일 생성
             File tempFile = File.createTempFile("upload-", filename);
@@ -97,8 +119,8 @@ public class UserService {
             String imageUrl = s3Service.uploadFile("profile_images", filename, tempFile);
 
             // DB에 프로필 이미지 URL 저장
-            user.updateProfileImage(imageUrl);
-            userRepository.save(user);
+            authenticatedUser.updateProfileImage(imageUrl);
+            userRepository.save(authenticatedUser);
 
             // 임시 파일 삭제
             tempFile.delete();
@@ -111,7 +133,11 @@ public class UserService {
 
     // 프로필 사진 조회 (URL 반환)
     public String getProfileImageUrl(String token) {
-        User user = getUserByToken(token);
-        return user.getProfileImageUrl();
+        User tokenUser = getUserByToken(token);
+        User authenticatedUser = getAuthenticatedUser();
+        if (!tokenUser.getUserId().equals(authenticatedUser.getUserId())) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+        return authenticatedUser.getProfileImageUrl();
     }
 }

@@ -10,10 +10,14 @@ import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
+import itda.ieoso.User.User;
+import itda.ieoso.User.UserRepository;
 import itda.ieoso.VideoHistory.VideoHistory;
 import itda.ieoso.VideoHistory.VideoHistoryRepository;
 import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,10 +36,20 @@ public class VideoService {
     private final LectureRepository lectureRepository;
     private final VideoHistoryRepository videoHistoryRepository;
     private final ContentOrderService contentOrderService;
+    private final UserRepository userRepository;
+
+    // SecurityContext에서 현재 사용자 조회
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
 
     // video 생성
     @Transactional
     public VideoDto.Response createVideo(Long courseId, Long lectureId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -45,7 +59,7 @@ public class VideoService {
                 .orElseThrow(()-> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -78,12 +92,13 @@ public class VideoService {
     // video 업데이트
     @Transactional
     public VideoDto.Response updateVideo(Long courseId, Long videoId, Long userId, VideoDto.Request request) {
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -116,12 +131,13 @@ public class VideoService {
     // video 삭제
     @Transactional
     public VideoDto.deleteResponse deleteVideo(Long courseId, Long videoId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
