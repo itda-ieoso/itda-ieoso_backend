@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 
@@ -78,7 +79,6 @@ public class LectureController {
                                          @RequestParam(required = true)
                                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-        LocalDateTime dateTime = date.atStartOfDay();
-        return Response.success("대시보드 조회(할일 목록)",lectureService.getDayTodoList(userId, dateTime));
+        return Response.success("대시보드 조회(할일 목록)",lectureService.getDayTodoList(userId, date));
     }
 }
