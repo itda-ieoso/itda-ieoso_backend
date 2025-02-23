@@ -30,6 +30,8 @@ import itda.ieoso.VideoHistory.VideoHistoryRepository;
 import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,11 +68,20 @@ public class CourseService {
     private final LectureRepository lectureRepository;
     private final ContentOrderRepository contentOrderRepository;
 
+    // SecurityContext에서 현재 사용자 조회
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
     // 강의실 생성
     @Transactional
     public CourseDTO createCourse(Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // userId로 사용자 조회
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(authenticatedUser.getUserId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // Course null 객체 생성 (builder 사용)
@@ -125,12 +136,13 @@ public class CourseService {
     // 강의실 수정
     @Transactional
     public CourseDTO updateCourse(Long courseId, Long userId, CourseDTO.BasicUpdateRequest request) {
+        User authenticatedUser = getAuthenticatedUser();
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -394,12 +406,13 @@ public class CourseService {
     // 강의실 개요 편집
     @Transactional
     public CourseDTO updateCourseOverview(Long courseId, Long userId, String description, MultipartFile file) throws IOException {
+        User authenticatedUser = getAuthenticatedUser();
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -437,12 +450,13 @@ public class CourseService {
     // 강의실 삭제
     @Transactional
     public void deleteCourse(Long courseId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -485,12 +499,13 @@ public class CourseService {
 
     // 강의실 입장 (입장 유저의 히스토리 생성)
     public void enterCourse(Long userId, String entryCode) {
+        User authenticatedUser = getAuthenticatedUser();
         // 1. 강의 존재 여부 확인
         Course course = courseRepository.findByEntryCode(entryCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 3. 유저 존재 여부 확인
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(authenticatedUser.getUserId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 4. 이미 강의에 등록되어 있는지 확인
@@ -616,7 +631,8 @@ public class CourseService {
 
     // 사용자가 가입한 강의실 목록 조회
     public List<CourseDTO> getCoursesByUser(Long userId) throws IOException {
-        List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(userId);
+        User authenticatedUser = getAuthenticatedUser();
+        List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(authenticatedUser.getUserId());
 
         // 강의실 목록 반환 (DTO 변환)
         List<CourseDTO> courseDTOList = new ArrayList<>();
