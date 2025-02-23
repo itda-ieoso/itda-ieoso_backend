@@ -25,7 +25,5 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     void deleteAllByCourse(Course course);
 
-    @Query("SELECT sm FROM Submission sm WHERE sm.assignment.assignmentId IN :assignmentIds AND sm.courseAttendees = :courseAttendees")
-    List<Submission> findByAssignment_AssignmentIdInAndCourseAttendeesIn(@Param("assignmentIds") List<Long> assignmentIds, @Param("courseAttendees") CourseAttendees courseAttendees);
 
 }

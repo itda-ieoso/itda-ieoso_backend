@@ -1,23 +1,16 @@
 package itda.ieoso.Lecture;
 
-import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Assignment.AssignmentDTO;
 import itda.ieoso.ContentOrder.ContentOrder;
 import itda.ieoso.Course.Course;
-import itda.ieoso.Material.Material;
 import itda.ieoso.Material.MaterialDto;
 import itda.ieoso.MaterialHistory.MaterialHistoryDto;
 import itda.ieoso.Submission.SubmissionDTO;
-import itda.ieoso.Video.Video;
 import itda.ieoso.Video.VideoDto;
-import itda.ieoso.VideoHistory.VideoHistory;
-import itda.ieoso.VideoHistory.VideoHistoryDto;
-import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,30 +117,26 @@ public class LectureDTO {
             List<SubmissionDTO.Response> submissions
     ) {}
 
-    public record TodayToDoListResponse(
+    public record ToDoResponse(
             Long courseId,
             String courseTitle,
-            List<VideoHistoryDto.Response> videoHistoryDto,
-            List<MaterialHistoryDto.ToDoListResponse> materialHistoryDto,
-            List<SubmissionDTO.ToDoListResponse> submissions
+            List<VideoDto.ToDoResponse> videoDtos,
+            List<MaterialDto.ToDoResponse> materialDtos,
+            List<AssignmentDTO.ToDoResponse> assignmentDTOS
     ) {
-        public static LectureDTO.TodayToDoListResponse of(Course course,
-                                                          List<VideoHistoryDto.Response> videoHistoryDto,
-                                                          List<MaterialHistoryDto.ToDoListResponse> materialHistoryDto,
-                                                          List<SubmissionDTO.ToDoListResponse> submissions) {
-
-            return new LectureDTO.TodayToDoListResponse(
+        public static ToDoResponse of(Course course,
+                                      List<VideoDto.ToDoResponse> videoDtos,
+                                      List<MaterialDto.ToDoResponse> materialDtos,
+                                      List<AssignmentDTO.ToDoResponse> assignmentDTOS) {
+            return new ToDoResponse(
                     course.getCourseId(),
                     course.getCourseTitle(),
-                    videoHistoryDto,
-                    materialHistoryDto,
-                    submissions
+                    videoDtos,
+                    materialDtos,
+                    assignmentDTOS
             );
-
         }
     }
-
-
 
 }
 

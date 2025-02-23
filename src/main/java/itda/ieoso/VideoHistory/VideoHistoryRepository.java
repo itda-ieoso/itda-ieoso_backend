@@ -20,8 +20,4 @@ public interface VideoHistoryRepository extends JpaRepository<VideoHistory, Long
 
     void deleteAllByCourse(Course course);
 
-    @Query("SELECT vh FROM VideoHistory vh WHERE vh.video.videoId IN :videoIds AND vh.courseAttendees = :courseAttendees")
-    List<VideoHistory> findByVideo_VideoIdInAndCourseAttendeesIn(@Param("videoIds") List<Long> videoIds, @Param("courseAttendees") CourseAttendees courseAttendees);
-
-    //List<VideoHistory> findByVideo_StartDateAndVideo_EndDate(Date startDate, Date endDate);
 }

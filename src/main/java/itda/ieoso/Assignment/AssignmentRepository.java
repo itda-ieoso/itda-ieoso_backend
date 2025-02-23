@@ -14,9 +14,8 @@ import java.util.Optional;
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     Assignment findByCourseAndAssignmentId(Course course, Long assignmentId);
     List<Assignment> findByLecture_LectureIdIn(@Param("lectureIds") List<Long> lectureIds);
-    List<Assignment> findByAssignmentIdIn(List<Long> assignmentIds);
     List<Assignment> findAllByCourse(Course course);
 
     Optional<Assignment> findByAssignmentId(Long assignmentId);
-    List<Assignment> findByStartDateBeforeAndEndDateAfter(LocalDateTime startDate, LocalDateTime endDate);
+    List<Assignment> findByCourseAndStartDateBeforeAndEndDateAfter(Course course, LocalDateTime startDate, LocalDateTime endDate);
 }
