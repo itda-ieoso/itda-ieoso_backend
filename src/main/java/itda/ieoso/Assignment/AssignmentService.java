@@ -13,11 +13,15 @@ import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.Submission.Submission;
 import itda.ieoso.Submission.SubmissionRepository;
 import itda.ieoso.Submission.SubmissionStatus;
+import itda.ieoso.User.User;
+import itda.ieoso.User.UserRepository;
 import itda.ieoso.Video.Video;
 import itda.ieoso.Video.VideoDto;
 import itda.ieoso.VideoHistory.VideoHistory;
 import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,10 +41,20 @@ public class AssignmentService {
     private final LectureRepository lectureRepository;
     private final SubmissionRepository submissionRepository;
     private final ContentOrderService contentOrderService;
+    private final UserRepository userRepository;
+
+    // SecurityContext에서 현재 사용자 조회
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
 
     // assignment 생성
     @Transactional
     public AssignmentDTO.Response createAssignment(Long courseId, Long lectureId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -50,7 +64,7 @@ public class AssignmentService {
                 .orElseThrow(()-> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -85,12 +99,13 @@ public class AssignmentService {
     // assignment 업데이트
     @Transactional
     public AssignmentDTO.Response updateAssignment(Long courseId, Long assignmentId, Long userId, AssignmentDTO.Request request) {
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -125,12 +140,13 @@ public class AssignmentService {
     // assignment 삭제
     @Transactional
     public AssignmentDTO.deleteResponse deleteAssignment(Long courseId, Long assignmentId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
