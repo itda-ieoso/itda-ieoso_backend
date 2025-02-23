@@ -68,8 +68,7 @@ public class CourseService {
 
     // 강의실 생성
     @Transactional
-    public CourseDTO createCourse(String token) {
-        Long userId = userService.getUserByToken(token).getUserId();
+    public CourseDTO createCourse(Long userId) {
         // userId로 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -125,8 +124,7 @@ public class CourseService {
 
     // 강의실 수정
     @Transactional
-    public CourseDTO updateCourse(Long courseId, String token, CourseDTO.BasicUpdateRequest request) {
-        Long userId = userService.getUserByToken(token).getUserId();
+    public CourseDTO updateCourse(Long courseId, Long userId, CourseDTO.BasicUpdateRequest request) {
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -395,8 +393,7 @@ public class CourseService {
 
     // 강의실 개요 편집
     @Transactional
-    public CourseDTO updateCourseOverview(Long courseId, String token, String description, MultipartFile file) throws IOException {
-        Long userId = userService.getUserByToken(token).getUserId();
+    public CourseDTO updateCourseOverview(Long courseId, Long userId, String description, MultipartFile file) throws IOException {
         // 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -439,8 +436,7 @@ public class CourseService {
 
     // 강의실 삭제
     @Transactional
-    public void deleteCourse(Long courseId, String token) {
-        Long userId = userService.getUserByToken(token).getUserId();
+    public void deleteCourse(Long courseId, Long userId) {
         // 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -470,7 +466,7 @@ public class CourseService {
 
     // 강의실 설정창 조회(설정 & 개요 페이지)
     @Transactional
-    public CourseDTO getCourseById(Long courseId) {
+    public CourseDTO getCourseById(Long courseId) throws IOException {
         // 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -488,8 +484,7 @@ public class CourseService {
     }
 
     // 강의실 입장 (입장 유저의 히스토리 생성)
-    public void enterCourse(String token, String entryCode) {
-        Long userId = userService.getUserByToken(token).getUserId();
+    public void enterCourse(Long userId, String entryCode) {
         // 1. 강의 존재 여부 확인
         Course course = courseRepository.findByEntryCode(entryCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -620,8 +615,7 @@ public class CourseService {
     }
 
     // 사용자가 가입한 강의실 목록 조회
-    public List<CourseDTO> getCoursesByUser(String token) {
-        Long userId = userService.getUserByToken(token).getUserId();
+    public List<CourseDTO> getCoursesByUser(Long userId) throws IOException {
         List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(userId);
 
         // 강의실 목록 반환 (DTO 변환)

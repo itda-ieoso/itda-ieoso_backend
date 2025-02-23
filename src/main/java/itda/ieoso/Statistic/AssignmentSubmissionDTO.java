@@ -33,9 +33,27 @@ public class AssignmentSubmissionDTO {
     public static class StudentSubmissionResult {
         private Long userId;        // 학생 ID
         private String studentName; // 학생 이름
-        private String fileName;    // 제출된 파일 이름
-        private String fileUrl;     // 제출된 파일 URL
+        private List<SubmissionFileDTO> files;
         private LocalDateTime submittedAt; // 제출 일시
         private String status;      // 제출 상태 ("SUBMITTED", "NOT_SUBMITTED", "LATE")
+        private String textContent;
+    }
+
+    public static class SubmissionFileDTO {
+        private String fileName;
+        private String fileUrl;
+
+        public SubmissionFileDTO(String fileName, String fileUrl) {
+            this.fileName = fileName;
+            this.fileUrl = fileUrl;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public String getFileUrl() {
+            return fileUrl;
+        }
     }
 }

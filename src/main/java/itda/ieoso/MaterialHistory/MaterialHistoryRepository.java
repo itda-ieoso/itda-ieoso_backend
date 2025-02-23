@@ -21,7 +21,4 @@ public interface MaterialHistoryRepository extends JpaRepository<MaterialHistory
 
     void deleteAllByCourse(Course course);
 
-    @Query("SELECT mh FROM MaterialHistory mh WHERE mh.material.materialId IN :materialIds AND mh.courseAttendees = :courseAttendees")
-    List<MaterialHistory> findByMaterial_MaterialIdInAndCourseAttendeesIn(@Param("materialIds") List<Long> materialIds, @Param("courseAttendees") CourseAttendees courseAttendees);
-
 }

@@ -13,9 +13,13 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +61,13 @@ public class S3Service {
     }
 
     // S3 파일 업로드 (폴더 지정)
-    public String uploadFile(String folder, String filename, File file) {
-        String filePath = folder + "/" + filename;
+    public String uploadFile(String folder, String filename, File file) throws UnsupportedEncodingException {
+
+        // 파일명 URL 인코딩 (한글 및 특수문자 처리)
+        String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
+                .replaceAll("\\+", "%20"); // "+"를 "%20"으로 변경 (URL-safe한 공백 처리)
+
+        String filePath = folder + "/" + encodedFilename;
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(s3Config.getBucketName())
@@ -95,15 +104,23 @@ public class S3Service {
     }
 
     // S3 파일 다운로드 URL 생성 (Presigned URL)
-    public String generatePresignedUrl(String s3Url) {
+    public String generatePresignedUrl(String s3Url) throws IOException {
 
         // URL에서 "https://"와 "s3.ap-northeast-2.amazonaws.com"을 제거하고, 경로를 남깁니다.
         String withoutS3Prefix = s3Url.replace("https://", "").replace("s3.ap-northeast-2.amazonaws.com/", "").replace("itdaawsbucket.", "");
         String filePath = withoutS3Prefix;
+        // 파일 이름을 URL 인코딩
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+
+        // Content-Disposition 설정: 브라우저가 파일 다운로드하도록 지정
+        String contentDisposition = "attachment; filename=\"" + fileName + "\"";
+        String contentType = Files.probeContentType(Paths.get(filePath));
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(s3Config.getBucketName())
                 .key(filePath)
+                .responseContentType(contentType)
+                .responseContentDisposition(contentDisposition)
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()

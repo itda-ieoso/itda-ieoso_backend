@@ -9,6 +9,5 @@ import java.util.List;
 public interface MaterialRepository extends JpaRepository<Material, Long> {
     Material findByCourseAndMaterialId(Course course, Long material);
     List<Material> findAllByCourse(Course course);
-    List<Material> findByMaterialIdIn(List<Long> materialIds);
-    List<Material> findByStartDateBeforeAndEndDateAfter(LocalDateTime startDate, LocalDateTime endDate);
+    List<Material> findByCourseAndStartDateBeforeAndEndDateAfter(Course course, LocalDateTime startDate, LocalDateTime endDate);
 }

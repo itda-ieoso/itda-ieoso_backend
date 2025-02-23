@@ -78,9 +78,4 @@ public class LectureController {
     public Response<?> getTodayDashboard(@PathVariable Long userId, @RequestHeader("Authorization") String token) {
         return Response.success("대시보드 조회(할일 목록)",lectureService.getDayTodoList(token, LocalDateTime.now()));
     }
-
-//    @GetMapping("/dashbard/week/{userId}")
-//    public Response<?> getWeeklyDashboard(@PathVariable Long userId) {
-//        return Response.success("대시보드 조회(이번주)" , lectureService.getWeekTodoList(userId, LocalDateTime.now()));
-//    }
 }
