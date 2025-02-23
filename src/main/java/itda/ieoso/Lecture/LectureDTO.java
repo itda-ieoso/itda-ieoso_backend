@@ -122,18 +122,18 @@ public class LectureDTO {
             String courseTitle,
             List<VideoDto.ToDoResponse> videoDtos,
             List<MaterialDto.ToDoResponse> materialDtos,
-            List<AssignmentDTO.ToDoResponse> assignmentDTOS
+            List<AssignmentDTO.ToDoResponse> assignmentDtos
     ) {
         public static ToDoResponse of(Course course,
                                       List<VideoDto.ToDoResponse> videoDtos,
                                       List<MaterialDto.ToDoResponse> materialDtos,
-                                      List<AssignmentDTO.ToDoResponse> assignmentDTOS) {
+                                      List<AssignmentDTO.ToDoResponse> assignmentDtos) {
             return new ToDoResponse(
                     course.getCourseId(),
                     course.getCourseTitle(),
                     videoDtos,
                     materialDtos,
-                    assignmentDTOS
+                    assignmentDtos
             );
         }
     }
