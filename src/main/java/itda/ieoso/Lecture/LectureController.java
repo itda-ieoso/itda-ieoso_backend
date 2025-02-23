@@ -73,8 +73,12 @@ public class LectureController {
     }
 
     // 대시보드 조회(userid = 수강생)
-    @GetMapping("/dashboard/today/{userId}")
-    public Response<?> getTodayDashboard(@PathVariable Long userId) {
-        return Response.success("대시보드 조회(할일 목록)",lectureService.getDayTodoList(userId, LocalDateTime.now()));
+    @GetMapping("/dashboard/{userId}")
+    public Response<?> getTodayDashboard(@PathVariable Long userId,
+                                         @RequestParam(required = true)
+                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        LocalDateTime dateTime = date.atStartOfDay();
+        return Response.success("대시보드 조회(할일 목록)",lectureService.getDayTodoList(userId, dateTime));
     }
 }
