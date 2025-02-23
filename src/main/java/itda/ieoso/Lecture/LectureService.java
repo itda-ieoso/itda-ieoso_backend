@@ -34,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -258,7 +259,7 @@ public class LectureService {
 
     // 오늘 할일 조회
     @Transactional
-    public List<LectureDTO.ToDoResponse> getDayTodoList(Long userId, LocalDateTime time) {
+    public List<LectureDTO.ToDoResponse> getDayTodoList(Long userId, LocalDate date) {
 
         // 유저가 속한 강의목록 불러오기
         List<CourseAttendees> courseAttendeesList = courseAttendeesRepository.findByUser_UserId(userId);
@@ -267,7 +268,7 @@ public class LectureService {
         }
 
         // 오늘날짜 조회
-        LocalDateTime today = time;
+        ;
 
         // course별로 오늘할일 목록 추출
         List<LectureDTO.ToDoResponse> toDoResponses = new ArrayList<>();
@@ -277,7 +278,7 @@ public class LectureService {
             Course course = courseAttendee.getCourse();
 
             // video 조회
-            List<Video> videos = videoRepository.findByCourseAndStartDateBeforeAndEndDateAfter(course, today, today);
+            List<Video> videos = videoRepository.findByCourseAndDateRange(course, date);
             List<VideoDto.ToDoResponse> videoDtos = videos.stream()
                     .map(video -> {
                         ContentOrder contentorder = contentOrderRepository.findByContentTypeAndContentId("video", video.getVideoId());
@@ -295,7 +296,7 @@ public class LectureService {
                     .collect(Collectors.toList());
 
             // material 조회
-            List<Material> materials = materialRepository.findByCourseAndStartDateBeforeAndEndDateAfter(course, today, today);
+            List<Material> materials = materialRepository.findByCourseAndDateRange(course, date);
             List<MaterialDto.ToDoResponse> materialDtos = materials.stream()
                     .map(material -> {
                         ContentOrder contentOrder = contentOrderRepository.findByContentTypeAndContentId("material", material.getMaterialId());
@@ -312,7 +313,7 @@ public class LectureService {
                     .collect(Collectors.toList());
 
             // assignment 조회
-            List<Assignment> assignments = assignmentRepository.findByCourseAndStartDateBeforeAndEndDateAfter(course,today,today);
+            List<Assignment> assignments = assignmentRepository.findByCourseAndDateRange(course, date);
             List<AssignmentDTO.ToDoResponse> assignmentDtos = assignments.stream()
                     .map(assignment -> {
                         ContentOrder contentOrder = contentOrderRepository.findByContentTypeAndContentId("assignment", assignment.getAssignmentId());
