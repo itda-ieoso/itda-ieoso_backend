@@ -13,7 +13,11 @@ import itda.ieoso.Lecture.Lecture;
 import itda.ieoso.Lecture.LectureRepository;
 import itda.ieoso.MaterialHistory.MaterialHistory;
 import itda.ieoso.MaterialHistory.MaterialHistoryRepository;
+import itda.ieoso.User.User;
+import itda.ieoso.User.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,10 +42,21 @@ public class MaterialService {
     private final MaterialHistoryRepository materialHistoryRepository;
     private final S3Service s3Service;
     private final ContentOrderService contentOrderService;
+    private final UserRepository userRepository;
+
+    // SecurityContext에서 현재 사용자 조회
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
 
     // material 생성
     @Transactional
     public MaterialDto.Response createMaterial(Long courseId, Long lectureId, Long userId) {
+
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
@@ -51,7 +66,7 @@ public class MaterialService {
                 .orElseThrow(()-> new CustomException(ErrorCode.LECTURE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -108,12 +123,13 @@ public class MaterialService {
     // material 업데이트
     @Transactional
     public MaterialDto.Response updateMaterial(Long courseId, Long materialId, Long userId, String materialTitle, MultipartFile file, LocalDateTime startDate) {
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
@@ -177,12 +193,13 @@ public class MaterialService {
     // material 삭제
     @Transactional
     public MaterialDto.deleteResponse deleteMaterial(Long courseId, Long materialId, Long userId) {
+        User authenticatedUser = getAuthenticatedUser();
         // course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
         // 권한 검증
-        if (!course.getUser().getUserId().equals(userId)) {
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
