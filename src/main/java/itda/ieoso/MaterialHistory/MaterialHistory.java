@@ -39,4 +39,8 @@ public class MaterialHistory {
     private CourseAttendees courseAttendees;
 
     private boolean materialHistoryStatus; // false = 다운x / true = 다운o
+
+    public void setMaterialHistoryStatus(boolean materialHistoryStatus) {
+        this.materialHistoryStatus = materialHistoryStatus;
+    }
 }

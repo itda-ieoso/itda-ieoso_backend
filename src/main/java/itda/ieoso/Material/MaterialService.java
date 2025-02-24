@@ -24,11 +24,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -247,5 +251,52 @@ public class MaterialService {
         material.getMaterialHistories().addAll(materialHistoryList);
         materialRepository.save(material);
 
+    }
+
+    // fileUrl을 통해 materialId를 조회하고, materialHistory 상태 업데이트
+    public void updateMaterialHistoryStatus(Long materialId) throws UnsupportedEncodingException {
+
+        User authenticatedUser = getAuthenticatedUser();
+        if (authenticatedUser == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        // materialId로 Material 조회
+        Optional<Material> materialOptional = materialRepository.findById(materialId);
+        if (materialOptional.isEmpty()) {
+            throw new CustomException(ErrorCode.MATERIAL_NOT_FOUND);
+        }
+        Material material = materialOptional.get(); // material 객체 가져오기
+
+        if (material.getCourse() == null) {
+            throw new CustomException(ErrorCode.COURSE_NOT_FOUND);
+        }
+
+        Optional<Course> courseOptional = courseRepository.findById(material.getCourse().getCourseId());
+        if (courseOptional.isEmpty()) {
+            throw new CustomException(ErrorCode.COURSE_NOT_FOUND);
+        }
+
+        Course course = courseOptional.get();
+        Long courseId = course.getCourseId();
+
+        // materialId에 해당하는 materialHistory 상태 조회
+        Optional<CourseAttendees> courseAttendees = courseAttendeesRepository.findByCourse_CourseIdAndUser_UserId(courseId, authenticatedUser.getUserId());
+        if (courseAttendees.isEmpty()) {
+            throw new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED);
+        }
+
+        Long courseAttendeesId = courseAttendees.get().getCourseAttendeesId();
+        Optional<MaterialHistory> materialHistoryOptional = materialHistoryRepository.findByMaterial_MaterialIdAndCourseAttendees_CourseAttendeesId(materialId, courseAttendeesId);
+        if (materialHistoryOptional.isEmpty()) {
+            throw new CustomException(ErrorCode.MATERIALHISTORY_NOT_FOUND);
+        }
+
+        MaterialHistory materialHistory = materialHistoryOptional.get();
+
+        if (!materialHistory.isMaterialHistoryStatus()) {
+            materialHistory.setMaterialHistoryStatus(true);  // 상태 변경
+            materialHistoryRepository.save(materialHistory);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package itda.ieoso.File;
 
+import itda.ieoso.Response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,8 +47,9 @@ public class FileController {
             return ResponseEntity.status(500).body("파일 업로드 실패: " + e.getMessage());
         }
     }
+
     @GetMapping("/download")
-    public ResponseEntity<String> getDownloadUrl(@RequestParam("fileUrl") String fileUrl) {
+    public Response<String> getDownloadUrl(@RequestParam("fileUrl") String fileUrl) {
         try {
             // fileUrl에서 S3 도메인 부분 제거 후 key만 추출
             String fileKey = fileUrl.replace("https://your-s3-bucket.s3.amazonaws.com/", "");
@@ -55,8 +57,9 @@ public class FileController {
             // Presigned URL 생성
             String presignedUrl = s3Service.generatePresignedUrl(fileKey);
 
-            return ResponseEntity.ok(presignedUrl);
-        } catch (Exception e) {
+
+            return Response.success("강의 자료 다운로드", presignedUrl);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

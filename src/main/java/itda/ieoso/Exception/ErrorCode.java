@@ -21,6 +21,7 @@ public enum ErrorCode {
     LECTURE_NOT_FOUND(HttpStatus.NOT_FOUND, "강의를 찾을 수 없습니다."),
     MATERIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "강의자료를 찾을 수 없습니다."),
     VIDEO_NOT_FOUND(HttpStatus.NOT_FOUND, "영상을 찾을 수 없습니다."),
+    MATERIALHISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "강의자료 히스토리를 찾을 수 없습니다."),
     COURSE_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "강의실의 개설자가 아닙니다."),
     ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "과제를 찾을 수 없습니다."),
     SUBMISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "제출 정보를 찾을 수 없습니다."),
