@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -61,7 +62,7 @@ public class S3Service {
     }
 
     // S3 파일 업로드 (폴더 지정)
-    public String uploadFile(String folder, String filename, File file) throws UnsupportedEncodingException {
+    public String uploadFile(String folder, String filename, File file) throws IOException {
 
         // 파일명 URL 인코딩 (한글 및 특수문자 처리)
         String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
@@ -69,9 +70,15 @@ public class S3Service {
 
         String filePath = folder + "/" + encodedFilename;
 
+        String contentDisposition = "attachment; filename=\"" + filename + "\"";
+
+        String contentType = Files.probeContentType(Paths.get(filePath));
+
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(s3Config.getBucketName())
                 .key(filePath)
+                .contentType(contentType)
+                .metadata(Collections.singletonMap("Content-Disposition", contentDisposition))
                 .build();
 
         s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromFile(file));
