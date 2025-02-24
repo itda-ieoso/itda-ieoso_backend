@@ -17,11 +17,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Material {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "material_id")
     private Long materialId;
-
     private String materialTitle;
     private String materialFile;
     private String originalFilename;

@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MaterialHistoryRepository extends JpaRepository<MaterialHistory, Long> {
     void deleteAllByMaterial(Material material);
@@ -21,4 +22,5 @@ public interface MaterialHistoryRepository extends JpaRepository<MaterialHistory
 
     void deleteAllByCourse(Course course);
 
+    Optional<MaterialHistory> findByMaterial_MaterialIdAndCourseAttendees_CourseAttendeesId(Long materialId, Long courseAttendeesId);
 }
