@@ -70,15 +70,9 @@ public class S3Service {
 
         String filePath = folder + "/" + encodedFilename;
 
-        String contentDisposition = "attachment; filename=\"" + filename + "\"";
-
-        String contentType = Files.probeContentType(Paths.get(filePath));
-
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(s3Config.getBucketName())
                 .key(filePath)
-                .contentType(contentType)
-                .metadata(Collections.singletonMap("Content-Disposition", contentDisposition))
                 .build();
 
         s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromFile(file));
