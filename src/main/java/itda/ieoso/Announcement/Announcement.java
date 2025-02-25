@@ -24,7 +24,7 @@ public class Announcement {
     @Column(nullable = false, length = 200)
     private String announcementTitle;
 
-    @Column(length = 500)
+    @Column(columnDefinition = "TEXT")
     private String announcementContent;
 
     @Column

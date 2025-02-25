@@ -15,7 +15,10 @@ import itda.ieoso.Submission.SubmissionFile;
 import itda.ieoso.Submission.SubmissionRepository;
 import itda.ieoso.Submission.SubmissionStatus;
 import itda.ieoso.User.User;
+import itda.ieoso.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,22 +33,39 @@ public class StatisticsService {
     private final CourseAttendeesRepository courseAttendeesRepository;
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public StatisticsService(CourseRepository courseRepository,
                              CourseAttendeesRepository courseAttendeesRepository,
                              AssignmentRepository assignmentRepository,
-                             SubmissionRepository submissionRepository) {
+                             SubmissionRepository submissionRepository,
+                             UserRepository userRepository) {
         this.courseRepository = courseRepository;
         this.courseAttendeesRepository = courseAttendeesRepository;
         this.assignmentRepository = assignmentRepository;
         this.submissionRepository = submissionRepository;
+        this.userRepository = userRepository;
+    }
+
+    // SecurityContext에서 현재 사용자 조회
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     public List<AssignmentStatisticsDTO> getAssignmentStatistics(Long courseId) {
         // 1. Course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
+
+        User authenticatedUser = getAuthenticatedUser();
+        // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
+        }
 
         // 2. Course에 연결된 Lecture ID만 가져오기
         List<Long> lectureIds = course.getLectures().stream()
@@ -87,6 +107,12 @@ public class StatisticsService {
         // 1. Course 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
+
+        User authenticatedUser = getAuthenticatedUser();
+        // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
+        }
 
         // 2. Course에 연결된 Lecture ID 가져오기
         List<Long> lectureIds = course.getLectures().stream()
