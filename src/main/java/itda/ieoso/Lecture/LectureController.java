@@ -23,7 +23,7 @@ public class LectureController {
 
     @Autowired
     private LectureService lectureService;
-    private LectureRepository lectureRepository;
+
 
     // 강의 생성 (개설자용)
     @PostMapping("/{courseId}/{userId}")
@@ -60,7 +60,7 @@ public class LectureController {
 
     // 강의실 커리큘럼 전체조회 (개설자, 수강생용)
     @GetMapping("/curriculum/{courseId}/{userId}")
-    public Response<List<LectureDTO.CurriculumResponse>> getLectureList(@PathVariable Long userId,
+    public Response<LectureDTO.CurriculumResponseWithCourseCreater> getLectureList(@PathVariable Long userId,
                                                                    @PathVariable Long courseId) {
         return Response.success("커리큘럼 전체 조회", lectureService.getLectureList(courseId, userId));
     }

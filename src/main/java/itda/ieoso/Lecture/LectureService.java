@@ -175,7 +175,7 @@ public class LectureService {
 
     // lecture조회(커리큘럼 전체조회)
     @Transactional
-    public List<LectureDTO.CurriculumResponse> getLectureList(Long courseId, Long userId) {
+    public LectureDTO.CurriculumResponseWithCourseCreater getLectureList(Long courseId, Long userId) {
         User authenticatedUser = getAuthenticatedUser();
         // 과정 찾기(필요?)
         Course course = courseRepository.findById(courseId)
@@ -189,7 +189,7 @@ public class LectureService {
 
         // lecutre 조회
         List<Lecture> lectureList = lectureRepository.findAllByCourse_CourseId(courseId);
-        List<LectureDTO.CurriculumResponse> responses = lectureList.stream()
+        List<LectureDTO.CurriculumResponse> lectrueResponseList = lectureList.stream()
                 .map(lecture -> {
                     // 해당 lecture에 대한 contentOrder 정보 조회
                     List<ContentOrder> contentOrders = contentOrderRepository.findOrderedByCourseIdAndLectureId(courseId, lecture.getLectureId());
@@ -198,7 +198,9 @@ public class LectureService {
                 })
                 .collect(Collectors.toList());
 
-        return responses;
+        LectureDTO.CurriculumResponseWithCourseCreater response = LectureDTO.CurriculumResponseWithCourseCreater.of(course, lectrueResponseList);
+
+        return response;
 
 //        List<ContentOrder> contentOrders = contentOrderRepository.findOrderedByCourseId(courseId);
 //
@@ -284,9 +286,6 @@ public class LectureService {
         if (courseAttendeesList.isEmpty()) {
             return Collections.emptyList();
         }
-
-        // 오늘날짜 조회
-        ;
 
         // course별로 오늘할일 목록 추출
         List<LectureDTO.ToDoResponse> toDoResponses = new ArrayList<>();

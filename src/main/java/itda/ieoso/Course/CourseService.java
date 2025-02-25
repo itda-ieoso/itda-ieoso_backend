@@ -219,7 +219,7 @@ public class CourseService {
         // durationWeeks 만큼 lecture 생성
         for (int i = 1; i <= durationWeeks; i++) {
             // lecture 생성 및 저장
-            Lecture lecture = createLecture(course, startDate);
+            Lecture lecture = createLecture(course, startDate, i);
 
             // lectureDay 만큼 video 자동생성
             if ((lectureDay != null && !lectureDay.isEmpty()) || lectureTime != null) {
@@ -260,12 +260,12 @@ public class CourseService {
     }
 
     // lecture 생성
-    private Lecture createLecture(Course course, LocalDate startDate) {
+    private Lecture createLecture(Course course, LocalDate startDate, int i) {
 
         // lecture 생성
         Lecture lecture = Lecture.builder()
                 .course(course)
-                .lectureTitle("챕터")
+                .lectureTitle(i+"주차")
                 .lectureDescription("챕터 설명을 작성하세요.")
                 .startDate(startDate)
                 .endDate(startDate.plusDays(6))
@@ -291,7 +291,7 @@ public class CourseService {
                 .course(lecture.getCourse())
                 .lecture(lecture)
                 .videoTitle("강의 영상 제목을 입력하세요.")
-                .videoUrl("영상 링크 첨부")
+                .videoUrl(null)
                 .startDate(LocalDateTime.of(startDate, lectureTime.toLocalTime()))
                 .endDate(LocalDateTime.of(course.getEndDate(), LocalTime.of(23, 59, 59))) // 강좌종료
                 .videoHistories(new ArrayList<>())
@@ -326,7 +326,7 @@ public class CourseService {
                 .course(lecture.getCourse())
                 .lecture(lecture)
                 .assignmentTitle("과제 제목을 입력하세요.")
-                .assignmentDescription("과제 설명")
+                .assignmentDescription(null)
                 .startDate(LocalDateTime.of(course.getStartDate(),LocalTime.of(0, 0, 0))) // 강좌시작일
                 .endDate(LocalDateTime.of(endDate, assignmentDueTime.toLocalTime()))
                 .createdAt(LocalDateTime.now())
