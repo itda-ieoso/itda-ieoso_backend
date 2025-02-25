@@ -53,7 +53,7 @@ public class LectureDTO {
 
     @Builder
     public record CurriculumResponse(
-            String instructorName,
+            //String instructorName,
             Long lectureId,
             String lectureTitle,
             String lectureDescription,
@@ -99,7 +99,7 @@ public class LectureDTO {
                     .collect(Collectors.toList());
 
             return new LectureDTO.CurriculumResponse (
-                    lecture.getCourse().getInstructorName(),
+                    //lecture.getCourse().getInstructorName(),
                     lecture.getLectureId(),
                     lecture.getLectureTitle(),
                     lecture.getLectureDescription(),
@@ -112,6 +112,23 @@ public class LectureDTO {
         }
     }
 
+    public record CurriculumResponseWithCourseCreater(
+            Long courseId,
+            Long creatorId,
+            String instructorName,
+            List<CurriculumResponse> curriculumResponses
+
+    ) {
+        public static CurriculumResponseWithCourseCreater of(Course course, List<CurriculumResponse> curriculumResponses) {
+            return new LectureDTO.CurriculumResponseWithCourseCreater(
+                    course.getCourseId(),
+                    course.getUser().getUserId(),
+                    course.getInstructorName(),
+                    curriculumResponses
+            );
+        }
+    }
+
     public record HistoryResponse(
             List<MaterialHistoryDto.Response> materials,
             List<SubmissionDTO.Response> submissions
@@ -119,6 +136,7 @@ public class LectureDTO {
 
     public record ToDoResponse(
             Long courseId,
+            Long creatorId,
             String courseTitle,
             List<VideoDto.ToDoResponse> videoDtos,
             List<MaterialDto.ToDoResponse> materialDtos,
@@ -130,6 +148,7 @@ public class LectureDTO {
                                       List<AssignmentDTO.ToDoResponse> assignmentDtos) {
             return new ToDoResponse(
                     course.getCourseId(),
+                    course.getUser().getUserId(),
                     course.getCourseTitle(),
                     videoDtos,
                     materialDtos,
