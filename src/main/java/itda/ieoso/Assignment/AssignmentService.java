@@ -115,11 +115,12 @@ public class AssignmentService {
             throw new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND);
         }
 
-        if (request.endDate() != null) {
-            if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
-                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
-            }
-        }
+//        //
+//        if (request.endDate() != null) {
+//            if (request.endDate().toLocalDate().isBefore(course.getStartDate()) || request.endDate().toLocalDate().isAfter(course.getEndDate())) {
+//                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+//            }
+//        }
 
         // assignment 수정
         if (request.assignmentTitle()!=null) assignment.setAssignmentTitle(request.assignmentTitle());
