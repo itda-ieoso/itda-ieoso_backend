@@ -165,13 +165,13 @@ public class MaterialService {
         material.setOriginalFilename(originalFilename);
         material.setFileSize(fileSize);
 
-        if (startDate != null) {
-            if (startDate.toLocalDate().isBefore(course.getStartDate())) {
-                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
-            }
-
-            material.setStartDate(startDate); // 유효한 startDate라면 설정
-        }
+//        if (startDate != null) {
+//            if (startDate.toLocalDate().isBefore(course.getStartDate())) {
+//                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+//            }
+//
+//        }
+        if (startDate != null) material.setStartDate(startDate);
 
         materialRepository.save(material);
 

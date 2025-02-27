@@ -1,5 +1,7 @@
 package itda.ieoso.Video;
 
+import itda.ieoso.ContentOrder.ContentOrder;
+import itda.ieoso.ContentOrder.ContentOrderRepository;
 import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
@@ -37,6 +39,7 @@ public class VideoService {
     private final VideoHistoryRepository videoHistoryRepository;
     private final ContentOrderService contentOrderService;
     private final UserRepository userRepository;
+    private final ContentOrderRepository contentOrderRepository;
 
     // SecurityContext에서 현재 사용자 조회
     private User getAuthenticatedUser() {
@@ -108,11 +111,11 @@ public class VideoService {
             throw new CustomException(ErrorCode.VIDEO_NOT_FOUND);
         }
 
-        if (request.startDate() !=null) {
-            if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
-                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
-            }
-        }
+//        if (request.startDate() !=null) {
+//            if (request.startDate().toLocalDate().isBefore(course.getStartDate()) || request.startDate().toLocalDate().isAfter(course.getEndDate())) {
+//                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+//            }
+//        }
 
         // video 수정
         if (request.videoTitle()!=null) video.setVideoTitle(request.videoTitle());
@@ -146,6 +149,7 @@ public class VideoService {
         if (video == null) {
             throw new CustomException(ErrorCode.VIDEO_NOT_FOUND);
         }
+
 
         // videoHistory 삭제 (추후 수정후 삭제)
         videoHistoryRepository.deleteAllByVideo(video);
