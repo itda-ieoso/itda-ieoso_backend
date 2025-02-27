@@ -23,11 +23,13 @@ public class Material {
     @Column(name = "material_id")
     private Long materialId;
     private String materialTitle;
-    private String materialFile;
     private String originalFilename;
     private String fileSize;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+
+    @Column(columnDefinition = "TEXT")
+    private String materialFile;
 
     @ManyToOne
     @JoinColumn(name = "lecture_id", nullable = false)

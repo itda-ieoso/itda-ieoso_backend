@@ -17,7 +17,7 @@ public class SubmissionFile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long submissionFileId;
 
-    @Column(name = "file_url")
+    @Column(name = "file_url", columnDefinition = "TEXT")
     private String submissionFileUrl;  // 파일 URL
 
     @Column(name = "original_filename")
