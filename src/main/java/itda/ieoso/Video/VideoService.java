@@ -81,13 +81,13 @@ public class VideoService {
         videoRepository.save(video);
 
         // contentorder 생성
-        contentOrderService.createContentOrder(course, lecture, "video", video.getVideoId());
+        ContentOrder contentOrder = contentOrderService.createContentOrder(course, lecture, "video", video.getVideoId());
 
         // videoHistory 생성
         addVideoHistoryToVideo(course,video);
 
         // 반환
-        VideoDto.Response response = VideoDto.Response.of(video);
+        VideoDto.Response response = VideoDto.Response.of(video, contentOrder);
 
         return response;
     }
