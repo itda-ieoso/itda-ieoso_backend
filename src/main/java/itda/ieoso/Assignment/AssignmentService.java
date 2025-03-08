@@ -1,5 +1,6 @@
 package itda.ieoso.Assignment;
 
+import itda.ieoso.ContentOrder.ContentOrder;
 import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
@@ -85,13 +86,13 @@ public class AssignmentService {
         assignmentRepository.save(assignment);
 
         // contentOrder 생성
-        contentOrderService.createContentOrder(course, lecture,"assignment", assignment.getAssignmentId());
+        ContentOrder contentOrder = contentOrderService.createContentOrder(course, lecture,"assignment", assignment.getAssignmentId());
 
         // submission 생성
         addSubmissionToAssignment(course,assignment);
 
         // 반환
-        AssignmentDTO.Response response = AssignmentDTO.Response.of(assignment);
+        AssignmentDTO.Response response = AssignmentDTO.Response.of(assignment,contentOrder);
 
         return response;
     }

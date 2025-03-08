@@ -1,5 +1,6 @@
 package itda.ieoso.Material;
 
+import itda.ieoso.ContentOrder.ContentOrder;
 import itda.ieoso.ContentOrder.ContentOrderService;
 import itda.ieoso.Course.Course;
 import itda.ieoso.Course.CourseRepository;
@@ -113,13 +114,13 @@ public class MaterialService {
         materialRepository.save(material);
 
         // contentOrder 생성
-        contentOrderService.createContentOrder(course, lecture,"material", material.getMaterialId());
+        ContentOrder contentOrder = contentOrderService.createContentOrder(course, lecture,"material", material.getMaterialId());
 
         // materialHistory 생성
         addMaterialHistoryToMaterial(course, material);
 
         // 반환
-        MaterialDto.Response response = MaterialDto.Response.of(material);
+        MaterialDto.Response response = MaterialDto.Response.of(material,contentOrder);
 
         return response;
     }
