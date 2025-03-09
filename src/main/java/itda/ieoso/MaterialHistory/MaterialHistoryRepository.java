@@ -22,5 +22,7 @@ public interface MaterialHistoryRepository extends JpaRepository<MaterialHistory
 
     void deleteAllByCourse(Course course);
 
+    void deleteAllByCourseAttendees(CourseAttendees attendees);
+
     Optional<MaterialHistory> findByMaterial_MaterialIdAndCourseAttendees_CourseAttendeesId(Long materialId, Long courseAttendeesId);
 }

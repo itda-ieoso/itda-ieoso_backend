@@ -77,5 +77,13 @@ public class CourseController {
         return Response.success("강의실 목록 조회", courses);
     }
 
+    // TODO 강의실 퇴장
+    @DeleteMapping("/exit/{courseId}")
+    public Response<?> exitCourse(@PathVariable Long courseId) {
+        courseService.exitCourse(courseId);
+        return Response.success("강의실 퇴장", null);
+    }
+
+
 }
 

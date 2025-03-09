@@ -25,5 +25,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     void deleteAllByCourse(Course course);
 
+    void deleteAllByCourseAttendees(CourseAttendees courseAttendees);
 
 }
