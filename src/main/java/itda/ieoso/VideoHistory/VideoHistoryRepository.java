@@ -20,4 +20,5 @@ public interface VideoHistoryRepository extends JpaRepository<VideoHistory, Long
 
     void deleteAllByCourse(Course course);
 
+    void deleteAllByCourseAttendees(CourseAttendees attendees);
 }

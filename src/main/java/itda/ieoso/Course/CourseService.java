@@ -89,7 +89,6 @@ public class CourseService {
                 .user(user)
                 .courseTitle("빈 강의실")
                 .courseDescription("빈 강의실 입니다.")
-                //.maxStudents(50) // default TODO 필요여부 프론트에 여쭤보기
                 .instructorName(user.getName())
                 .startDate(null)
                 .endDate(null)
@@ -184,6 +183,7 @@ public class CourseService {
         if (request.difficultyLevel() != null) course.setDifficultyLevel(request.difficultyLevel());
         if (request.startDate() !=null && request.durationWeeks() > 0) course.setEndDate((request.startDate().plusWeeks(request.durationWeeks()-1)).plusDays(6));
         course.setUpdatedAt(LocalDateTime.now());
+        // TODO 학생별 과제 공개, 비공개 설정 추가
 
         // 데이터베이스에 저장
         courseRepository.save(course);
@@ -579,6 +579,36 @@ public class CourseService {
 
     }
 
+    // 강의실 퇴장
+    @Transactional
+    public void exitCourse(Long courseId) {
+        // 로그인 유저 불러오기
+        User authenticatedUser = getAuthenticatedUser();
+
+        // course찾기
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
+
+        // course attendees 찾기
+        CourseAttendees courseAttendees = courseAttendeesRepository.findByCourseAndUser(course,authenticatedUser)
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED));
+
+        // courseAttendees가 owner인경우 = 나갈수없음(강의삭제로 해야함)
+        if (courseAttendees.getCourseAttendeesStatus() == CourseAttendeesStatus.OWNER) {
+            throw new CustomException(ErrorCode.COURSE_OWNER_CANNOT_LEAVE);
+        }
+
+        // courseAttendees의 히스토리 전체 삭제
+        videoHistoryRepository.deleteAllByCourseAttendees(courseAttendees);
+        materialHistoryRepository.deleteAllByCourseAttendees(courseAttendees);
+        submissionRepository.deleteAllByCourseAttendees(courseAttendees); // submissionFile = CasCade
+        // TODO s3 bucket에서 파일 삭제하는 기능 추가
+
+        // courseAttendees 삭제
+        // FIXME courseAttendees의 Status를 DROPPED로 변경
+        courseAttendeesRepository.delete(courseAttendees);
+    }
+
     // 입장 코드 검증
     public boolean validateEntryCode(Long courseId, String entryCode) {
         // courseId로 강좌 조회
@@ -618,6 +648,7 @@ public class CourseService {
     }
 
     // 각 히스토리 추출 메서드
+    // TODO 삭제
     private <T,E> E extractEntity(T history) {
         if (history instanceof VideoHistory) {
             return (E) ((VideoHistory) history).getVideo();
