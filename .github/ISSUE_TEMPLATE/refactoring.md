@@ -1,5 +1,5 @@
 ---
-name: 'Refactoring '
+name: 'Refactoring'
 about: 리팩토링 관련 이슈
 title: "[REFACTORING]"
 labels: ''
