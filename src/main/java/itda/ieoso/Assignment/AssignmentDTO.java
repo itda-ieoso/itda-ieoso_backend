@@ -1,5 +1,6 @@
 package itda.ieoso.Assignment;
 
+import itda.ieoso.Assignment.Assignment.SubmissionType;
 import itda.ieoso.ContentOrder.ContentOrder;
 import itda.ieoso.Submission.SubmissionStatus;
 import itda.ieoso.Video.Video;
@@ -18,6 +19,7 @@ public class AssignmentDTO {
             String assignmentTitle,
             String assignmentDescription,
             // LocalDateTime startDate,
+            SubmissionType submissionType,
             LocalDateTime endDate
 
     ) {}
@@ -26,6 +28,7 @@ public class AssignmentDTO {
             Long assignmentId,
             String assignmentTitle,
             String assignmentDescription,
+            SubmissionType submissionType,
             LocalDateTime startDate,
             LocalDateTime endDate,
             Long contentOrderId,
@@ -37,6 +40,7 @@ public class AssignmentDTO {
                     assignment.getAssignmentId(),
                     assignment.getAssignmentTitle(),
                     assignment.getAssignmentDescription(),
+                    assignment.getSubmissionType(),
                     assignment.getStartDate(),
                     assignment.getEndDate(),
                     null,
@@ -50,6 +54,7 @@ public class AssignmentDTO {
                     assignment.getAssignmentId(),
                     assignment.getAssignmentTitle(),
                     assignment.getAssignmentDescription(),
+                    assignment.getSubmissionType(),
                     assignment.getStartDate(),
                     assignment.getEndDate(),
                     contentOrder.getContentOrderId(),
