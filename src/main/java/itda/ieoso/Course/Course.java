@@ -72,16 +72,19 @@ public class Course {
     }
 
     @Column
+    private Boolean isAssignmentPublic; // 수강생간의 과제 공개 여부
+
+    @Column
     private LocalDateTime createdAt;
 
     @Column
     private LocalDateTime updatedAt;
 
     @Column
-    private String courseThumbnail;
+    private String courseThumbnail; // 강의 썸네일
 
     @Column(unique = true)
-    private String entryCode;
+    private String entryCode;   // 입장코드
 
     @Column
     private boolean init; // 초기설정 여부
@@ -133,6 +136,10 @@ public class Course {
 
     public void setDifficultyLevel(DifficultyLevel difficultyLevel) {
         this.difficultyLevel = difficultyLevel;
+    }
+
+    public void setIsAssignmentPublic(Boolean isAssignmentPublic) {
+        this.isAssignmentPublic = isAssignmentPublic;
     }
 
     public void setDurationWeeks(int durationWeeks) {

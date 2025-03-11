@@ -33,7 +33,8 @@ public enum ErrorCode {
     INVALID_DAY_OF_WEEK(HttpStatus.BAD_REQUEST, "요일 범위설정을 벗어났습니다."),
     CONTENTORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "순서도메인을 찾을수없습니다."),
     INVALID_DURATION_WEEK(HttpStatus.BAD_REQUEST, "커리큘럼주차가 올바르지 않습니다."),
-    COURSE_OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "강의 개설자는 강의실을 나갈 수 없습니다.");
+    COURSE_OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "강의 개설자는 강의실을 나갈 수 없습니다."),
+    FORBIDDEN_ASSIGNMENT_ACCESS(HttpStatus.FORBIDDEN, "강의 정책에 따라 이 과제에 접근할 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;

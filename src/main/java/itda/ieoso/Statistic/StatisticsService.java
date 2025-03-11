@@ -61,11 +61,15 @@ public class StatisticsService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
+        // 로그인 유저 조회
         User authenticatedUser = getAuthenticatedUser();
-        // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
-        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
-            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
-        }
+
+        // courseAttendees 조회
+        CourseAttendees courseAttendees = courseAttendeesRepository.findByCourseAndUser(course, authenticatedUser)
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED));
+
+        // 과제 전체공개 여부 확인
+        validateCourseAssignmentVisibility(course, courseAttendees);
 
         // 2. Course에 연결된 Lecture ID만 가져오기
         List<Long> lectureIds = course.getLectures().stream()
@@ -108,11 +112,15 @@ public class StatisticsService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COURSE_NOT_FOUND));
 
+        // 로그인 유저 조회
         User authenticatedUser = getAuthenticatedUser();
-        // 강좌를 생성한 사용자 ID와 요청한 사용자 ID가 일치하는지 확인
-        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
-            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
-        }
+
+        // courseAttendees 조회
+        CourseAttendees courseAttendees = courseAttendeesRepository.findByCourseAndUser(course, authenticatedUser)
+                .orElseThrow(() -> new CustomException(ErrorCode.COURSEATTENDEES_PERMISSION_DENIED));
+
+        // 과제 전체공개 여부 확인
+        validateCourseAssignmentVisibility(course, courseAttendees);
 
         // 2. Course에 연결된 Lecture ID 가져오기
         List<Long> lectureIds = course.getLectures().stream()
@@ -184,6 +192,17 @@ public class StatisticsService {
                     studentResults
             );
         }).collect(Collectors.toList());
+    }
+
+    void validateCourseAssignmentVisibility(Course course, CourseAttendees courseAttendees) {
+        // courseAttendees 가 owner -> 공개
+        if (courseAttendees.getCourseAttendeesStatus()==CourseAttendeesStatus.OWNER) {
+            return;
+        } else if (courseAttendees.getCourseAttendeesStatus()==CourseAttendeesStatus.ACTIVE && course.getIsAssignmentPublic()) {
+            return;
+        } else {
+            throw new CustomException(ErrorCode.FORBIDDEN_ASSIGNMENT_ACCESS);
+        }
     }
 
 }
