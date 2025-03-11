@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static itda.ieoso.Assignment.Assignment.*;
+
 @Service
 @RequiredArgsConstructor
 public class AssignmentService {
@@ -70,11 +72,12 @@ public class AssignmentService {
         }
 
         // assignment 생성
-        Assignment assignment = Assignment.builder()
+        Assignment assignment = builder()
                 .course(course)
                 .lecture(lecture)
                 .assignmentTitle(null)
                 .assignmentDescription(null)
+                .submissionType(SubmissionType.TEXT)
                 .startDate(LocalDateTime.of(course.getStartDate(), LocalTime.of(0, 0, 0)))
                 .endDate(null)
                 .createdAt(LocalDateTime.now())
@@ -124,8 +127,10 @@ public class AssignmentService {
 //        }
 
         // assignment 수정
+        // TODO submssionType추가
         if (request.assignmentTitle()!=null) assignment.setAssignmentTitle(request.assignmentTitle());
         if (request.assignmentDescription()!=null) assignment.setAssignmentDescription(request.assignmentDescription());
+        if (request.submissionType()!=null) assignment.setSubmissionType(request.submissionType());
         // if (request.startDate()!=null) assignment.setStartDate(request.startDate());
         if (request.endDate()!=null) assignment.setEndDate(request.endDate());
         assignment.setUpdatedAt(LocalDateTime.now());
