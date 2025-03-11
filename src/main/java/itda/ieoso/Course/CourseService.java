@@ -327,6 +327,7 @@ public class CourseService {
                 .lecture(lecture)
                 .assignmentTitle("과제 제목을 입력하세요.")
                 .assignmentDescription(null)
+                .submissionType(Assignment.SubmissionType.TEXT)
                 .startDate(LocalDateTime.of(course.getStartDate(),LocalTime.of(0, 0, 0))) // 강좌시작일
                 .endDate(LocalDateTime.of(endDate, assignmentDueTime.toLocalTime()))
                 .createdAt(LocalDateTime.now())
