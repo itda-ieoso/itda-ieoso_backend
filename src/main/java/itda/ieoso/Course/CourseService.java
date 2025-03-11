@@ -98,6 +98,7 @@ public class CourseService {
                 .assignmentDueDay(null)
                 .assignmentDueTime(null)
                 .difficultyLevel(Course.DifficultyLevel.EASY)
+                .isAssignmentPublic(null)
                 .courseThumbnail(null)
                 .entryCode(generateEntryCode())
                 .init(false)
@@ -145,7 +146,6 @@ public class CourseService {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
-        // 예외처리
         // dureation, startDate 필수
         if (request.durationWeeks() == null || (request.durationWeeks() <= 0 || request.durationWeeks() > 12)) {
             throw new CustomException(ErrorCode.INVALID_DURATION_WEEK);
@@ -181,18 +181,15 @@ public class CourseService {
         if (request.assignmentDueDay()!=null && !request.assignmentDueDay().isEmpty()) course.setAssignmentDueDay(assignmentDueDayString);
         if (request.assignmentDueTime() != null) course.setAssignmentDueTime(request.assignmentDueTime());
         if (request.difficultyLevel() != null) course.setDifficultyLevel(request.difficultyLevel());
+        if (request.isAssignmentPublic() !=null) course.setIsAssignmentPublic(request.isAssignmentPublic());
         if (request.startDate() !=null && request.durationWeeks() > 0) course.setEndDate((request.startDate().plusWeeks(request.durationWeeks()-1)).plusDays(6));
         course.setUpdatedAt(LocalDateTime.now());
-        // TODO 학생별 과제 공개, 비공개 설정 추가
 
         // 데이터베이스에 저장
         courseRepository.save(course);
 
         // 초기 업데이트 여부 확인
         if (!course.isInit()) {
-
-            // 예외처리 묶기
-
 
             // 초기 설정시 커리큘럼 자동생성
             initializeCourse(course, request.startDate(), request.durationWeeks(),
@@ -318,6 +315,7 @@ public class CourseService {
     }
 
     // assignment 와 submission 생성
+    // TODO 과제 제출방식 추가
     private Assignment createAssignment(Course course, Lecture lecture, int day, Time assignmentDueTime) {
         // 요일 받아오기
         LocalDate endDate = findDateInWeek(lecture.getStartDate(), lecture.getEndDate(), day);

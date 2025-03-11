@@ -25,6 +25,7 @@ public class CourseDTO {
     private String assignmentDueDay;
     private Time assignmentDueTime;
     private DifficultyLevel difficultyLevel;
+    private Boolean isAssignmentPublic;
     private String courseThumbnail;
     private String entryCode;
     private boolean init; // 초기설정 여부
@@ -45,17 +46,13 @@ public class CourseDTO {
                 .assignmentDueDay(course.getAssignmentDueDay())
                 .assignmentDueTime(course.getAssignmentDueTime())
                 .difficultyLevel(course.getDifficultyLevel())
+                .isAssignmentPublic(course.getIsAssignmentPublic())
                 .courseThumbnail(presignedThumbnailUrl != null ? presignedThumbnailUrl : course.getCourseThumbnail())
                 .entryCode(course.getEntryCode())
                 .init(course.isInit())
                 .user(userInfoDto)
                 .build();
     }
-
-    public record OverviewUpdateRequest(
-            String description,
-            String courseThumbnail
-    ) {}
 
     public record BasicUpdateRequest(
             String title,
@@ -66,6 +63,7 @@ public class CourseDTO {
             Time lectureTime,
             List<Integer> assignmentDueDay, // 리스트
             Time assignmentDueTime,
-            DifficultyLevel difficultyLevel
+            DifficultyLevel difficultyLevel,
+            Boolean isAssignmentPublic
     ) {}
 }
