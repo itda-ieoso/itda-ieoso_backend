@@ -98,7 +98,7 @@ public class CourseService {
                 .assignmentDueDay(null)
                 .assignmentDueTime(null)
                 .difficultyLevel(Course.DifficultyLevel.EASY)
-                .isAssignmentPublic(null)
+                .isAssignmentPublic(false)
                 .courseThumbnail(null)
                 .entryCode(generateEntryCode())
                 .init(false)
