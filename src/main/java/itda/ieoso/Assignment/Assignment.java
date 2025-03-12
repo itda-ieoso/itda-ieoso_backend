@@ -34,6 +34,16 @@ public class Assignment {
     @Column(length = 1000)
     private String assignmentDescription;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SubmissionType submissionType;
+
+    public enum SubmissionType {
+        TEXT,
+        FILE,
+        BOTH;
+    }
+
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 
@@ -74,5 +84,9 @@ public class Assignment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public void setSubmissionType(SubmissionType submissionType) {
+        this.submissionType = submissionType;
     }
 }

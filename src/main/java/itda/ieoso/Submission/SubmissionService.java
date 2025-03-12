@@ -63,6 +63,8 @@ public class SubmissionService {
             throw new CustomException(ErrorCode.SUBMISSION_PERMISSION_DENIED);
         }
 
+        // TODO assignment의 submissionType에 따라 제출방식 제한
+
         //기존 파일 유지 (existingFileUrls에 포함된 파일만 유지)
         if (existingFileUrls != null) {
             submission.setSubmissionFiles(
