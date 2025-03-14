@@ -30,7 +30,7 @@ public class SwaggerConfig {
                         .bearerFormat("JWT"));
 
         return new OpenAPI()
-                .addServersItem(new Server().url("https://eduitda.com"))
+                .addServersItem(new Server().url("/api"))
                 .info(info)
                 .addSecurityItem(securityRequirement)
                 .components(components);
