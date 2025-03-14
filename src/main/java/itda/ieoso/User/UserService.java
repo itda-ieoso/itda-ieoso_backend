@@ -1,4 +1,5 @@
 package itda.ieoso.User;
+import itda.ieoso.Email.EmailService;
 import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.File.S3Service;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtUtil jwtUtil;
     private final S3Service s3Service;
+    private final EmailService emailService;
 
     // 이메일 중복 확인
     public boolean isEmailDuplicate(String email) {
@@ -139,5 +142,52 @@ public class UserService {
             throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
         }
         return authenticatedUser.getProfileImageUrl();
+    }
+
+    @Transactional
+    public void resetPassword(String email, String name) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.getName().equals(name)) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+
+        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+        user.setPassword(bCryptPasswordEncoder.encode(tempPassword));
+        userRepository.save(user);
+
+        String subject = "임시 비밀번호가 발급되었습니다";
+        String text = "<html>" +
+                "<body>" +
+                "<p><strong>안녕하세요, " + user.getName() + "님.</strong></p>" +
+                "<p>요청하신 <strong>임시 비밀번호</strong>가 발급되었습니다. 아래의 임시 비밀번호로 로그인하신 후, 보안을 위해 즉시 새로운 비밀번호로 변경해주시길 바랍니다.</p>" +
+                "<p><strong>임시 비밀번호: " + tempPassword + "</strong></p>" +
+                "<hr>" +
+                "<h3>로그인 방법</h3>" +
+                "<ol>" +
+                "<li>웹사이트 또는 앱에서 로그인 페이지로 이동합니다.</li>" +
+                "<li>이메일 주소와 위의 임시 비밀번호를 입력합니다.</li>" +
+                "<li>로그인 후, <strong>'내 정보'</strong> 또는 <strong>'비밀번호 변경'</strong> 메뉴에서 새로운 비밀번호로 변경합니다.</li>" +
+                "</ol>" +
+                "<hr>" +
+                "<p>혹시 로그인 또는 비밀번호 변경에 어려움이 있으시면 고객센터(전화: 010-2856-2048)로 문의해 주시기 바랍니다.</p>" +
+                "<p>감사합니다.</p>" +
+                "<p><strong>itda 드림</strong></p>" +
+                "</body>" +
+                "</html>";
+        emailService.sendEmail(email, subject, text);
+    }
+    @Transactional
+    public void changePassword(String currentPassword, String newPassword) {
+
+        User authenticatedUser = getAuthenticatedUser();
+
+        if (!bCryptPasswordEncoder.matches(currentPassword, authenticatedUser.getPassword())) {
+            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        authenticatedUser.setPassword(bCryptPasswordEncoder.encode(newPassword));
+        userRepository.save(authenticatedUser);
     }
 }

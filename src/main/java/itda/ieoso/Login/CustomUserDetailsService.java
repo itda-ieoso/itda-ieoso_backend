@@ -24,4 +24,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("해당 이메일로 등록된 사용자가 없습니다."));
         return new CustomUserDetails(data);
     }
+
+    public UserDetails loadUserByUserId(Long userId) throws UsernameNotFoundException {
+        User data = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 사용자 아이디로 등록된 사용자가 없습니다."));
+        return new CustomUserDetails(data); // CustomUserDetails 반환
+    }
 }
