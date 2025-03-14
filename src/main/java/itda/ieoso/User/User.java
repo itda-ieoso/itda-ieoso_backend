@@ -64,4 +64,8 @@ public class User {
     public void updateProfileImage(String imageUrl) {
         this.profileImageUrl = imageUrl;
     }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

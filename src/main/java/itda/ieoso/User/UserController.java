@@ -1,13 +1,12 @@
 package itda.ieoso.User;
 
 
-import itda.ieoso.Response.BasicResponse;
-import itda.ieoso.Response.DataResponse;
 import itda.ieoso.Response.Response;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import itda.ieoso.User.UserDTO.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -69,5 +68,18 @@ public class UserController {
     @GetMapping
     public Response<List<UserInfoDto>> getAllUsers() {
         return Response.success("모든 사용자 정보 조회", userService.getAllUserInfo());
+    }
+    @PostMapping("/reset/password")
+    public Response<String> resetPassword(@RequestParam String email, @RequestParam String name) {
+        userService.resetPassword(email, name);
+        return Response.success("임시 비밀번호가 이메일로 전송되었습니다.", null);
+    }
+    @PostMapping("/change/password")
+    public Response<String> changePassword(
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword
+    ) {
+        userService.changePassword(currentPassword, newPassword);
+        return Response.success("비밀번호가 성공적으로 변경되었습니다.", null);
     }
 }

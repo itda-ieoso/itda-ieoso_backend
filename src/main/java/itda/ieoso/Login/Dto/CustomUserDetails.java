@@ -6,7 +6,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
     private final User user;
@@ -21,7 +20,6 @@ public class CustomUserDetails implements UserDetails {
         authorities.add(() -> user.getRole().getAuthority());
         return authorities;
     }
-
     @Override
     public String getPassword() {
         return user.getPassword();
