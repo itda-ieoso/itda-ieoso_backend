@@ -1,5 +1,4 @@
-# 운영서버 배포 
-
+# 운영서버 배포
 
 name: CD
 
@@ -64,7 +63,7 @@ jobs:
           aws deploy create-deployment \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --application-name itda-code-deploy \
-            --deployment-group-name itda-aws-server \
+            --deployment-group-name itda-aws-production-server \
             --s3-location bucket=itdaawsbucket,key=${{ github.sha }}.zip,bundleType=zip \
             --region ap-northeast-2
   
