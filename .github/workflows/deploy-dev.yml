@@ -1,4 +1,4 @@
-# cd.yml 
+# 개발서버 배포 
 
 name: CD
 
@@ -10,7 +10,7 @@ env:
   AWS_REGION: ap-northeast-2
   S3_BUCKET_NAME: itdaawsbucket
   CODE_DEPLOY_APPLICATION_NAME: itda-code-deploy
-  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: itda-aws-server
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: itda-aws-development-server
   
 permissions:
   contents: read
