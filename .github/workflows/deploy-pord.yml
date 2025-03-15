@@ -1,0 +1,70 @@
+# 운영서버 배포 
+
+
+name: CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: ap-northeast-2
+  S3_BUCKET_NAME: itdaawsbucket
+  CODE_DEPLOY_APPLICATION_NAME: itda-code-deploy
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: itda-aws-production-server
+  
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: 체크아웃 Github-Action
+      uses: actions/checkout@v4
+
+    - name: 자바 JDK set up
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Gradle set up
+      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+
+    - name: gradlew 권한 부여
+      run: chmod +x ./gradlew
+      working-directory: ./
+      
+    - name: Gradle 빌드
+      run: ./gradlew clean build -x test
+      working-directory: ./
+  
+    - name: AWS 인증 (IAM 사용자 Access key, Secret Key 사용)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: AWS S3 에 build 결과 업로드
+      run: |
+          aws deploy push \
+            --application-name itda-code-deploy \
+            --ignore-hidden-files \
+            --s3-location s3://itdaawsbucket/${{ github.sha }}.zip \
+            --source . \
+            --region ap-northeast-2  # 리전 추가
+      
+    - name: S3 버킷 내 파일 CodeDeploy 실행
+      run: |
+          aws deploy create-deployment \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --application-name itda-code-deploy \
+            --deployment-group-name itda-aws-server \
+            --s3-location bucket=itdaawsbucket,key=${{ github.sha }}.zip,bundleType=zip \
+            --region ap-northeast-2
+  
