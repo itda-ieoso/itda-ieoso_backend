@@ -3,7 +3,9 @@ package itda.ieoso.Login.Config;
 import itda.ieoso.Login.Jwt.JwtFilter;
 import itda.ieoso.Login.Jwt.JwtUtil;
 import itda.ieoso.Login.Jwt.LoginFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,11 +13,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+@Slf4j
 @Configuration
 public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -73,8 +79,26 @@ public class SecurityConfig {
         http
                 .logout(logout -> logout
                         .logoutUrl("/logout")
+                        .addLogoutHandler(new LogoutHandler() {
+                            @Override
+                            public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+                                String authHeader = request.getHeader("Authorization");
+                                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                                    String token = authHeader.substring(7);
+                                    try {
+                                        String username = jwtUtil.getEmail(token);
+                                        log.info("사용자 '{}' 로그아웃 시도", username);
+                                    } catch (Exception e) {
+                                        log.info("토큰에서 사용자 정보를 추출할 수 없음: {}", e.getMessage());
+                                    }
+                                } else {
+                                    log.info("Authorization 헤더에 토큰이 없음");
+                                }
+                            }
+                        })
                         .clearAuthentication(true)
                         .logoutSuccessHandler((request, response, authentication) -> {
+                            log.info("로그아웃 성공");
                             response.setStatus(HttpServletResponse.SC_OK);
                         }));
         return http.build();
