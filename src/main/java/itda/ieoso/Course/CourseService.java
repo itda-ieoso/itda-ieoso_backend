@@ -229,6 +229,16 @@ public class CourseService {
                     contentOrderService.createContentOrder(course, lecture, "video", video.getVideoId());
 
                 }
+
+            // lectureDay 가 null인경우 강의 1개만 생성(정해지지 않았어요)
+            } else if (lectureDay.isEmpty()) {
+                // video 한개 생성
+                int day = LocalDate.now().getDayOfWeek().getValue();
+                Time time = Time.valueOf("00:00:00");
+                Video video = createVideo(course, lecture, day, time);
+                videoRepository.save(video);
+                // contentOrder생성
+                contentOrderService.createContentOrder(course, lecture, "video", video.getVideoId());
             }
 
             // assignmentDueDay 만큼 assignment 자동생성
@@ -315,7 +325,6 @@ public class CourseService {
     }
 
     // assignment 와 submission 생성
-    // TODO 과제 제출방식 추가
     private Assignment createAssignment(Course course, Lecture lecture, int day, Time assignmentDueTime) {
         // 요일 받아오기
         LocalDate endDate = findDateInWeek(lecture.getStartDate(), lecture.getEndDate(), day);
