@@ -88,7 +88,7 @@ public class OAuthService {
         // 계정 정보가 없는경우
         if (!userexist) {
             // google login 정보 저장
-            User user = new User(googleUser.getName(), googleUser.getEmail(),"google");
+            User user = new User(googleUser.getName(), googleUser.getEmail());
             userRepository.save(user);
             log.info("신규유저 구글로그인 정보 저장 완료");
         }
