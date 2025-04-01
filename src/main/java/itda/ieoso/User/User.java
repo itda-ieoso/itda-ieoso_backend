@@ -12,19 +12,15 @@ import org.hibernate.validator.constraints.UniqueElements;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String name;
 
     @Column(name = "profile_image_url")
@@ -61,6 +57,16 @@ public class User {
         this.marketing = marketing;
     }
 
+    @Builder
+    public User(String oauthName, String oauthEmail) {
+        this.name = oauthName;
+        this.email = oauthEmail;
+        this.role = UserRole.USER;
+        this.service = true;
+        this.privacy = true;
+        this.marketing = true;
+    }
+
     // S3에서 받은 URL 저장
     public void updateProfileImage(String imageUrl) {
         this.profileImageUrl = imageUrl;
@@ -68,5 +74,10 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void updateSocial(String oauthEmail, String oauthName) {
+        this.email = oauthEmail;
+        this.name = oauthName;
     }
 }
