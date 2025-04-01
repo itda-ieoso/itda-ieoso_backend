@@ -6,7 +6,9 @@ import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Login.Jwt.JwtUtil;
 import itda.ieoso.Response.Response;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,6 +62,7 @@ public class OAuthService {
         params.put("response_type", response_type);
         params.put("client_id", clientId);
         params.put("redirect_uri", redirectUri);
+        log.info("redirect uri: {}", redirectUri);
 
         String parameterString = params.entrySet().stream()
                         .map(x->x.getKey()+"="+x.getValue())
@@ -116,7 +119,16 @@ public class OAuthService {
 
 
     // 기존 유저 소셜로그인 연동 api
-    public void googleRedirectURLTemp() throws IOException {
+    public void googleRedirectURLTemp(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 세션에 기존 사용자 정보 저장
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+        HttpSession session = request.getSession();
+        session.setAttribute("existingUserId", authentication.getName());
+
+        // uri 호출
         Map<String, Object> params = new HashMap<>();
         params.put("scope", scope);
         params.put("response_type", response_type);
@@ -127,12 +139,13 @@ public class OAuthService {
                 .map(x->x.getKey()+"="+x.getValue())
                 .collect(Collectors.joining("&"));
         String redirectUrl = "https://accounts.google.com/o/oauth2/v2/auth"+"?"+parameterString;
-        response.sendRedirect(redirectUrl);
 
+        // 리다이렉트
+        response.sendRedirect(redirectUrl);
     }
 
     // 기존 유저 소셜로그인 연동 api
-    public ResponseEntity<Map<String, String>> googleLoginTemp(String code) throws JsonProcessingException {
+    public ResponseEntity<Map<String, String>> googleLoginTemp(HttpServletRequest request, String code) throws JsonProcessingException {
         // oauth 로그인 엑세스토큰 발급
         ResponseEntity<String> accessToken = requestAccessToken(code);
         GoogleOAuthToken oAuthToken = getAccessToken(accessToken);
@@ -144,13 +157,10 @@ public class OAuthService {
             throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
         }
 
-        // 기존계정 찾기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
-        }
-        String localemail = authentication.getName();
-        User user = userRepository.findByEmail(localemail)
+        // 세션에서 기존 사용자 id가져오기
+        HttpSession session = request.getSession();
+        String existingUserId = (String) session.getAttribute("existingUserId");
+        User user = userRepository.findByEmail(existingUserId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // oauth user정보 저장
@@ -175,6 +185,9 @@ public class OAuthService {
 
         Map<String, String> response = new HashMap<>();
         response.put("jwtToken", jwtToken); // 발급한 JWT 토큰
+
+        // 세션 제거
+        session.removeAttribute("existingUserId");
 
         return ResponseEntity.ok(response); //
 

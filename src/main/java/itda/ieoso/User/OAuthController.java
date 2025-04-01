@@ -2,6 +2,8 @@ package itda.ieoso.User;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import itda.ieoso.Response.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,13 +35,14 @@ public class OAuthController {
 
     // 기존고객용 소셜로그인 연동
     @GetMapping("/google/login/temp")
-    public void googleloginTemp() throws IOException {
-        oAuthService.googleRedirectURLTemp();
+    public void googleloginTemp(HttpServletRequest request,
+                                HttpServletResponse response) throws IOException {
+        oAuthService.googleRedirectURLTemp(request, response);
     }
 
     // 기존고객용 소셜로그인 연동 리다이렉트
     @GetMapping("/return/uri/temp")
-    public ResponseEntity<Map<String, String>> returnUriTemp(@RequestParam String code) throws JsonProcessingException {
-        return oAuthService.googleLoginTemp(code);
+    public ResponseEntity<Map<String, String>> returnUriTemp(HttpServletRequest request, @RequestParam String code) throws JsonProcessingException {
+        return oAuthService.googleLoginTemp(request,code);
     }
 }
