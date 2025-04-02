@@ -78,6 +78,7 @@ public class OAuthService {
         ResponseEntity<String> accessToken = requestAccessToken(code);
         GoogleOAuthToken oAuthToken = getAccessToken(accessToken);
 
+
         // oauth user정보 가져오기
         ResponseEntity<String> userInfoResponse = requestUserInfo(oAuthToken);
         System.out.println("userInfoResponse = " + userInfoResponse.getBody());
