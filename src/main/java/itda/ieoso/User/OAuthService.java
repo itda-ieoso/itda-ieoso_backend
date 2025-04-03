@@ -73,14 +73,12 @@ public class OAuthService {
 
     // 업데이트 이후 신규가입자용 api
     public ResponseEntity<Map<String, String>> googleLogin(String code) throws JsonProcessingException {
-        System.out.println("code = " + code);
         // oauth 로그인 엑세스토큰 발급
-        ResponseEntity<String> accessToken = requestAccessToken(code);
+        ResponseEntity<String> accessToken = requestAccessToken(code, redirectUri);
         GoogleOAuthToken oAuthToken = getAccessToken(accessToken);
 
         // oauth user정보 가져오기
         ResponseEntity<String> userInfoResponse = requestUserInfo(oAuthToken);
-        System.out.println("userInfoResponse = " + userInfoResponse.getBody());
         GoogleUser googleUser = getUserInfo(userInfoResponse);
         if (googleUser == null) {
             throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
@@ -139,7 +137,7 @@ public class OAuthService {
     // 기존 유저 소셜로그인 연동 api
     public ResponseEntity<Map<String, String>> googleLoginTemp(String code) throws JsonProcessingException {
         // oauth 로그인 엑세스토큰 발급
-        ResponseEntity<String> accessToken = requestAccessToken(code);
+        ResponseEntity<String> accessToken = requestAccessToken(code, redirectUriTemp);
         GoogleOAuthToken oAuthToken = getAccessToken(accessToken);
 
         // oauth user정보 가져오기
@@ -183,14 +181,14 @@ public class OAuthService {
 
     }
 
-    public ResponseEntity<String> requestAccessToken(String code) {
+    public ResponseEntity<String> requestAccessToken(String code, String redirect) {
         String GOOGLE_ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
         RestTemplate restTemplate = new RestTemplate();
         Map<String, Object> params = new HashMap<>();
         params.put("client_id", clientId);
         params.put("client_secret", clientSecret);
         params.put("code", code);
-        params.put("redirect_uri", redirectUri);
+        params.put("redirect_uri", redirect);
         params.put("grant_type", "authorization_code");
 
         ResponseEntity<String> responseEntity= restTemplate.postForEntity(GOOGLE_ACCESS_TOKEN_URL, params, String.class);
