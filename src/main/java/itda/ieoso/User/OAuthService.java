@@ -154,7 +154,7 @@ public class OAuthService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // oauth user정보 저장
-        user.updateSocial(googleUser.getName(), googleUser.getEmail());
+        user.updateSocial(googleUser.getEmail(), googleUser.getName());
 
         // 이후에는 소셜로그인으로만 접근가능
         user.setPassword(null);
