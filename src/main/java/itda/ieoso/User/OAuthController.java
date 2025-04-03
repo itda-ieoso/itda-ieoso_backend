@@ -35,14 +35,13 @@ public class OAuthController {
 
     // 기존고객용 소셜로그인 연동
     @GetMapping("/google/login/temp")
-    public void googleloginTemp(HttpServletRequest request,
-                                HttpServletResponse response) throws IOException {
-        oAuthService.googleRedirectURLTemp(request, response);
+    public void googleloginTemp() throws IOException {
+        oAuthService.googleRedirectURLTemp();
     }
 
     // 기존고객용 소셜로그인 연동 리다이렉트
     @GetMapping("/return/uri/temp")
-    public ResponseEntity<Map<String, String>> returnUriTemp(HttpServletRequest request, @RequestParam String code) throws JsonProcessingException {
-        return oAuthService.googleLoginTemp(request,code);
+    public ResponseEntity<Map<String, String>> returnUriTemp(@RequestParam String code) throws JsonProcessingException {
+        return oAuthService.googleLoginTemp(code);
     }
 }

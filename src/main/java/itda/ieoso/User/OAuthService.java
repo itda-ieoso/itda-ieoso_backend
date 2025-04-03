@@ -77,7 +77,7 @@ public class OAuthService {
         // oauth 로그인 엑세스토큰 발급
         ResponseEntity<String> accessToken = requestAccessToken(code);
         GoogleOAuthToken oAuthToken = getAccessToken(accessToken);
-        
+
         // oauth user정보 가져오기
         ResponseEntity<String> userInfoResponse = requestUserInfo(oAuthToken);
         System.out.println("userInfoResponse = " + userInfoResponse.getBody());
@@ -119,15 +119,7 @@ public class OAuthService {
 
 
     // 기존 유저 소셜로그인 연동 api
-    public void googleRedirectURLTemp(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // 세션에 기존 사용자 정보 저장
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
-        }
-        HttpSession session = request.getSession();
-        session.setAttribute("existingUserId", authentication.getName());
-
+    public void googleRedirectURLTemp() throws IOException {
         // uri 호출
         Map<String, Object> params = new HashMap<>();
         params.put("scope", scope);
@@ -145,7 +137,7 @@ public class OAuthService {
     }
 
     // 기존 유저 소셜로그인 연동 api
-    public ResponseEntity<Map<String, String>> googleLoginTemp(HttpServletRequest request, String code) throws JsonProcessingException {
+    public ResponseEntity<Map<String, String>> googleLoginTemp(String code) throws JsonProcessingException {
         // oauth 로그인 엑세스토큰 발급
         ResponseEntity<String> accessToken = requestAccessToken(code);
         GoogleOAuthToken oAuthToken = getAccessToken(accessToken);
@@ -157,14 +149,15 @@ public class OAuthService {
             throw new CustomException(ErrorCode.AUTHENTICATION_FAILED);
         }
 
-        // 세션에서 기존 사용자 id가져오기
-        HttpSession session = request.getSession();
-        String existingUserId = (String) session.getAttribute("existingUserId");
-        User user = userRepository.findByEmail(existingUserId)
+        // contextHolder에서 기존 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String localEmail = authentication.getName(); // 현재 로그인한 사용자의 이메일 가져오기
+        User user = userRepository.findByEmail(localEmail)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // oauth user정보 저장
         user.updateSocial(googleUser.getName(), googleUser.getEmail());
+
         // 이후에는 소셜로그인으로만 접근가능
         user.setPassword(null);
         userRepository.save(user);
@@ -185,9 +178,6 @@ public class OAuthService {
 
         Map<String, String> response = new HashMap<>();
         response.put("jwtToken", jwtToken); // 발급한 JWT 토큰
-
-        // 세션 제거
-        session.removeAttribute("existingUserId");
 
         return ResponseEntity.ok(response); //
 
