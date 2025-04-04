@@ -225,7 +225,13 @@ public class OAuthService {
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        return user.getProvider();
+        if (user.getProvider() == null) {
+            return "NONE";
+        } else if (user.getProvider().equals("GOOGLE")) {
+            return user.getProvider();
+        } else {
+            return "NONE";
+        }
     }
 
 }
