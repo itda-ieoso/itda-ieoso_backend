@@ -89,7 +89,7 @@ public class OAuthService {
         // 계정 정보가 없는경우
         if (!userexist) {
             // google login 정보 저장
-            User user = new User(googleUser.getName(), googleUser.getEmail());
+            User user = new User(googleUser.getName(), googleUser.getEmail(), "GOOGLE");
             userRepository.save(user);
             log.info("신규유저 구글로그인 정보 저장 완료");
         }
@@ -102,12 +102,6 @@ public class OAuthService {
         // 헤더에 jwt토큰 넣기
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + jwtToken);
-
-        // 반환
-        // GoogleLoginResponse googleLoginResponse = new GoogleLoginResponse(jwtToken, 1, oAuthToken.getAccess_token(), oAuthToken.getToken_type());
-        //return new ResponseEntity<>(googleLoginResponse, headers, HttpStatus.OK);
-
-        //return new ResponseEntity<>("구글 로그인 성공", headers, HttpStatus.OK);
 
         Map<String, String> response = new HashMap<>();
         response.put("jwtToken", jwtToken); // 발급한 JWT 토큰
@@ -154,7 +148,7 @@ public class OAuthService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // oauth user정보 저장
-        user.updateSocial(googleUser.getEmail(), googleUser.getName());
+        user.updateSocial(googleUser.getEmail(), googleUser.getName(), "GOOGLE");
 
         // 이후에는 소셜로그인으로만 접근가능
         user.setPassword(null);
@@ -225,5 +219,13 @@ public class OAuthService {
         return googleUser;
     }
 
+    public String getProvider() {
+        // contextHolder에서 기존 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return user.getProvider();
+    }
 
 }

@@ -30,6 +30,8 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    private String provider;
+
     private boolean service;  // 필수 약관 동의
     private boolean privacy;   // 필수 개인정보 동의
     private boolean marketing; // 선택 마케팅 동의
@@ -58,13 +60,14 @@ public class User {
     }
 
     @Builder
-    public User(String oauthName, String oauthEmail) {
+    public User(String oauthName, String oauthEmail, String provider) {
         this.name = oauthName;
         this.email = oauthEmail;
         this.role = UserRole.USER;
         this.service = true;
         this.privacy = true;
         this.marketing = true;
+        this.provider = provider;
     }
 
     // S3에서 받은 URL 저장
@@ -76,8 +79,10 @@ public class User {
         this.password = password;
     }
 
-    public void updateSocial(String oauthEmail, String oauthName) {
+    public void updateSocial(String oauthEmail, String oauthName, String provider) {
         this.email = oauthEmail;
         this.name = oauthName;
+        this.provider = provider;
+
     }
 }
