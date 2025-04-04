@@ -44,4 +44,10 @@ public class OAuthController {
     public ResponseEntity<Map<String, String>> returnUriTemp(@RequestParam String code) throws JsonProcessingException {
         return oAuthService.googleLoginTemp(code);
     }
+
+    // 소셜로그인 연동 여부
+    @GetMapping("/social/linked")
+    public Response<String> getProvider() {
+        return Response.success("소셜로그인 연동 유무", oAuthService.getProvider());
+    }
 }
