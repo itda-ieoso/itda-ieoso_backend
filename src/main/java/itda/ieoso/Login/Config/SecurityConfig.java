@@ -62,7 +62,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/login", "/users/sign-up", "/users/check-email", "/users/reset/password", "auth/**",
                                         "/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**","/webjars/**",
-                                        "/oauth/google/login", "oauth/return/uri", "/oauth/google/login/temp").permitAll()
+                                        "/oauth/google/login", "oauth/return/uri", "/oauth/google/login/temp", "/translate/**").permitAll()
                         .anyRequest().authenticated());
 
 
