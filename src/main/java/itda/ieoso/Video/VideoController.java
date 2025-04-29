@@ -33,6 +33,14 @@ public class VideoController {
         return Response.success("강의영상 삭제", videoService.deleteVideo(courseId,videoId,userId));
     }
 
+    // 유튜브 영상 자막 추출 및 저장
+    @PostMapping("/summary/{courseId}/{videoId}")
+    public Response<String> summarizeVideo(@PathVariable Long courseId,
+                                         @PathVariable Long videoId) {
+
+        return Response.success("강의영상 요약", videoService.summarizeVideo(courseId,videoId));
+    }
+
 
 
 }

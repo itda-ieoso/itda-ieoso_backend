@@ -18,15 +18,19 @@ import itda.ieoso.VideoHistory.VideoHistory;
 import itda.ieoso.VideoHistory.VideoHistoryRepository;
 import itda.ieoso.VideoHistory.VideoHistoryStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -169,16 +173,6 @@ public class VideoService {
 
     }
 
-    // video 조회
-    public void getVideo() {
-
-    }
-
-    // video 목록 조회
-    public void getVideos() {
-
-    }
-
     // courseAttendees만큼의 videoHistory 생성
     private void addVideoHistoryToVideo(Course course, Video video) {
         // course내의 모든 courseAttendees 조회
@@ -198,5 +192,42 @@ public class VideoService {
         // video에 videoHistory추가
         video.getVideoHistories().addAll(videoHistoryList);
         videoRepository.save(video);
+    }
+
+    // 강의영상 요약 추출
+    public String summarizeVideo(Long courseId, Long videoId) {
+        User authenticatedUser = getAuthenticatedUser();
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(()-> new CustomException(ErrorCode.COURSE_NOT_FOUND));
+
+        // 권한 검증
+        if (!course.getUser().getUserId().equals(authenticatedUser.getUserId())) {
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
+        }
+
+        // video 조회
+        Video video = videoRepository.findByCourseAndVideoId(course, videoId);
+        if (video == null) {
+            throw new CustomException(ErrorCode.VIDEO_NOT_FOUND);
+        }
+
+        RestTemplate restTemplate = new RestTemplate();
+        String url = video.getVideoUrl();
+
+        Map<String, String> requestData = new HashMap<>();
+        requestData.put("url", url);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestData, headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+                "http://localhost:8000/summarize/",
+                HttpMethod.POST,
+                requestEntity,
+                String.class);
+
+        System.out.println("response = " + response.getBody());
+
+        return response.getBody();
     }
 }
