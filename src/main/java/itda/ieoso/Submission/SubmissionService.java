@@ -110,7 +110,9 @@ public class SubmissionService {
             submission.setSubmissionStatus(
                     assignment.getEndDate().isAfter(LocalDateTime.now()) ? SubmissionStatus.SUBMITTED : SubmissionStatus.LATE
             );
-        }
+        } else if (submission.getSubmissionStatus() == SubmissionStatus.SUBMITTED && assignment.getEndDate().isBefore(LocalDateTime.now())) {
+            submission.setSubmissionStatus(SubmissionStatus.LATE);
+        } 
 
         // 수정된 제출 정보 저장
         submissionRepository.save(submission);
