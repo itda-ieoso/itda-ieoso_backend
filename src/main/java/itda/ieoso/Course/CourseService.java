@@ -146,13 +146,9 @@ public class CourseService {
             throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
         }
 
-        // dureation, startDate 필수
+        // 기간 설정 예외처리
         if (request.durationWeeks() == null || (request.durationWeeks() <= 0 || request.durationWeeks() > 12)) {
             throw new CustomException(ErrorCode.INVALID_DURATION_WEEK);
-        }
-
-        if (request.startDate() == null || request.startDate().isBefore(LocalDate.now())) {
-            throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
         }
 
         // 리스트를 문자열로 변환 (예: 쉼표로 구분)
@@ -190,6 +186,16 @@ public class CourseService {
 
         // 초기 업데이트 여부 확인
         if (!course.isInit()) {
+
+            // 초기 설정시 dureation 필수
+            if (request.durationWeeks() == null || (request.durationWeeks() <= 0 || request.durationWeeks() > 12)) {
+                throw new CustomException(ErrorCode.INVALID_DURATION_WEEK);
+            }
+
+            // 초기 설정시 startDate 필수
+            if (request.startDate() == null) {
+                throw new CustomException(ErrorCode.INVALID_DATE_RANGE);
+            }
 
             // 초기 설정시 커리큘럼 자동생성
             initializeCourse(course, request.startDate(), request.durationWeeks(),
