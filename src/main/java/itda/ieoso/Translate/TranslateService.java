@@ -46,7 +46,7 @@ public class TranslateService {
         TranslateTextRequest request = TranslateTextRequest.builder()
                 .text(text)
                 .sourceLanguageCode(sourceLang)
-                .targetLanguageCode(sourceLang)
+                .targetLanguageCode(targetLang)
                 .build();
 
         TranslateTextResponse response = translateClient.translateText(request);
