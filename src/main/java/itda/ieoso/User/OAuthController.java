@@ -6,10 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Map;
@@ -27,7 +24,7 @@ public class OAuthController {
         oAuthService.googleRedirectURL();
     }
 
-    // 신규고객용 소셔롤그인 리다이렉트
+    // 신규고객용 소셜로그인 리다이렉트
     @GetMapping("/return/uri")
     public ResponseEntity<Map<String, String>> returnUri(@RequestParam String code) throws JsonProcessingException {
         return oAuthService.googleLogin(code);
@@ -49,5 +46,11 @@ public class OAuthController {
     @GetMapping("/social/linked")
     public Response<String> getProvider() {
         return Response.success("소셜로그인 연동 유무", oAuthService.getProvider());
+    }
+
+    @PostMapping("/reissuetoken")
+    public ResponseEntity<Map<String, String>> reissueAccessToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        return oAuthService.reissueAccessToken(refreshToken);
     }
 }

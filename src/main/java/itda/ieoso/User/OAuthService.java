@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
 import itda.ieoso.Login.Jwt.JwtUtil;
+import itda.ieoso.Login.Jwt.RefreshToken;
+import itda.ieoso.Login.Jwt.RefreshTokenRepository;
 import itda.ieoso.Response.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +38,7 @@ public class OAuthService {
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${client_id}")
     private String clientId;
@@ -96,8 +100,19 @@ public class OAuthService {
 
         // jwt토큰 생성
         String email = googleUser.getEmail();
-        String jwtToken = jwtUtil.createJwt(email, "USER", 60 * 60 * 10L);
+        String jwtToken = jwtUtil.createJwt(email, "USER", 60 * 60 * 1000L);
         log.info("jwt 토큰 생성");
+        String refreshTokenJwt = jwtUtil.createRefreshToken(email, "USER", 14 * 24 * 60 * 60 * 1000L); // 14일
+
+        // RefreshToken 저장 or 갱신
+        Optional<RefreshToken> existingToken = refreshTokenRepository.findByEmail(email);
+        if (existingToken.isPresent()) {
+            existingToken.get().updateToken(refreshTokenJwt);
+            refreshTokenRepository.save(existingToken.get());
+        } else {
+            RefreshToken token = new RefreshToken(email, refreshTokenJwt);
+            refreshTokenRepository.save(token);
+        }
 
         // 헤더에 jwt토큰 넣기
         HttpHeaders headers = new HttpHeaders();
@@ -105,6 +120,7 @@ public class OAuthService {
 
         Map<String, String> response = new HashMap<>();
         response.put("jwtToken", jwtToken); // 발급한 JWT 토큰
+        response.put("refreshToken", refreshTokenJwt);
 
         return ResponseEntity.ok(response); // 클라이언트에게 리다이렉트 URL과 JWT를 반환
     }
@@ -232,6 +248,31 @@ public class OAuthService {
         } else {
             return "NONE";
         }
+    }
+
+    public ResponseEntity<Map<String, String>> reissueAccessToken(String refreshTokenJwt) {
+        // refreshToken 유효성 검사
+        if (jwtUtil.isExpired(refreshTokenJwt)) {
+            throw new CustomException(ErrorCode.REFRESH_TOKEN_EXPIRED);
+        }
+
+        String email = jwtUtil.getEmail(refreshTokenJwt);
+
+        // DB에 저장된 refreshToken과 비교
+        RefreshToken storedToken = refreshTokenRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
+
+        if (!storedToken.getToken().equals(refreshTokenJwt)) {
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        // 새 access token 발급
+        String newAccessToken = jwtUtil.createJwt(email, "USER", 60 * 60 * 1000L);
+
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("jwtToken", newAccessToken);
+
+        return ResponseEntity.ok(tokens);
     }
 
 }
