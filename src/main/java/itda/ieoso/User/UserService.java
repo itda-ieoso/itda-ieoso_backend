@@ -1,4 +1,5 @@
 package itda.ieoso.User;
+
 import itda.ieoso.Email.EmailService;
 import itda.ieoso.Exception.CustomException;
 import itda.ieoso.Exception.ErrorCode;
@@ -178,6 +179,7 @@ public class UserService {
                 "</html>";
         emailService.sendEmail(email, subject, text);
     }
+
     @Transactional
     public void changePassword(String currentPassword, String newPassword) {
 
@@ -189,5 +191,19 @@ public class UserService {
 
         authenticatedUser.setPassword(bCryptPasswordEncoder.encode(newPassword));
         userRepository.save(authenticatedUser);
+    }
+
+    // 튜토리얼 진행 여부 반환
+    @Transactional(readOnly = true)
+    public Boolean getTutorial() {
+        User authenticatedUser = getAuthenticatedUser();
+        return authenticatedUser.isTutorial();
+    }
+
+    // 튜토리얼 진행 여부 업데이트
+    @Transactional
+    public void updateTutorial() {
+        User authenticatedUser = getAuthenticatedUser();
+        authenticatedUser.updateTutorial();
     }
 }

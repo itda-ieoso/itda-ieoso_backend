@@ -70,6 +70,7 @@ public class UserDTO {
         private boolean service;
         private boolean privacy;
         private boolean marketing;
+        private boolean tutorial;
 
         public static UserInfoDto of(User user, String profileImageUrl) {
             return UserInfoDto.builder()
@@ -80,6 +81,7 @@ public class UserDTO {
                     .service(user.isService())
                     .privacy(user.isPrivacy())
                     .marketing(user.isMarketing())
+                    .tutorial(user.isTutorial())
                     .build();
         }
     }

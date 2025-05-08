@@ -69,11 +69,13 @@ public class UserController {
     public Response<List<UserInfoDto>> getAllUsers() {
         return Response.success("모든 사용자 정보 조회", userService.getAllUserInfo());
     }
+
     @PostMapping("/reset/password")
     public Response<String> resetPassword(@RequestParam String email, @RequestParam String name) {
         userService.resetPassword(email, name);
         return Response.success("임시 비밀번호가 이메일로 전송되었습니다.", null);
     }
+
     @PostMapping("/change/password")
     public Response<String> changePassword(
             @RequestParam String currentPassword,
@@ -81,5 +83,18 @@ public class UserController {
     ) {
         userService.changePassword(currentPassword, newPassword);
         return Response.success("비밀번호가 성공적으로 변경되었습니다.", null);
+    }
+
+    // 튜토리얼 진행 여부
+    @GetMapping("/tutorial")
+    public Response<Boolean> getTutorial() {
+        return Response.success("튜토리얼 진행 여부 반환", userService.getTutorial());
+    }
+
+    // 튜토리얼 완료
+    @PatchMapping("/tutorial")
+    public Response<?> updateTutorial() {
+        userService.updateTutorial();
+        return Response.success("튜토리얼 진행 완료", null);
     }
 }
