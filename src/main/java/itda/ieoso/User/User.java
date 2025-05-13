@@ -32,7 +32,14 @@ public class User {
 
     private String provider;
 
-    private boolean tutorial = false;
+    @Enumerated(EnumType.STRING)
+    private TutorialStatus tutorial = TutorialStatus.FALSE;
+
+    public enum TutorialStatus {
+        FALSE,              // 튜토리얼 진행 전
+        CONTINUE,           // 튜토리얼 진행 중
+        TRUE;               // 튜토리얼 진행 완료
+    }
 
     private boolean service;  // 필수 약관 동의
     private boolean privacy;   // 필수 개인정보 동의
@@ -73,7 +80,7 @@ public class User {
         this.privacy = true;
         this.marketing = true;
         this.provider = provider;
-        this.tutorial = false;
+        this.tutorial = TutorialStatus.FALSE;
     }
 
     // S3에서 받은 URL 저장
@@ -92,8 +99,8 @@ public class User {
 
     }
 
-    public void updateTutorial() {
-        this.tutorial = true;
+    public void updateTutorial(TutorialStatus tutorialStatus) {
+        this.tutorial = tutorialStatus;
     }
 
 }

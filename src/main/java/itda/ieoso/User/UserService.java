@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static itda.ieoso.User.User.*;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -195,15 +197,15 @@ public class UserService {
 
     // 튜토리얼 진행 여부 반환
     @Transactional(readOnly = true)
-    public Boolean getTutorial() {
+    public TutorialStatus getTutorial() {
         User authenticatedUser = getAuthenticatedUser();
-        return authenticatedUser.isTutorial();
+        return authenticatedUser.getTutorial();
     }
 
     // 튜토리얼 진행 여부 업데이트
     @Transactional
-    public void updateTutorial() {
+    public void updateTutorial(TutorialStatus tutorialStatus) {
         User authenticatedUser = getAuthenticatedUser();
-        authenticatedUser.updateTutorial();
+        authenticatedUser.updateTutorial(tutorialStatus);
     }
 }

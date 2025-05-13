@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import static itda.ieoso.User.User.*;
 import static itda.ieoso.User.UserRole.USER;
 
 @Getter
@@ -70,7 +71,7 @@ public class UserDTO {
         private boolean service;
         private boolean privacy;
         private boolean marketing;
-        private boolean tutorial;
+        private TutorialStatus tutorial;
 
         public static UserInfoDto of(User user, String profileImageUrl) {
             return UserInfoDto.builder()
@@ -81,7 +82,7 @@ public class UserDTO {
                     .service(user.isService())
                     .privacy(user.isPrivacy())
                     .marketing(user.isMarketing())
-                    .tutorial(user.isTutorial())
+                    .tutorial(user.getTutorial())
                     .build();
         }
     }
