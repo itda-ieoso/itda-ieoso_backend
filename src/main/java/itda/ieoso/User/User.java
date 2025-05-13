@@ -36,9 +36,9 @@ public class User {
     private TutorialStatus tutorial = TutorialStatus.FALSE;
 
     public enum TutorialStatus {
-        FALSE,
-        CONTINUE,
-        TRUE;
+        FALSE,              // 튜토리얼 진행 전
+        CONTINUE,           // 튜토리얼 진행 중
+        TRUE;               // 튜토리얼 진행 완료
     }
 
     private boolean service;  // 필수 약관 동의
