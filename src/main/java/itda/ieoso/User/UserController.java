@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import static itda.ieoso.User.User.*;
+
 @RestController
 @RequestMapping("/users") // 공통 경로 추가
 @RequiredArgsConstructor
@@ -87,14 +89,14 @@ public class UserController {
 
     // 튜토리얼 진행 여부
     @GetMapping("/tutorial")
-    public Response<Boolean> getTutorial() {
+    public Response<TutorialStatus> getTutorial() {
         return Response.success("튜토리얼 진행 여부 반환", userService.getTutorial());
     }
 
     // 튜토리얼 완료
     @PatchMapping("/tutorial")
-    public Response<?> updateTutorial() {
-        userService.updateTutorial();
-        return Response.success("튜토리얼 진행 완료", null);
+    public Response<?> updateTutorial(@RequestParam TutorialStatus tutorialStatus) {
+        userService.updateTutorial(tutorialStatus);
+        return Response.success("튜토리얼 진행 상태 업데이트", null);
     }
 }
