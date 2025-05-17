@@ -133,6 +133,30 @@ public class S3Service {
 
         return presignedUrl.toString();
     }
+
+    public void moveFileToDeleteFolder(String fileUrl) {
+        // 기존 URL로부터 S3 key 추출
+        String bucketUrlPrefix = "https://" + s3Config.getBucketName() + ".s3." + s3Config.getRegion() + ".amazonaws.com/";
+        String originalKey = fileUrl.replace(bucketUrlPrefix, ""); // example: submissions/abc.jpg
+        String fileName = originalKey.substring(originalKey.lastIndexOf("/") + 1);
+        String newKey = "delete/" + fileName;
+
+        // S3 객체 복사
+        CopyObjectRequest copyReq = CopyObjectRequest.builder()
+                .sourceBucket(s3Config.getBucketName())
+                .sourceKey(originalKey)
+                .destinationBucket(s3Config.getBucketName())
+                .destinationKey(newKey)
+                .build();
+        s3Client.copyObject(copyReq);
+
+        // 원본 삭제
+        DeleteObjectRequest deleteReq = DeleteObjectRequest.builder()
+                .bucket(s3Config.getBucketName())
+                .key(originalKey)
+                .build();
+        s3Client.deleteObject(deleteReq);
+    }
 }
 
 
