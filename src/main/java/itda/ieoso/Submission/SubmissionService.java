@@ -121,7 +121,7 @@ public class SubmissionService {
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(submission.getUser(), submission.getUser().getProfileImageUrl());
 
         // 수정된 SubmissionDTO 반환
-        return SubmissionDTO.of(submission, userInfoDto);
+        return SubmissionDTO.of(submission, userInfoDto, s3Service);
     }
 
     // 파일 크기 포맷팅 유틸리티 메서드 (KB, MB, GB)
@@ -202,6 +202,6 @@ public class SubmissionService {
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(submission.getUser(), submission.getUser().getProfileImageUrl());
 
         // SubmissionDTO로 변환하여 반환
-        return SubmissionDTO.of(submission, userInfoDto);
+        return SubmissionDTO.of(submission, userInfoDto, s3Service);
     }
 }
