@@ -76,6 +76,10 @@ public class SubmissionService {
 
         // 삭제할 파일 처리 (DB에서만 삭제)
         if (deleteFileUrls != null) {
+            // S3 상에서 파일 이동
+            for (String fileUrl : deleteFileUrls) {
+                s3Service.moveFileToDeleteFolder(fileUrl); // "delete" 폴더로 이동
+            }
             submissionFileRepository.deleteBySubmissionFileUrlIn(deleteFileUrls);
 
             // 메모리에서도 삭제
@@ -170,6 +174,10 @@ public class SubmissionService {
                 .collect(Collectors.toList());
 
         if (!fileUrlsToDelete.isEmpty()) {
+            // S3에서 "delete" 폴더로 이동
+            for (String fileUrl : fileUrlsToDelete) {
+                s3Service.moveFileToDeleteFolder(fileUrl);
+            }
             submissionFileRepository.deleteBySubmissionFileUrlIn(fileUrlsToDelete);  // 파일 URL들로 DB에서 삭제
         }
 

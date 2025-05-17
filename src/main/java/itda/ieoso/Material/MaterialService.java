@@ -214,6 +214,13 @@ public class MaterialService {
             throw new CustomException(ErrorCode.MATERIAL_NOT_FOUND);
         }
 
+        String fileUrl = material.getMaterialFile();
+
+
+        if (fileUrl != null && !fileUrl.isBlank()) {
+            s3Service.moveFileToDeleteFolder(fileUrl);
+        }
+
         // materialHistory 삭제
         materialHistoryRepository.deleteAllByMaterial(material);
 

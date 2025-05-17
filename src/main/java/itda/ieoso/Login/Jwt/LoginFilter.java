@@ -90,7 +90,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60 * 60 * 10L);
+        String token = jwtUtil.createJwt(username, role, 60 * 60 * 1000L);
 
         // System.out.println(token);
         log.debug("생성된 JWT: {}", token);
