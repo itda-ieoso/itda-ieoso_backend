@@ -69,6 +69,17 @@ public class SubmissionController {
         SubmissionDTO submissionDTO = submissionService.getSubmission(assignmentId, submissionId, userId);
         return Response.success("과제 조회", submissionDTO); // 조회한 제출 정보 반환
     }
+
+    // 과제제출 상태 변경(개설자 전용)
+    @PatchMapping("/{submissionId}/submission-status")
+    public Response<?> updateSubmissionStatus(@PathVariable Long assignmentId,
+                                              @PathVariable Long submissionId,
+                                              @RequestParam SubmissionStatus status) {
+
+        // 과제제출 상태 변경
+        submissionService.updateSubmissionStatus(assignmentId, submissionId, status);
+        return Response.success("과제 제출 상태변경", null);
+    }
 }
 
 

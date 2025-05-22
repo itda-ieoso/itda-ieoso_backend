@@ -49,7 +49,7 @@ public class Submission {
     @JoinColumn(name = "submission_id")
     private List<SubmissionFile> submissionFiles = new ArrayList<>();
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String textContent;
 
     @Enumerated(EnumType.STRING)

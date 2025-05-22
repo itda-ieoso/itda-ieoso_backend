@@ -76,6 +76,10 @@ public class SubmissionService {
 
         // 삭제할 파일 처리 (DB에서만 삭제)
         if (deleteFileUrls != null) {
+            // S3 상에서 파일 이동
+            for (String fileUrl : deleteFileUrls) {
+                s3Service.moveFileToDeleteFolder(fileUrl); // "delete" 폴더로 이동
+            }
             submissionFileRepository.deleteBySubmissionFileUrlIn(deleteFileUrls);
 
             // 메모리에서도 삭제
@@ -112,7 +116,8 @@ public class SubmissionService {
             );
         } else if (submission.getSubmissionStatus() == SubmissionStatus.SUBMITTED && assignment.getEndDate().isBefore(LocalDateTime.now())) {
             submission.setSubmissionStatus(SubmissionStatus.LATE);
-        } 
+        }
+
 
         // 수정된 제출 정보 저장
         submissionRepository.save(submission);
@@ -121,7 +126,7 @@ public class SubmissionService {
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(submission.getUser(), submission.getUser().getProfileImageUrl());
 
         // 수정된 SubmissionDTO 반환
-        return SubmissionDTO.of(submission, userInfoDto);
+        return SubmissionDTO.of(submission, userInfoDto, s3Service);
     }
 
     // 파일 크기 포맷팅 유틸리티 메서드 (KB, MB, GB)
@@ -170,6 +175,10 @@ public class SubmissionService {
                 .collect(Collectors.toList());
 
         if (!fileUrlsToDelete.isEmpty()) {
+            // S3에서 "delete" 폴더로 이동
+            for (String fileUrl : fileUrlsToDelete) {
+                s3Service.moveFileToDeleteFolder(fileUrl);
+            }
             submissionFileRepository.deleteBySubmissionFileUrlIn(fileUrlsToDelete);  // 파일 URL들로 DB에서 삭제
         }
 
@@ -202,6 +211,30 @@ public class SubmissionService {
         UserDTO.UserInfoDto userInfoDto = UserDTO.UserInfoDto.of(submission.getUser(), submission.getUser().getProfileImageUrl());
 
         // SubmissionDTO로 변환하여 반환
-        return SubmissionDTO.of(submission, userInfoDto);
+        return SubmissionDTO.of(submission, userInfoDto, s3Service);
+    }
+
+
+    // 과제제출 상태변경(개설자용)
+    @Transactional
+    public void updateSubmissionStatus(Long assignmentId, Long submissionId, SubmissionStatus status) {
+        User authenticatedUser = getAuthenticatedUser();
+
+        // 과제 조회
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+
+        // 제출 정보 조회
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBMISSION_NOT_FOUND));
+
+        // 로그인 유저가 강의 개설자인지 검증
+        if (!submission.getCourse().getUser().getUserId().equals(authenticatedUser.getUserId())) {
+            throw new CustomException(ErrorCode.COURSE_PERMISSION_DENIED);
+        }
+
+        submission.setSubmissionStatus(status);
+        submissionRepository.save(submission);
+
     }
 }

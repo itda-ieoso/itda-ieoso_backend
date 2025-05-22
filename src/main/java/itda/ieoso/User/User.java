@@ -32,6 +32,15 @@ public class User {
 
     private String provider;
 
+    @Enumerated(EnumType.STRING)
+    private TutorialStatus tutorial = TutorialStatus.FALSE;
+
+    public enum TutorialStatus {
+        FALSE,              // 튜토리얼 진행 전
+        CONTINUE,           // 튜토리얼 진행 중
+        TRUE;               // 튜토리얼 진행 완료
+    }
+
     private boolean service;  // 필수 약관 동의
     private boolean privacy;   // 필수 개인정보 동의
     private boolean marketing; // 선택 마케팅 동의
@@ -40,13 +49,16 @@ public class User {
     public String getEmail() {
         return email;
     }
+
     // public으로 password 제공
     public String getPassword() {
         return password;
     }
 
     // public으로 userId 제공
-    public Long getUserId() { return userId; }
+    public Long getUserId() {
+        return userId;
+    }
 
     @Builder
     public User(String name, String email, String password, UserRole role, boolean service, boolean privacy, boolean marketing) {
@@ -68,6 +80,7 @@ public class User {
         this.privacy = true;
         this.marketing = true;
         this.provider = provider;
+        this.tutorial = TutorialStatus.FALSE;
     }
 
     // S3에서 받은 URL 저장
@@ -85,4 +98,9 @@ public class User {
         this.provider = provider;
 
     }
+
+    public void updateTutorial(TutorialStatus tutorialStatus) {
+        this.tutorial = tutorialStatus;
+    }
+
 }
