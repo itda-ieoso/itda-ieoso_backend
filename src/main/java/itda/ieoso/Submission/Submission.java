@@ -4,6 +4,7 @@ import itda.ieoso.Assignment.Assignment;
 import itda.ieoso.Course.Course;
 import itda.ieoso.CourseAttendees.CourseAttendees;
 import itda.ieoso.User.User;
+import itda.ieoso.comment.Comment;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -48,6 +49,9 @@ public class Submission {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "submission_id")
     private List<SubmissionFile> submissionFiles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     @Column(columnDefinition = "TEXT")
     private String textContent;
