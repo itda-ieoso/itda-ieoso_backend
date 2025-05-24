@@ -9,6 +9,7 @@ import itda.ieoso.File.S3Service;
 import itda.ieoso.User.User;
 import itda.ieoso.User.UserDTO;
 import itda.ieoso.User.UserRepository;
+import itda.ieoso.comment.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,6 +37,8 @@ public class SubmissionService {
 
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private CommentRepository commentRepository;
 
     // SecurityContext에서 현재 사용자 조회
     private User getAuthenticatedUser() {
@@ -185,6 +188,9 @@ public class SubmissionService {
         submission.setSubmissionFiles(new ArrayList<>());
 
         submissionRepository.save(submission);
+
+        // 과제에 작성된 댓글 전체 삭제
+        commentRepository.deleteAllBySubmission(submission);
     }
 
     // 과제 조회
